@@ -15,6 +15,7 @@ import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.EntityBuilder;
 import com.tterrag.registrate.builders.ItemBuilder;
+import com.tterrag.registrate.builders.TileEntityBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
@@ -27,6 +28,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -164,6 +166,18 @@ public class Registrate {
     
     public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, String name, EntityType.IFactory<T> factory, EntityClassification classification) {
         return entry(name, callback -> new EntityBuilder<>(this, parent, name, callback, factory, classification));
+    }
+    
+    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(Supplier<T> factory) {
+        return tileEntity(this, factory);
+    }
+    
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, Supplier<T> factory) {
+        return tileEntity(parent, currentName, factory);
+    }
+    
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, Supplier<T> factory) {
+        return entry(name, callback -> new TileEntityBuilder<>(this, parent, name, callback, factory));
     }
 
     private <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> accept(String name, Class<? super R> type, Supplier<? extends T> creator) {

@@ -15,6 +15,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.tileentity.ChestTileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.RegistryObject;
@@ -67,6 +69,10 @@ public class TestMod {
         RegistryObject<EntityType<TestEntity>> testentity = registrate.object("testentity")
                 .entity(TestEntity::new, EntityClassification.CREATURE)
                 .defaultSpawnEgg(0xFF0000, 0x00FF00)
+                .register();
+        
+        RegistryObject<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")
+                .tileEntity(ChestTileEntity::new)
                 .register();
     }
     
