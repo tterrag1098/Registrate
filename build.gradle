@@ -16,7 +16,7 @@ buildscript {
     }
 }
 plugins {
-    id "io.freefair.lombok" version "2.9.5"
+    id "io.freefair.lombok" version "4.1.5"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
@@ -35,19 +35,19 @@ ext.buildnumber = 0
 project.buildnumber = System.getenv('BUILD_NUMBER') != null ? System.getenv('BUILD_NUMBER') : project.ext.gitHash
 
 version = "MC${minecraft_version}-${mod_version}.${buildnumber}"
-group = "team.chisel" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "com.tterrag.registrate"
 archivesBaseName = dev ? "Registrate_DEV" : "Registrate"
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 minecraft {
-	mappings channel: 'snapshot', version: '20191118-1.14.3'
-	
-	runs {
+    mappings channel: 'snapshot', version: '20191118-1.14.3'
+    
+    runs {
         client {
             taskName 'testmod_client'
-        	
+            
             workingDirectory project.file('run')
 
             property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
@@ -56,13 +56,13 @@ minecraft {
             mods {
                 testmod {
                     source sourceSets.test
-					source sourceSets.main
+                    source sourceSets.main
                 }
             }
         }
         server {
             taskName 'testmod_server'
-        	
+            
             workingDirectory project.file('run')
 
             property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
@@ -71,12 +71,12 @@ minecraft {
             mods {
                 testmod {
                     source sourceSets.test
-					source sourceSets.main
+                    source sourceSets.main
                 }
             }
         }
-		data {
-        	taskName 'testmod_data'
+        data {
+            taskName 'testmod_data'
         
             workingDirectory project.file('run')
             
@@ -87,18 +87,18 @@ minecraft {
 
             mods {
                 tropicraft {
-                	source sourceSets.test
+                    source sourceSets.test
                     source sourceSets.main
                 }
             }
             
-			args '--mod', 'testmod', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"'
+            args '--mod', 'testmod', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"'
         }
-	}
+    }
 }
 
 sourceSets.main.resources {
-	srcDir 'src/generated/resources'
+    srcDir 'src/generated/resources'
 }
 
 dependencies {
@@ -109,6 +109,23 @@ dependencies {
 
 lombok {
     version = "1.18.10"
+    config['lombok.addJavaxGeneratedAnnotation'] = 'true'
+}
+
+delombok {
+    format = [
+        'suppressWarnings': 'skip',
+        'javaLangAsFQN': 'skip'
+    ]
+}
+
+task sourceJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.delombokTask
+}
+
+javadoc {
+    source = delombok
 }
 
 publishing {
@@ -116,7 +133,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifact jar
-//          artifact sourceJar
+            artifact sourceJar
         }
     }
 
