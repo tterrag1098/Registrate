@@ -2,6 +2,7 @@ package com.tterrag.registrate.builders;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -20,7 +21,11 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     P getParent();
 
     String getName();
-
+    
+    default Supplier<T> get(Class<? super R> registryType) {
+        return () -> getOwner().<R, T>get(getName(), registryType).get();
+    }
+    
     @SuppressWarnings("unchecked")
     default <D extends RegistrateProvider> S addData(ProviderType<D> type, Class<? super R> clazz, Consumer<DataGenContext<D, R, T>> cons) {
         getOwner().addDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(prov, this, clazz)));

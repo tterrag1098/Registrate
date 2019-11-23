@@ -1,6 +1,7 @@
 package com.tterrag.registrate.builders;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -33,8 +34,8 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
         return callback.accept(name, registryType, this::createEntry);
     }
     
-    public T get() {
-        return getOwner().<R, T>get(getName(), registryType).get();
+    public Supplier<T> get() {
+        return get(registryType);
     }
     
     public <D extends RegistrateProvider> S addData(ProviderType<D> type, Consumer<DataGenContext<D, R, T>> cons) {

@@ -43,12 +43,12 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     @SuppressWarnings("unchecked")
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(BiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>>item(this, p -> factory.apply((T) getOwner().get(getName(), Block.class).get(), p))
-                .model(ctx -> ctx.getProvider().blockItem(this::get));
+                .model(ctx -> ctx.getProvider().blockItem(get()));
     }
     
     public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(Supplier<? extends TE> factory) {
         return getOwner().<TE, BlockBuilder<T, P>>tileEntity(this, factory)
-                .validBlock(this::get)
+                .validBlock(get())
                 .build();
     }
 

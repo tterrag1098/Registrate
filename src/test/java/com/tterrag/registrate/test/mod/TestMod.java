@@ -66,6 +66,8 @@ public class TestMod {
                     .tileEntity(ChestTileEntity::new)
                     .register();
         
+        RegistryObject<TileEntityType<ChestTileEntity>> testblockte = registrate.get(TileEntityType.class);
+        
         @SuppressWarnings("deprecation")
         RegistryObject<EntityType<TestEntity>> testentity = registrate.object("testentity")
                 .entity(TestEntity::new, EntityClassification.CREATURE)
