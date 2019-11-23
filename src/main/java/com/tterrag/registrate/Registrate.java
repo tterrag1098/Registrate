@@ -168,15 +168,15 @@ public class Registrate {
         return entry(name, callback -> new EntityBuilder<>(this, parent, name, callback, factory, classification));
     }
     
-    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(Supplier<T> factory) {
+    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(Supplier<? extends T> factory) {
         return tileEntity(this, factory);
     }
     
-    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, Supplier<T> factory) {
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, Supplier<? extends T> factory) {
         return tileEntity(parent, currentName, factory);
     }
     
-    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, Supplier<T> factory) {
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, Supplier<? extends T> factory) {
         return entry(name, callback -> new TileEntityBuilder<>(this, parent, name, callback, factory));
     }
 

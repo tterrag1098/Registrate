@@ -63,6 +63,7 @@ public class TestMod {
                         .model(ctx -> ctx.getProvider()
                                 .withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                         .build()
+                    .tileEntity(ChestTileEntity::new)
                     .register();
         
         @SuppressWarnings("deprecation")
