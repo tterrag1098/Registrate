@@ -43,10 +43,68 @@ targetCompatibility = '1.8'
 
 minecraft {
 	mappings channel: 'snapshot', version: '20191118-1.14.3'
+	
+	runs {
+        client {
+            taskName 'testmod_client'
+        	
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                testmod {
+                    source sourceSets.test
+					source sourceSets.main
+                }
+            }
+        }
+        server {
+            taskName 'testmod_server'
+        	
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                testmod {
+                    source sourceSets.test
+					source sourceSets.main
+                }
+            }
+        }
+		data {
+        	taskName 'testmod_data'
+        
+            workingDirectory project.file('run')
+            
+            environment 'target', 'fmluserdevdata'
+
+            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                tropicraft {
+                	source sourceSets.test
+                    source sourceSets.main
+                }
+            }
+            
+			args '--mod', 'testmod', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"'
+        }
+	}
+}
+
+sourceSets.main.resources {
+	srcDir 'src/generated/resources'
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    testImplementation     "org.junit.jupiter:junit-jupiter-api:5.2.0"
+    testRuntime         "org.junit.jupiter:junit-jupiter-engine:5.2.0"
 }
 
 lombok {
@@ -59,7 +117,6 @@ publishing {
         mavenJava(MavenPublication) {
             artifact jar
 //          artifact sourceJar
-            artifact apiJar
         }
     }
 

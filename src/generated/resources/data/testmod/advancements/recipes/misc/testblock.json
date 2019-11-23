@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "testmod:testblock"
+    ]
+  },
+  "criteria": {
+    "has_egg": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:egg"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "testmod:testblock"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_egg",
+      "has_the_recipe"
+    ]
+  ]
+}
