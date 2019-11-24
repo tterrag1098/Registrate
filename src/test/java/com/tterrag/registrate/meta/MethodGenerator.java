@@ -3,6 +3,7 @@ package com.tterrag.registrate.meta;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -15,22 +16,42 @@ import com.google.common.collect.ImmutableList;
 import com.tterrag.registrate.meta.ProtectedMethodScraper.Header;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 @RequiredArgsConstructor
 public class MethodGenerator {
+    
+    @Value
+    private class Exclusion {
+
+        String name;
+        String[] params;
+        
+        public boolean matches(Header header) {
+            if (!header.getName().equals(this.name)) {
+                return false;
+            }
+            return this.params == null ? true : Arrays.equals(header.getParamTypes(), this.params);
+        }
+    }
     
     private static final String START_KEY = "// GENERATED START";
     private static final String END_KEY = "// GENERATED END";
     
     private final List<Pair<String, String>> typeReplacements;
-    private final Set<String> excludes = new HashSet<>();
+    private final Set<Exclusion> excludes = new HashSet<>();
     
     public MethodGenerator() {
         this(ImmutableList.of());
     }
     
     public MethodGenerator exclude(String name) {
-        excludes.add(name);
+        excludes.add(new Exclusion(name, null));
+        return this;
+    }
+    
+    public MethodGenerator exclude(String name, String... paramTypes) {
+        excludes.add(new Exclusion(name, paramTypes));
         return this;
     }
 
@@ -62,7 +83,7 @@ public class MethodGenerator {
                 }
                 itr.add("    " + START_KEY);
                 for (Header header : newHeaders) {
-                    if (excludes.contains(header.getName())) continue;
+                    if (excludes.stream().anyMatch(e -> e.matches(header))) continue;
                     itr.add("");
                     for (String s : header.printStubMethod().split("\n")) {
                         itr.add("    " + s);

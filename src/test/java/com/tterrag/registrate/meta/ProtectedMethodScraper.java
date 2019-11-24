@@ -64,24 +64,25 @@ public class ProtectedMethodScraper {
             return base.toString();
         }
 
-        private static final Pattern PATTERN = Pattern.compile("^\\s+protected\\s(static)?\\s?(\\S+)\\s(\\S+)\\((.+)\\)\\s\\{$");
+        private static final Pattern HEADER_PATTERN = Pattern.compile("^\\s+protected\\s(static)?\\s?(\\S+)\\s(\\S+)\\((.+)\\)\\s\\{$");
+        private static final Pattern PARAM_PATTERN = Pattern.compile("([a-zA-Z_][\\w.$]+(?:<.+>)?)\\s+(\\S+)");
 
         public static Optional<Header> parse(String className, String code) {
-            Matcher m = PATTERN.matcher(code);
-            if (m.matches()) {
-                boolean isStatic = m.group(1) != null;
-                String type = m.group(2);
-                String name = m.group(3);
-                String params = m.group(4);
+            Matcher h = HEADER_PATTERN.matcher(code);
+            if (h.matches()) {
+                boolean isStatic = h.group(1) != null;
+                String type = h.group(2);
+                String name = h.group(3);
+                String params = h.group(4);
                 String[] paramList = params.split(",");
                 String[] paramTypes = new String[paramList.length];
                 String[] paramNames = new String[paramList.length];
                 for (int i = 0; i < paramList.length; i++) {
                     String param = paramList[i].trim();
-                    String[] typeAndName = param.split(" ");
-                    if (typeAndName.length == 2) {
-                        paramTypes[i] = typeAndName[0];
-                        paramNames[i] = typeAndName[1];
+                    Matcher p = PARAM_PATTERN.matcher(param);
+                    if (p.matches()) {
+                        paramTypes[i] = p.group(1);
+                        paramNames[i] = p.group(2);
                     } else {
                         return Optional.empty();
                     }
@@ -102,8 +103,8 @@ public class ProtectedMethodScraper {
         do {
             if (className != null) {
                 Header.parse(className, line).ifPresent(headers::add);
-            } else if (line.startsWith("public class ")) {
-                className = line.split("\\s+")[2];
+            } else if (line.startsWith("public class ") || line.startsWith("public abstract class")) {
+                className = line.replaceAll("public (abstract )?class ", "").split("\\s+")[0];
             }
             line = scanner.nextLine();
         } while (!"done".equals(line));

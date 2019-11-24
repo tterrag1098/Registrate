@@ -20,6 +20,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         super(owner, parent, name, callback, Item.class);
         this.factory = factory;
         model(ctx -> ctx.getProvider().generated(ctx::getEntry));
+        lang(Item::getTranslationKey);
     }
 
     public ItemBuilder<T, P> properties(Consumer<Item.Properties> action) {

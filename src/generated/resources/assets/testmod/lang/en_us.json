@@ -1,0 +1,6 @@
+{
+  "block.testmod.testblock": "Testblock",
+  "entity.testmod.testentity": "Testentity",
+  "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",
+  "item.testmod.testitem": "Testitem"
+}

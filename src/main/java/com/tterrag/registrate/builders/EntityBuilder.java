@@ -19,6 +19,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     public EntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
         this.builder = EntityType.Builder.create(factory, classification);
+        lang(EntityType::getTranslationKey);
     }
     
     public EntityBuilder<T, P> apply(Consumer<EntityType.Builder<T>> cons) {

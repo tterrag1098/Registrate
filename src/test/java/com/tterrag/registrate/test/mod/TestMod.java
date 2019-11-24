@@ -56,7 +56,8 @@ public class TestMod {
                                 .build(ctx.getProvider());
                         
                         CookingRecipeBuilder.smeltingRecipe(Ingredient.fromItems(ctx.getEntry()), Blocks.DIAMOND_BLOCK, 1f, 200)
-                                .build(ctx.getProvider());
+                                .addCriterion("has_testitem", ctx.getProvider().hasItem(ctx.getEntry()))
+                                .build(ctx.getProvider(), new ResourceLocation("testmod", "diamond_block_from_" + ctx.getName()));
                     })
                     .item()
                         .properties(p -> p.group(ItemGroup.MISC))

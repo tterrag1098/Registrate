@@ -29,6 +29,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         super(owner, parent, name, callback, Block.class);
         this.factory = factory;
         blockstate(ctx -> ctx.getProvider().simpleBlock(ctx.getEntry()));
+        lang(Block::getTranslationKey);
         loot(RegistrateBlockLootTables::registerDropSelfLootTable);
     }
     
