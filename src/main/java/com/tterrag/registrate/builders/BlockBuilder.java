@@ -20,7 +20,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 
-public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, P, BlockBuilder<T, P>> {
+public final class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, P, BlockBuilder<T, P>> {
 
     private final Function<Block.Properties, T> factory;
     private final Block.Properties properties = Block.Properties.create(Material.ROCK);
@@ -28,12 +28,12 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
         super(owner, parent, name, callback, Block.class);
         this.factory = factory;
-        blockstate(ctx -> ctx.getProvider().simpleBlock(ctx.getEntry()));
-        lang(Block::getTranslationKey);
-        loot(RegistrateBlockLootTables::registerDropSelfLootTable);
+        defaultBlockstate();
+        defaultLang();
+        defaultLoot();
     }
     
-    public <I extends BlockItem> BlockBuilder<T, P> defaultItem() {
+    public <I extends BlockItem> BlockBuilder<T, P> simpleItem() {
         return item().build();
     }
 
@@ -53,8 +53,24 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                 .build();
     }
 
+    public BlockBuilder<T, P> defaultBlockstate() {
+        return blockstate(ctx -> ctx.getProvider().simpleBlock(ctx.getEntry()));
+    }
+    
     public BlockBuilder<T, P> blockstate(Consumer<DataGenContext<RegistrateBlockstateProvider, Block, T>> cons) {
         return addData(ProviderType.BLOCKSTATE, cons);
+    }
+    
+    public BlockBuilder<T, P> defaultLang() {
+        return lang(Block::getTranslationKey);
+    }
+    
+    public BlockBuilder<T, P> lang(String name) {
+        return lang(Block::getTranslationKey, name);
+    }
+    
+    public BlockBuilder<T, P> defaultLoot() {
+        return loot(RegistrateBlockLootTables::registerDropSelfLootTable);
     }
     
     public BlockBuilder<T, P> loot(BiConsumer<RegistrateBlockLootTables, T> cons) {

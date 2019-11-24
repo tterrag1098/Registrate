@@ -12,14 +12,14 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.util.ResourceLocation;
 
-public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, EntityBuilder<T, P>> {
+public final class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, EntityBuilder<T, P>> {
     
     private final EntityType.Builder<T> builder;
 
     public EntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
         this.builder = EntityType.Builder.create(factory, classification);
-        lang(EntityType::getTranslationKey);
+        defaultLang();
     }
     
     public EntityBuilder<T, P> apply(Consumer<EntityType.Builder<T>> cons) {
@@ -47,6 +47,14 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         return getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(get(), primaryColor, secondaryColor, p))
                 .properties(p -> p.group(ItemGroup.MISC))
                 .model(ctx -> ctx.getProvider().withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
+    }
+    
+    public EntityBuilder<T, P> defaultLang() {
+        return lang(EntityType::getTranslationKey);
+    }
+    
+    public EntityBuilder<T, P> lang(String name) {
+        return lang(EntityType::getTranslationKey, name);
     }
 
     @Override
