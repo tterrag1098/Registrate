@@ -2,8 +2,7 @@ package com.tterrag.registrate.providers;
 
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,10 +15,10 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
 public class RegistrateDataProvider implements IDataProvider {
 
-    static final Map<String, ProviderType<?>> TYPES = new HashMap<>();
+    static final Map<String, ProviderType<?>> TYPES = new LinkedHashMap<>();
 
     private final String mod;
-    private final Map<ProviderType<?>, RegistrateProvider> subProviders = new IdentityHashMap<>();
+    private final Map<ProviderType<?>, RegistrateProvider> subProviders = new LinkedHashMap<>();
 
     public RegistrateDataProvider(Registrate parent, String modid, GatherDataEvent event) {
         this.mod = modid;
