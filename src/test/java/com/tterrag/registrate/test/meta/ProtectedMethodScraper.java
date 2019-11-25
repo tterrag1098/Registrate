@@ -1,4 +1,4 @@
-package com.tterrag.registrate.meta;
+package com.tterrag.registrate.test.meta;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,4 +1,4 @@
-package com.tterrag.registrate.meta;
+package com.tterrag.registrate.test.meta;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import com.tterrag.registrate.meta.ProtectedMethodScraper.Header;
+import com.tterrag.registrate.test.meta.ProtectedMethodScraper.Header;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Value;

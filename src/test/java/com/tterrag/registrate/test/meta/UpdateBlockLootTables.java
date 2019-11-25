@@ -1,4 +1,4 @@
-package com.tterrag.registrate.meta;
+package com.tterrag.registrate.test.meta;
 
 import java.io.IOException;
 import java.nio.file.Paths;

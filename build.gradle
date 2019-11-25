@@ -122,6 +122,7 @@ delombok {
 task sourceJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.delombokTask
+    exclude 'com.tterrag.registrate.test.*'
 }
 
 javadoc {
