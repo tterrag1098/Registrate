@@ -33,6 +33,11 @@ public final class BlockBuilder<T extends Block, P> extends AbstractBuilder<Bloc
         defaultLoot();
     }
     
+    public BlockBuilder<T, P> properties(Consumer<Block.Properties> cons) {
+        cons.accept(properties);
+        return this;
+    }
+    
     public <I extends BlockItem> BlockBuilder<T, P> simpleItem() {
         return item().build();
     }

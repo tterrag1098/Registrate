@@ -22,7 +22,7 @@ public final class EntityBuilder<T extends Entity, P> extends AbstractBuilder<En
         defaultLang();
     }
     
-    public EntityBuilder<T, P> apply(Consumer<EntityType.Builder<T>> cons) {
+    public EntityBuilder<T, P> properties(Consumer<EntityType.Builder<T>> cons) {
         cons.accept(builder);
         return this;
     }
