@@ -19,6 +19,13 @@ import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.ConstantRange;
+import net.minecraft.world.storage.loot.ItemLootEntry;
+import net.minecraft.world.storage.loot.LootPool;
+import net.minecraft.world.storage.loot.LootTable;
+import net.minecraft.world.storage.loot.RandomValueRange;
+import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
+import net.minecraft.world.storage.loot.functions.SetCount;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 
@@ -73,6 +80,11 @@ public class TestMod {
         RegistryObject<EntityType<TestEntity>> testentity = registrate.object("testentity")
                 .entity(TestEntity::new, EntityClassification.CREATURE)
                 .defaultSpawnEgg(0xFF0000, 0x00FF00)
+                .loot((prov, type) -> prov.func_218582_a(type, LootTable.builder().addLootPool(LootPool.builder()
+                        .rolls(ConstantRange.of(1))
+                        .addEntry(ItemLootEntry.builder(Items.DIAMOND)
+                                .acceptFunction(SetCount.builder(RandomValueRange.of(1, 3)))
+                                .acceptFunction(LootingEnchantBonus.func_215915_a(RandomValueRange.of(0, 2)))))))
                 .register();
         
         RegistryObject<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")

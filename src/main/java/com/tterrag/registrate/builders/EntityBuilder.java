@@ -1,8 +1,12 @@
 package com.tterrag.registrate.builders;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.loot.RegistrateEntityLootTables;
+import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
 import com.tterrag.registrate.util.LazySpawnEggItem;
 
 import net.minecraft.entity.Entity;
@@ -56,7 +60,12 @@ public final class EntityBuilder<T extends Entity, P> extends AbstractBuilder<En
     public EntityBuilder<T, P> lang(String name) {
         return lang(EntityType::getTranslationKey, name);
     }
-
+    
+    public EntityBuilder<T, P> loot(BiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
+        return addData(ProviderType.LOOT, ctx -> ctx.getProvider()
+                .addLootAction(LootType.ENTITY, prov -> cons.accept(prov, ctx.getEntry())));
+    }
+    
     @Override
     protected EntityType<T> createEntry() {
         return builder.build(getName());

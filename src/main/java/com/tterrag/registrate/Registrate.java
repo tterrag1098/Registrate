@@ -106,7 +106,7 @@ public class Registrate {
     }
     
     @SuppressWarnings("unchecked")
-    public <T extends IForgeRegistryEntry<T>> Collection<RegistryObject<T>> getAll(Class<? extends T> clazz) {
+    public <T extends IForgeRegistryEntry<T>> Collection<RegistryObject<T>> getAll(Class<? super T> clazz) {
         return registrations.column(clazz).values().stream().map(r -> (RegistryObject<T>) r.getDelegate()).collect(Collectors.toList());
     }
     
