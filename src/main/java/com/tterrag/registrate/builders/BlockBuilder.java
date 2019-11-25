@@ -18,6 +18,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
 
 public final class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, P, BlockBuilder<T, P>> {
@@ -85,6 +86,10 @@ public final class BlockBuilder<T extends Block, P> extends AbstractBuilder<Bloc
     
     public BlockBuilder<T, P> recipe(Consumer<DataGenContext<RegistrateRecipeProvider, Block, T>> cons) {
         return addData(ProviderType.RECIPE, cons);
+    }
+    
+    public BlockBuilder<T, P> tag(Tag<Block> tag) {
+        return tag(ProviderType.BLOCK_TAGS, tag);
     }
     
     @Override

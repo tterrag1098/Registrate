@@ -15,6 +15,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
@@ -44,6 +47,7 @@ public class TestMod {
         RegistryObject<Item> testitem = registrate.object("testitem")
                 .item(Item::new)
                     .properties(p -> p.group(ItemGroup.MISC).food(new Food.Builder().hunger(1).saturation(0.2f).build()))
+                    .tag(ItemTags.BEDS)
                     .model(ctx -> ctx.getProvider()
                             .withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                     .register();
@@ -66,6 +70,7 @@ public class TestMod {
                                 .addCriterion("has_testitem", ctx.getProvider().hasItem(ctx.getEntry()))
                                 .build(ctx.getProvider(), new ResourceLocation("testmod", "diamond_block_from_" + ctx.getName()));
                     })
+                    .tag(BlockTags.BAMBOO_PLANTABLE_ON)
                     .item()
                         .properties(p -> p.group(ItemGroup.MISC))
                         .model(ctx -> ctx.getProvider()
@@ -85,6 +90,7 @@ public class TestMod {
                         .addEntry(ItemLootEntry.builder(Items.DIAMOND)
                                 .acceptFunction(SetCount.builder(RandomValueRange.of(1, 3)))
                                 .acceptFunction(LootingEnchantBonus.func_215915_a(RandomValueRange.of(0, 2)))))))
+                .tag(EntityTypeTags.RAIDERS)
                 .register();
         
         RegistryObject<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")

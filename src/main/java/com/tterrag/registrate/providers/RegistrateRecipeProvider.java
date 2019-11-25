@@ -30,11 +30,6 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     @Override
-    public ProviderType<RegistrateRecipeProvider> getType() {
-        return ProviderType.RECIPE;
-    }
-
-    @Override
     public LogicalSide getSide() {
         return LogicalSide.SERVER;
     }
@@ -52,7 +47,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     @Override
     protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
         this.callback = consumer;
-        owner.genData(getType(), this);
+        owner.genData(ProviderType.RECIPE, this);
         this.callback = null;
     }
     

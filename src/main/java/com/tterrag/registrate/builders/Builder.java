@@ -8,7 +8,9 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
+import com.tterrag.registrate.providers.RegistrateTagsProvider;
 
+import net.minecraft.tags.Tag;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -27,9 +29,13 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     }
     
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S addData(ProviderType<D> type, Class<? super R> clazz, Consumer<DataGenContext<D, R, T>> cons) {
-        getOwner().addDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(prov, this, clazz)));
+    default <D extends RegistrateProvider> S addData(ProviderType<D> type, Class<? super R> registryType, Consumer<DataGenContext<D, R, T>> cons) {
+        getOwner().addDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(prov, this, registryType)));
         return (S) this;
+    }
+    
+    default S tag(ProviderType<RegistrateTagsProvider<R>> type, Class<? super R> registryType, Tag<R> tag) {
+        return addData(type, registryType, ctx -> ctx.getProvider().getBuilder(tag).add(get(registryType).get()));
     }
     
     @SuppressWarnings("unchecked")

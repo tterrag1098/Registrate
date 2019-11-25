@@ -22,12 +22,7 @@ public class RegistrateItemModelProvider extends ItemModelProvider implements Re
         super(generator, parent.getModid(), existingFileHelper);
         this.parent = parent;
     }
-    
-    @Override
-    public ProviderType<RegistrateItemModelProvider> getType() {
-        return ProviderType.ITEM_MODEL;
-    }
-    
+
     @Override
     public LogicalSide getSide() {
         return LogicalSide.CLIENT;
@@ -35,7 +30,7 @@ public class RegistrateItemModelProvider extends ItemModelProvider implements Re
     
     @Override
     protected void registerModels() {
-        parent.genData(getType(), this);
+        parent.genData(ProviderType.ITEM_MODEL, this);
     }
     
     @Override

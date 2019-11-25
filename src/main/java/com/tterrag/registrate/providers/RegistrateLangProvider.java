@@ -54,18 +54,13 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     @Override
-    public ProviderType<RegistrateLangProvider> getType() {
-        return ProviderType.LANG;
-    }
-
-    @Override
     public LogicalSide getSide() {
         return LogicalSide.CLIENT;
     }
 
     @Override
     protected void addTranslations() {
-        owner.genData(getType(), this);
+        owner.genData(ProviderType.LANG, this);
     }
     
     public static final String toEnglishName(String internalName) {

@@ -82,11 +82,6 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     }
     
     @Override
-    public ProviderType<RegistrateLootTableProvider> getType() {
-        return ProviderType.LOOT;
-    }
-    
-    @Override
     protected void validate(Map<ResourceLocation, LootTable> map, ValidationResults validationresults) {
         currentLootCreators.forEach(c -> c.validate(map, validationresults));
     }
@@ -112,7 +107,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     
     @Override
     protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>>, LootParameterSet>> getTables() {
-        parent.genData(getType(), this);
+        parent.genData(ProviderType.LOOT, this);
         currentLootCreators.clear();
         ImmutableList.Builder<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>>, LootParameterSet>> builder = ImmutableList.builder();
         for (LootType<?> type : LOOT_TYPES.values()) {

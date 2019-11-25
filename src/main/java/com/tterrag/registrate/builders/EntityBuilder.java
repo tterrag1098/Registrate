@@ -14,6 +14,7 @@ import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
 
 public final class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, EntityBuilder<T, P>> {
@@ -64,6 +65,10 @@ public final class EntityBuilder<T extends Entity, P> extends AbstractBuilder<En
     public EntityBuilder<T, P> loot(BiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
         return addData(ProviderType.LOOT, ctx -> ctx.getProvider()
                 .addLootAction(LootType.ENTITY, prov -> cons.accept(prov, ctx.getEntry())));
+    }
+    
+    public EntityBuilder<T, P> tag(Tag<EntityType<?>> tag) {
+        return tag(ProviderType.ENTITY_TAGS, tag);
     }
     
     @Override

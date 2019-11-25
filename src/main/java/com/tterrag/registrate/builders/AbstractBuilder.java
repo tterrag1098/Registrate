@@ -10,10 +10,12 @@ import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
+import com.tterrag.registrate.providers.RegistrateTagsProvider;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.minecraft.tags.Tag;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -55,5 +57,9 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     
     private S lang(Function<T, String> langKeyProvider, BiFunction<RegistrateLangProvider, Supplier<T>, String> localizedNameProvider) {
         return addData(ProviderType.LANG, ctx -> ctx.getProvider().add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(ctx.getProvider(), ctx::getEntry)));
+    }
+    
+    public S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R> tag) {
+        return tag(type, registryType, tag);
     }
 }

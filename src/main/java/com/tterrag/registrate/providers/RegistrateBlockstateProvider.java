@@ -35,18 +35,13 @@ public class RegistrateBlockstateProvider extends BlockStateProvider implements 
     }
 
     @Override
-    public ProviderType<RegistrateBlockstateProvider> getType() {
-        return ProviderType.BLOCKSTATE;
-    }
-
-    @Override
     public LogicalSide getSide() {
         return LogicalSide.CLIENT;
     }
 
     @Override
     protected void registerStatesAndModels() {
-        parent.genData(getType(), this);
+        parent.genData(ProviderType.BLOCKSTATE, this);
     }
     
     @Override

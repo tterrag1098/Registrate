@@ -10,6 +10,7 @@ import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 
 import net.minecraft.item.Item;
+import net.minecraft.tags.Tag;
 
 public final class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, ItemBuilder<T, P>> {
 
@@ -46,6 +47,10 @@ public final class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, 
     
     public ItemBuilder<T, P> recipe(Consumer<DataGenContext<RegistrateRecipeProvider, Item, T>> cons) {
         return addData(ProviderType.RECIPE, cons);
+    }
+    
+    public ItemBuilder<T, P> tag(Tag<Item> tag) {
+        return tag(ProviderType.ITEM_TAGS, tag);
     }
     
     @Override
