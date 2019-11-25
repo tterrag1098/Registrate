@@ -85,11 +85,12 @@ public class TestMod {
         RegistryObject<EntityType<TestEntity>> testentity = registrate.object("testentity")
                 .entity(TestEntity::new, EntityClassification.CREATURE)
                 .defaultSpawnEgg(0xFF0000, 0x00FF00)
-                .loot((prov, type) -> prov.func_218582_a(type, LootTable.builder().addLootPool(LootPool.builder()
-                        .rolls(ConstantRange.of(1))
-                        .addEntry(ItemLootEntry.builder(Items.DIAMOND)
-                                .acceptFunction(SetCount.builder(RandomValueRange.of(1, 3)))
-                                .acceptFunction(LootingEnchantBonus.func_215915_a(RandomValueRange.of(0, 2)))))))
+                .loot((prov, type) -> prov.registerLootTable(type, LootTable.builder()
+                        .addLootPool(LootPool.builder()
+                                .rolls(ConstantRange.of(1))
+                                .addEntry(ItemLootEntry.builder(Items.DIAMOND)
+                                        .acceptFunction(SetCount.builder(RandomValueRange.of(1, 3)))
+                                        .acceptFunction(LootingEnchantBonus.builder(RandomValueRange.of(0, 2)))))))
                 .tag(EntityTypeTags.RAIDERS)
                 .register();
         

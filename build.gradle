@@ -42,7 +42,7 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 minecraft {
-    mappings channel: 'snapshot', version: '20191118-1.14.3'
+    mappings channel: 'snapshot', version: '20191125-1.14.3'
     
     runs {
         client {

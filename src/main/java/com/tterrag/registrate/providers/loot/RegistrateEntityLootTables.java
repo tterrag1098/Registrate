@@ -38,10 +38,10 @@ public class RegistrateEntityLootTables extends EntityLootTables implements Regi
     // GENERATED START
 
     @Override
-    public void func_218582_a(EntityType<?> p_218582_1_, LootTable.Builder p_218582_2_) { super.func_218582_a(p_218582_1_, p_218582_2_); }
+    public void registerLootTable(EntityType<?> type, LootTable.Builder table) { super.registerLootTable(type, table); }
 
     @Override
-    public void func_218585_a(ResourceLocation p_218585_1_, LootTable.Builder p_218585_2_) { super.func_218585_a(p_218585_1_, p_218585_2_); }
+    public void registerLootTable(ResourceLocation id, LootTable.Builder table) { super.registerLootTable(id, table); }
 
     // GENERATED END
 }
