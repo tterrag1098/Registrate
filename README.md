@@ -33,12 +33,12 @@ This simple declaration will create a block, with a default simple blockstate, m
 ```java
 public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.object("my_block")
         .block(MyStairsBlock::new)
-        .defaultItem()
-        .tag(BlockTags.STAIRS)
-        .blockstate(ctx -> ctx.getProvider()
+            .defaultItem()
+            .tag(BlockTags.STAIRS)
+            .blockstate(ctx -> ctx.getProvider()
                 .stairsBlock(ctx.getEntry(), ctx.getProvider().modLoc(ctx.getName())))
-        .lang("Special Stairs")
-        .register();
+            .lang("Special Stairs")
+            .register();
 ```
 
 This customized version will create a BlockItem (with its own default model and lang entry), add the block to a tag, configure the blockstate for stair properties, and add a custom localization.
