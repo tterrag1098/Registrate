@@ -30,11 +30,11 @@ This simple declaration will create a block, with a default simple blockstate, m
 
 ```java
 public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.block(MyStairsBlock::new)
-		.tag(BlockTags.STAIRS)
-		.blockstate(ctx -> ctx.getProvider()
-				.stairsBlock(ctx.getEntry(), ctx.getProvider().modLoc(ctx.getName())))
-		.lang("Special Stairs")
-		.register();
+        .tag(BlockTags.STAIRS)
+        .blockstate(ctx -> ctx.getProvider()
+                .stairsBlock(ctx.getEntry(), ctx.getProvider().modLoc(ctx.getName())))
+        .lang("Special Stairs")
+        .register();
 ```
 
 To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/javadoc/). For more advanced usage, read the [wiki](https://github.com/tterrag1098/Registrate/wiki) (WIP).
