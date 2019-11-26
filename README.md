@@ -15,7 +15,7 @@ A powerful wrapper for creating and registering objects in your mod.
 First, create a `Registrate` object which will be used across your entire project.
 
 ```java
-public static final Registrate REGISTRATE = new Registrate(MOD_ID);
+public static final Registrate REGISTRATE = Registrate.create(MOD_ID);
 ```
 
 Using a constant field is not necessary, it can be passed around and thrown away after registration is setup.

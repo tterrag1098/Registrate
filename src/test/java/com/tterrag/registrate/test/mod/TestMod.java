@@ -43,7 +43,7 @@ public class TestMod {
     }
 
     public TestMod() {
-        Registrate registrate = new Registrate("testmod");
+        Registrate registrate = Registrate.create("testmod");
         RegistryObject<Item> testitem = registrate.object("testitem")
                 .item(Item::new)
                     .properties(p -> p.group(ItemGroup.MISC).food(new Food.Builder().hunger(1).saturation(0.2f).build()))
