@@ -26,7 +26,7 @@ Next, begin adding objects.
 public static final RegistryObject<MyBlock> MY_BLOCK = REGISTRATE.block(MyBlock::new).register();
 ```
 
-This simple declaration will create an item, with a default simple blockstate, model, loot table, and lang entry. However all of these can be configured easily to use whatever custom data you may want.
+This simple declaration will create a block, with a default simple blockstate, model, loot table, and lang entry. However all of these can be configured easily to use whatever custom data you may want.
 
 ```java
 public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.block(MyStairsBlock::new)
