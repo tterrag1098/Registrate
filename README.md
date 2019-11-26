@@ -1,4 +1,4 @@
-# Registrate [![Build Status](https://img.shields.io/jenkins/build/https/ci.tterrag.com/Registrate)](https://ci.tterrag.com/job/Registrate) ![License](https://img.shields.io/github/license/tterrag1098/Registrate?cacheSeconds=36000) ![Minecraft Version](https://img.shields.io/badge/minecraft-1.14.4-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
+# Registrate [![Build Status](https://img.shields.io/jenkins/build/https/ci.tterrag.com/Registrate)](https://ci.tterrag.com/job/Registrate) [![License](https://img.shields.io/github/license/tterrag1098/Registrate?cacheSeconds=36000)](https://www.tldrlegal.com/l/mpl-2.0) ![Minecraft Version](https://img.shields.io/badge/minecraft-1.14.4-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
 
 A powerful wrapper for creating and registering objects in your mod.
 
