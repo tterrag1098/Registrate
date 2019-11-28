@@ -10,6 +10,14 @@ import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 
+/**
+ * A builder for tile entities, allows for customization of the valid blocks.
+ * 
+ * @param <T>
+ *            The type of tile entity being built
+ * @param <P>
+ *            Parent object type
+ */
 public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<TileEntityType<?>, TileEntityType<T>, P, TileEntityBuilder<T, P>> {
     
     /**
@@ -47,6 +55,13 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
         this.factory = factory;
     }
     
+    /**
+     * Add a valid block for this tile entity.
+     * 
+     * @param block
+     *            A supplier for the block to add at registration time
+     * @return this {@link TileEntityBuilder}
+     */
     public TileEntityBuilder<T, P> validBlock(Supplier<? extends Block> block) {
         validBlocks.add(block);
         return this;

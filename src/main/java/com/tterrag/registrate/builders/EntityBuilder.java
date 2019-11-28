@@ -2,9 +2,12 @@ package com.tterrag.registrate.builders;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.loot.RegistrateEntityLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
 import com.tterrag.registrate.util.LazySpawnEggItem;
@@ -17,6 +20,14 @@ import net.minecraft.item.SpawnEggItem;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
 
+/**
+ * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
+ * 
+ * @param <T>
+ *            The type of entity being built
+ * @param <P>
+ *            Parent object type
+ */
 public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, EntityBuilder<T, P>> {
 
     /**
@@ -84,18 +95,46 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
                 .model(ctx -> ctx.getProvider().withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
     }
 
+    /**
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(Supplier)}. This is the default, so it is generally not necessary to call, unless for undoing
+     * previous changes.
+     * 
+     * @return this {@link EntityBuilder}
+     */
     public EntityBuilder<T, P> defaultLang() {
         return lang(EntityType::getTranslationKey);
     }
 
+    /**
+     * Set the translation for this entity.
+     * 
+     * @param name
+     *            A localized English name
+     * @return this {@link EntityBuilder}
+     */
     public EntityBuilder<T, P> lang(String name) {
         return lang(EntityType::getTranslationKey, name);
     }
 
+    /**
+     * Configure the loot table for this entity. This is different than most data gen callbacks as the callback does not accept a {@link DataGenContext}, but instead a
+     * {@link RegistrateEntityLootTables}, for creating specifically entity loot tables.
+     * 
+     * @param cons
+     *            The callback which will be invoked during entity loot table creation.
+     * @return this {@link EntityBuilder}
+     */
     public EntityBuilder<T, P> loot(BiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
         return addData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.ENTITY, prov -> cons.accept(prov, ctx.getEntry())));
     }
 
+    /**
+     * Assign a {@link Tag} to this entity.
+     * 
+     * @param tag
+     *            The tag to assign
+     * @return this {@link EntityBuilder}
+     */
     public EntityBuilder<T, P> tag(Tag<EntityType<?>> tag) {
         return tag(ProviderType.ENTITY_TAGS, tag);
     }
