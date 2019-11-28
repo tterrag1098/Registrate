@@ -352,7 +352,7 @@ public class Registrate {
     }
     
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, Function<Item.Properties, T> factory) {
-        return entry(name, callback -> new ItemBuilder<>(this, parent, name, callback, factory));
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory));
     }
     
     public <T extends Block> BlockBuilder<T, Registrate> block(Function<Block.Properties, T> factory) {
@@ -368,7 +368,7 @@ public class Registrate {
     }
     
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Function<Block.Properties, T> factory) {
-        return entry(name, callback -> new BlockBuilder<>(this, parent, name, callback, factory));
+        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory));
     }
     
     public <T extends Entity> EntityBuilder<T, Registrate> entity(EntityType.IFactory<T> factory, EntityClassification classification) {
@@ -384,7 +384,7 @@ public class Registrate {
     }
     
     public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, String name, EntityType.IFactory<T> factory, EntityClassification classification) {
-        return entry(name, callback -> new EntityBuilder<>(this, parent, name, callback, factory, classification));
+        return entry(name, callback -> EntityBuilder.create(this, parent, name, callback, factory, classification));
     }
     
     public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(Supplier<? extends T> factory) {
@@ -400,6 +400,6 @@ public class Registrate {
     }
     
     public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, Supplier<? extends T> factory) {
-        return entry(name, callback -> new TileEntityBuilder<>(this, parent, name, callback, factory));
+        return entry(name, callback -> TileEntityBuilder.create(this, parent, name, callback, factory));
     }
 }

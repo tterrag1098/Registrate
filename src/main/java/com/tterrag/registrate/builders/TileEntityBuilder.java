@@ -12,10 +12,37 @@ import net.minecraft.tileentity.TileEntityType;
 
 public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<TileEntityType<?>, TileEntityType<T>, P, TileEntityBuilder<T, P>> {
     
+    /**
+     * Create a new {@link TileEntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The block will be assigned the following data:
+     * <ul>
+     * </ul>
+     * 
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link Registrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the tile entity
+     * @return A new {@link TileEntityBuilder} with reasonable default data generators.
+     */
+    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Supplier<? extends T> factory) {
+        return new TileEntityBuilder<>(owner, parent, name, callback, factory);
+    }
+
     private final Supplier<? extends T> factory;
     private final Set<Supplier<? extends Block>> validBlocks = new HashSet<>();
 
-    public TileEntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Supplier<? extends T> factory) {
+    protected TileEntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Supplier<? extends T> factory) {
         super(owner, parent, name, callback, TileEntityType.class);
         this.factory = factory;
     }

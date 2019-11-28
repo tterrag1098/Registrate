@@ -24,31 +24,52 @@ import net.minecraft.tileentity.TileEntity;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
- * <p>
- * By default, the block will be assigned the following data:
- * <ul>
- * <li>A default blockstate file mapping all states to one model</li>
- * <li>A simple cube_all model (used in the blockstate) with one texture</li>
- * <li>A self-dropping loot table</li>
- * <li>The default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(Supplier)}.</li>
- * </ul>
  * 
  * @param <T>
  *            The type of block being built
  * @param <P>
  *            Parent object type
  */
-public final class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, P, BlockBuilder<T, P>> {
+public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, P, BlockBuilder<T, P>> {
+
+    /**
+     * Create a new {@link BlockBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The block will be assigned the following data:
+     * <ul>
+     * <li>A default blockstate file mapping all states to one model (via {@link #defaultBlockstate()})</li>
+     * <li>A simple cube_all model (used in the blockstate) with one texture (via {@link #defaultBlockstate()})</li>
+     * <li>A self-dropping loot table (via {@link #defaultLoot()})</li>
+     * <li>The default translation (via {@link #defaultLang()}</li>
+     * </ul>
+     * 
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link Registrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the block
+     * @return A new {@link BlockBuilder} with reasonable default data generators.
+     */
+    public static <T extends Block, P> BlockBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
+        return new BlockBuilder<>(owner, parent, name, callback, factory)
+                .defaultBlockstate().defaultLoot().defaultLang();
+    }
 
     private final Function<Block.Properties, T> factory;
     private final Block.Properties properties = Block.Properties.create(Material.ROCK);
 
-    public BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
+    protected BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
         super(owner, parent, name, callback, Block.class);
         this.factory = factory;
-        defaultBlockstate();
-        defaultLoot();
-        defaultLang();
     }
 
     /**
