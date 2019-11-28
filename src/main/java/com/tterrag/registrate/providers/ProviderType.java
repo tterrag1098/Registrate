@@ -17,6 +17,16 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
+/**
+ * Represents a type of data that can be generated, and specifies a factory for the provider.
+ * <p>
+ * Used as a key for data generator callbacks.
+ * <p>
+ * This file also defines the built-in provider types, but third-party types can be created with {@link #register(String, ProviderType)}.
+ *
+ * @param <T>
+ *            The type of the provider
+ */
 @FunctionalInterface
 @SuppressWarnings("deprecation")
 public interface ProviderType<T extends RegistrateProvider> {
