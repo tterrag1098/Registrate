@@ -68,6 +68,8 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     /**
      * Add a data provider callback for this entry, which will be invoked when the provider of the given type executes.
      * <p>
+     * The consumer accepts a {@link DataGenContext} which contains the current data provider instance, the built object, and other utilities for creating data.
+     * <p>
      * This is mostly unneeded, and instead helper methods for specific data types should be used when possible.
      * 
      * @param <D>
