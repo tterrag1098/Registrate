@@ -72,8 +72,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The action to perform on the properties
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> properties(Consumer<Item.Properties> action) {
-        action.accept(properties);
+    public ItemBuilder<T, P> properties(Consumer<Item.Properties> cons) {
+        cons.accept(properties);
         return this;
     }
     
