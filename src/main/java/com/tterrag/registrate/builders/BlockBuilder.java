@@ -73,7 +73,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Modify the properties of the block. Modifications are <em>not</em> done lazily, instead changing the properteis object immediately, and as such this method can be called multiple times to
+     * Modify the properties of the block. Modifications are <em>not</em> done lazily, instead changing the properties object immediately, and as such this method can be called multiple times to
      * perform different operations.
      * 
      * @param cons
@@ -166,9 +166,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * Set the translation for this block.
      * 
      * @param name
-     *            A localized english name
+     *            A localized English name
      * @return this {@link BlockBuilder}
-     * @see #addData(ProviderType, Consumer)
      */
     public BlockBuilder<T, P> lang(String name) {
         return lang(Block::getTranslationKey, name);
@@ -200,7 +199,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * Configure the recipe(s) for this block.
      * 
      * @param cons
-     *            The callback which will be invoked during block data generation.
+     *            The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
      * @see #addData(ProviderType, Consumer)
      */
