@@ -5,6 +5,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -21,6 +22,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.storage.loot.LootTables;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -65,7 +67,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     private final Function<Block.Properties, T> factory;
-    private final Block.Properties properties = Block.Properties.create(Material.ROCK);
+    private Block.Properties properties = Block.Properties.create(Material.ROCK);
 
     protected BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
         super(owner, parent, name, callback, Block.class);
@@ -75,13 +77,15 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Modify the properties of the block. Modifications are <em>not</em> done lazily, instead changing the properties object immediately, and as such this method can be called multiple times to
      * perform different operations.
+     * <p>
+     * If a different properties instance is returned, it will replace the existing one entirely.
      * 
-     * @param cons
+     * @param func
      *            The action to perform on the properties
      * @return this {@link BlockBuilder}
      */
-    public BlockBuilder<T, P> properties(Consumer<Block.Properties> cons) {
-        cons.accept(properties);
+    public BlockBuilder<T, P> properties(UnaryOperator<Block.Properties> func) {
+        properties = func.apply(properties);
         return this;
     }
 
@@ -186,13 +190,19 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Configure the loot table for this block. This is different than most data gen callbacks as the callback does not accept a {@link DataGenContext}, but instead a
      * {@link RegistrateBlockLootTables}, for creating specifically block loot tables.
+     * <p>
+     * If the block does not have a loot table (i.e. {@link Block.Properties#noDrops()} is called) this action will be <em>skipped</em>.
      * 
      * @param cons
      *            The callback which will be invoked during block loot table creation.
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> loot(BiConsumer<RegistrateBlockLootTables, T> cons) {
-        return addData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.BLOCK, prov -> cons.accept(prov, ctx.getEntry())));
+        return addData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.BLOCK, prov -> {
+            if (!ctx.getEntry().getLootTable().equals(LootTables.EMPTY)) {
+                cons.accept(prov, ctx.getEntry());
+            }
+        }));
     }
 
     /**

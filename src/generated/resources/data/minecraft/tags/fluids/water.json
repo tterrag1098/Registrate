@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "testmod:testfluid",
+    "testmod:flowing_testfluid"
+  ]
+}

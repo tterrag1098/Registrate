@@ -29,6 +29,7 @@ import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.RandomValueRange;
 import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
 import net.minecraft.world.storage.loot.functions.SetCount;
+import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 
@@ -96,6 +97,12 @@ public class TestMod {
         
         RegistryObject<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")
                 .tileEntity(ChestTileEntity::new)
+                .register();
+        
+        RegistryObject<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
+                .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
+                .attributes(a -> a.luminosity(15))
+                .properties(p -> p.canMultiply())
                 .register();
     }
     
