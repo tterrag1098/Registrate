@@ -64,7 +64,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     private final Supplier<EntityType.Builder<T>> builder;
     
-    private Consumer<EntityType.Builder<T>> builderCallback;
+    private Consumer<EntityType.Builder<T>> builderCallback = $ -> {};
 
     protected EntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
