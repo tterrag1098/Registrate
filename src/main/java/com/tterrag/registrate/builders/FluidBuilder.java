@@ -12,6 +12,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FlowingFluidBlock;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.tags.FluidTags;
@@ -57,9 +58,10 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private final ResourceLocation stillTexture;
     private final String sourceName;
     private final String bucketName;
-    private final FluidAttributes.Builder attributes;
+    private final Supplier<FluidAttributes.Builder> attributes;
     private final Function<ForgeFlowingFluid.Properties, T> factory;
     
+    private Consumer<FluidAttributes.Builder> attributesCallback = $ -> {};
     private Consumer<ForgeFlowingFluid.Properties> properties;
     private Supplier<? extends ForgeFlowingFluid> source;
     
@@ -69,17 +71,35 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         this.stillTexture = stillTexture;
         this.sourceName = name;
         this.bucketName = name + "_bucket";
-        this.attributes = attributesFactory == null ? FluidAttributes.builder(stillTexture, flowingTexture) : new Builder(stillTexture, flowingTexture, attributesFactory);
+        this.attributes = () -> attributesFactory == null ? FluidAttributes.builder(stillTexture, flowingTexture) : new Builder(stillTexture, flowingTexture, attributesFactory);
         this.factory = factory;
         this.properties = p -> p.bucket(() -> getOwner().get(bucketName, Item.class).get())
                 .block(() -> getOwner().<Block, FlowingFluidBlock>get(name, Block.class).get());
     }
     
+    /**
+     * Modify the attributes of the fluid. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
+     * different operations.
+     * <p>
+     * If a different properties instance is returned, it will replace the existing one entirely.
+     * 
+     * @param func
+     *            The action to perform on the attributes
+     * @return this {@link FluidBuilder}
+     */
     public FluidBuilder<T, P> attributes(Consumer<FluidAttributes.Builder> cons) {
-        cons.accept(attributes);
+        attributesCallback = attributesCallback.andThen(cons);
         return this;
     }
     
+    /**
+     * Modify the properties of the fluid. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
+     * different operations.
+     *
+     * @param func
+     *            The action to perform on the properties
+     * @return this {@link FluidBuilder}
+     */
     public FluidBuilder<T, P> properties(Consumer<ForgeFlowingFluid.Properties> cons) {
         properties = properties.andThen(cons);
         return this;
@@ -96,6 +116,11 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     public <I extends FlowingFluidBlock> BlockBuilder<I, FluidBuilder<T, P>> block(BiFunction<Supplier<? extends T>, Block.Properties, ? extends I> factory) {
         return getOwner().<I, FluidBuilder<T, P>>block(this, p -> factory.apply(get(), p))
                 .properties(p -> Block.Properties.from(Blocks.WATER).noDrops())
+                .properties(p -> {
+                    // TODO is this ok?
+                    FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
+                    return p.lightValue(attrs.getLuminosity());
+                })
                 .blockstate(ctx -> ctx.getProvider()
                         .simpleBlock(ctx.getEntry(), ctx.getProvider().getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
@@ -134,6 +159,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
     
     private ForgeFlowingFluid.Properties makeProperties() {
+        FluidAttributes.Builder attributes = this.attributes.get();
+        attributesCallback.accept(attributes);
         ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(getSource(), get(), attributes);
         properties.accept(ret);
         return ret;

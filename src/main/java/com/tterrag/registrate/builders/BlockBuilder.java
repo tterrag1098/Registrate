@@ -67,7 +67,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     private final Function<Block.Properties, T> factory;
-    private Block.Properties properties = Block.Properties.create(Material.ROCK);
+    private final Supplier<Block.Properties> properties = () -> Block.Properties.create(Material.ROCK);
+    
+    private Function<Block.Properties, Block.Properties> propertiesCallback = UnaryOperator.identity();
 
     protected BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
         super(owner, parent, name, callback, Block.class);
@@ -75,8 +77,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Modify the properties of the block. Modifications are <em>not</em> done lazily, instead changing the properties object immediately, and as such this method can be called multiple times to
-     * perform different operations.
+     * Modify the properties of the block. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
+     * different operations.
      * <p>
      * If a different properties instance is returned, it will replace the existing one entirely.
      * 
@@ -85,7 +87,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> properties(UnaryOperator<Block.Properties> func) {
-        properties = func.apply(properties);
+        propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
 
@@ -230,6 +232,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     @Override
     protected T createEntry() {
+        Block.Properties properties = this.properties.get();
+        properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }
 }

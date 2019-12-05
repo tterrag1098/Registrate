@@ -62,15 +62,25 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
                 .defaultLang();
     }
 
-    private final EntityType.Builder<T> builder;
+    private final Supplier<EntityType.Builder<T>> builder;
+    
+    private Consumer<EntityType.Builder<T>> builderCallback;
 
     protected EntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
-        this.builder = EntityType.Builder.create(factory, classification);
+        this.builder = () -> EntityType.Builder.create(factory, classification);
     }
 
+    /**
+     * Modify the properties of the entity. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
+     * different operations.
+     *
+     * @param func
+     *            The action to perform on the properties
+     * @return this {@link EntityBuilder}
+     */
     public EntityBuilder<T, P> properties(Consumer<EntityType.Builder<T>> cons) {
-        cons.accept(builder);
+        builderCallback = builderCallback.andThen(cons);
         return this;
     }
 
@@ -141,6 +151,8 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     @Override
     protected EntityType<T> createEntry() {
+        EntityType.Builder<T> builder = this.builder.get();
+        builderCallback.accept(builder);
         return builder.build(getName());
     }
 }

@@ -3,6 +3,7 @@ package com.tterrag.registrate.builders;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -55,7 +56,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     private final Function<Item.Properties, T> factory;
-    private final Item.Properties properties = new Item.Properties();
+    private final Supplier<Item.Properties> properties = Item.Properties::new;
+    
+    private Function<Item.Properties, Item.Properties> propertiesCallback;
     
     protected ItemBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
@@ -65,15 +68,17 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Modify the properties of the item. Modifications are <em>not</em> done lazily, instead changing the properties object immediately, and as such this method can be called multiple times to
-     * perform different operations.
+     * Modify the properties of the item. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
+     * different operations.
+     * <p>
+     * If a different properties instance is returned, it will replace the existing one entirely.
      * 
-     * @param cons
+     * @param func
      *            The action to perform on the properties
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> properties(Consumer<Item.Properties> cons) {
-        cons.accept(properties);
+    public ItemBuilder<T, P> properties(UnaryOperator<Item.Properties> func) {
+        propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
     
@@ -144,6 +149,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     
     @Override
     protected T createEntry() {
+        Item.Properties properties = this.properties.get();
+        properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }
 }
