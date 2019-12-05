@@ -120,7 +120,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(BiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<T, P>> item(this, p -> factory.apply(get().get(), p)).model(ctx -> ctx.getProvider().blockItem(get()));
+        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().get(), p)).model(ctx -> ctx.getProvider().blockItem(get()));
     }
 
     /**
@@ -133,7 +133,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(Supplier<? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, factory).validBlock(get()).build();
+        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(get()).build();
     }
 
     /**

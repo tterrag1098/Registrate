@@ -63,8 +63,6 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     protected ItemBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
         this.factory = factory;
-        defaultModel();
-        defaultLang();
     }
 
     /**
