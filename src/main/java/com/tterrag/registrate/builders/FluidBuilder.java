@@ -221,7 +221,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * Create a standard {@link ForgeFlowingFluid.Source} for this fluid which will be built and registered along with this fluid.
      * 
      * @return this {@link FluidBuilder}
-     * @see #source()
+     * @see #source(Function)
      */
     public FluidBuilder<T, P> defaultSource() {
         return source(ForgeFlowingFluid.Source::new);
