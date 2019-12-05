@@ -344,5 +344,8 @@ public class RegistrateBlockstateProvider extends BlockStateProvider implements 
     @Override
     public BlockModelBuilder carpet(String name, ResourceLocation wool) { return super.carpet(name, wool); }
 
+    @Override
+    public ModelFile.ExistingModelFile getExistingFile(ResourceLocation path) { return super.getExistingFile(path); }
+
     // GENERATED END
 }
