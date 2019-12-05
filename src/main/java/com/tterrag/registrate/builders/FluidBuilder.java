@@ -188,8 +188,6 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     /**
      * Modify the attributes of the fluid. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
      * different operations.
-     * <p>
-     * If a different properties instance is returned, it will replace the existing one entirely.
      * 
      * @param cons
      *            The action to perform on the attributes
