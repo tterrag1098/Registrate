@@ -262,7 +262,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
     public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(BiFunction<Supplier<? extends T>, Block.Properties, ? extends B> factory) {
-        return getOwner().<B, FluidBuilder<T, P>>block(this, getName(), p -> factory.apply(get(), p))
+        return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(get(), p))
                 .properties(p -> Block.Properties.from(Blocks.WATER).noDrops())
                 .properties(p -> {
                     // TODO is this ok?
