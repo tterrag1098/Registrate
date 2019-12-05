@@ -44,8 +44,6 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     /**
      * Create a new {@link FluidBuilder} and configure data. The created builder will use the default attributes class ({@link FluidAttributes}) and fluid class ({@link ForgeFlowingFluid.Flowing}).
      * 
-     * @param <T>
-     *            The type of the builder
      * @param <P>
      *            Parent object type
      * @param owner
@@ -70,8 +68,6 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     /**
      * Create a new {@link FluidBuilder} and configure data. The created builder will use the default fluid class ({@link ForgeFlowingFluid.Flowing}).
      * 
-     * @param <T>
-     *            The type of the builder
      * @param <P>
      *            Parent object type
      * @param owner
@@ -195,7 +191,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * <p>
      * If a different properties instance is returned, it will replace the existing one entirely.
      * 
-     * @param func
+     * @param cons
      *            The action to perform on the attributes
      * @return this {@link FluidBuilder}
      */
@@ -208,7 +204,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * Modify the properties of the fluid. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
      * different operations.
      *
-     * @param func
+     * @param cons
      *            The action to perform on the properties
      * @return this {@link FluidBuilder}
      */

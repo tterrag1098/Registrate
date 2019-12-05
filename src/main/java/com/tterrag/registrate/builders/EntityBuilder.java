@@ -75,7 +75,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * Modify the properties of the entity. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
      * different operations.
      *
-     * @param func
+     * @param cons
      *            The action to perform on the properties
      * @return this {@link EntityBuilder}
      */
