@@ -58,7 +58,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     private final Function<Item.Properties, T> factory;
     private final Supplier<Item.Properties> properties = Item.Properties::new;
     
-    private Function<Item.Properties, Item.Properties> propertiesCallback;
+    private Function<Item.Properties, Item.Properties> propertiesCallback = UnaryOperator.identity();
     
     protected ItemBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
