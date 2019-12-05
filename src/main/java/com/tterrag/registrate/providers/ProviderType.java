@@ -1,5 +1,6 @@
 package com.tterrag.registrate.providers;
 
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -32,8 +33,8 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 public interface ProviderType<T extends RegistrateProvider> {
 
     // CLIENT DATA
-    public static final ProviderType<RegistrateItemModelProvider> ITEM_MODEL = register("item_model", (p, e) -> new RegistrateItemModelProvider(p, e.getGenerator(), e.getExistingFileHelper()));
     public static final ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = register("blockstate", (p, e) -> new RegistrateBlockstateProvider(p, e.getGenerator(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateItemModelProvider> ITEM_MODEL = register("item_model", (p, e, existing) -> new RegistrateItemModelProvider(p, e.getGenerator(), ((RegistrateBlockstateProvider)existing.get(BLOCKSTATE)).getExistingFileHelper()));
     public static final ProviderType<RegistrateLangProvider> LANG = register("lang", (p, e) -> new RegistrateLangProvider(p, e.getGenerator()));
 
     // SERVER DATA
@@ -44,14 +45,25 @@ public interface ProviderType<T extends RegistrateProvider> {
     public static final ProviderType<RegistrateTagsProvider<Fluid>> FLUID_TAGS = register("tags/fluid", type -> (p, e) -> new RegistrateTagsProvider<Fluid>(p, type, "fluids", FluidTags::setCollection, e.getGenerator(), Registry.FLUID));
     public static final ProviderType<RegistrateTagsProvider<EntityType<?>>> ENTITY_TAGS = register("tags/entity", type -> (p, e) -> new RegistrateTagsProvider<EntityType<?>>(p, type, "entity_types", EntityTypeTags::setCollection, e.getGenerator(), Registry.ENTITY_TYPE));
 
-    T create(Registrate parent, GatherDataEvent event);
+    T create(Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing);
     
     static <T extends RegistrateProvider> ProviderType<T> register(String name, Function<ProviderType<T>, BiFunction<Registrate, GatherDataEvent, T>> type) {
         ProviderType<T> ret = new ProviderType<T>() {
             
             @Override
-            public T create(Registrate parent, GatherDataEvent event) {
+            public T create(Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
                 return type.apply(this).apply(parent, event);
+            }
+        };
+        return register(name, ret);
+    }
+    
+    static <T extends RegistrateProvider> ProviderType<T> register(String name, BiFunction<Registrate, GatherDataEvent, T> type) {
+        ProviderType<T> ret = new ProviderType<T>() {
+            
+            @Override
+            public T create(Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
+                return type.apply(parent, event);
             }
         };
         return register(name, ret);

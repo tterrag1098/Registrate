@@ -48,6 +48,10 @@ public class RegistrateBlockstateProvider extends BlockStateProvider implements 
     public String getName() {
         return "Blockstates";
     }
+    
+    ExistingFileHelper getExistingFileHelper() {
+        return this.existingFileHelper;
+    }
 
     // @formatter:off
     // GENERATED START

@@ -30,7 +30,7 @@ public class RegistrateDataProvider implements IDataProvider {
             sides.add(LogicalSide.CLIENT);
         }
         for (ProviderType<?> type : TYPES.values()) {
-            RegistrateProvider prov = type.create(parent, event);
+            RegistrateProvider prov = type.create(parent, event, subProviders);
             if (sides.contains(prov.getSide())) {
                 subProviders.put(type, prov);
             }
