@@ -44,3 +44,59 @@ public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.object(
 This customized version will create a BlockItem (with its own default model and lang entry), add the block to a tag, configure the blockstate for stair properties, and add a custom localization.
 
 To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/javadoc/). For more advanced usage, read the [wiki](https://github.com/tterrag1098/Registrate/wiki) (WIP).
+
+## Project Setup
+
+Registrate can be installed in the mods folder as a typical dependency, but since it does not have a mod, it can also be shaded. Shading is the recommended way to include Registrate (at least until Forge jar-in-jar is working again).
+
+This is easiest with the [Gradle Shadow plugin](https://imperceptiblethoughts.com/shadow/). Add the plugin to your buildscript like so:
+
+```gradle
+plugins {
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+}
+```
+
+**Note: Shadow 5.1+ requires Gradle 5.x. I recommend 5.6 as I know this version works with both Shadow and FG3.**
+
+Once you have the plugin, it needs to be configured. First add a shade configuration,
+
+```gradle
+configurations {
+    shade
+}
+```
+
+configure the shadowJar task use it, and repackage Registrate classes.
+
+```gradle
+shadowJar {
+    configurations = [project.configurations.shade]
+    relocate 'com.tterrag.registrate', 'com.mymod.repack.registrate'
+}
+```
+
+Finally, the dependency itself must be added. First add my maven repository,
+
+```gradle
+repositories {
+    maven { // Registrate
+        url "http://maven.tterrag.com/"
+    }
+    mavenLocal()
+}
+```
+
+and then the Registrate dependency to the implementation and shade configurations.
+
+```gradle
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}" // This should already be here
+    
+    def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
+    implementation fg.deobf(registrate)
+    shade registrate
+}
+```
+
+To build the jar containing shaded dependencies, use the `shadowJar` task.
