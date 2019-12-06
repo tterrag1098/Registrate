@@ -99,4 +99,6 @@ dependencies {
 }
 ```
 
+**Note: Registrate will not function properly on the classpath unless you use Forge 28.1.104+**
+
 To build the jar containing shaded dependencies, use the `shadowJar` task.
