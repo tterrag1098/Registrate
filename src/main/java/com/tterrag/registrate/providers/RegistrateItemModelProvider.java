@@ -4,7 +4,6 @@ import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
 
-import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
@@ -50,23 +49,23 @@ public class RegistrateItemModelProvider extends ItemModelProvider implements Re
         return modLoc("item/" + name(item));
     }
     
-    public ItemModelBuilder blockItem(Supplier<? extends Block> block) {
+    public ItemModelBuilder blockItem(Supplier<? extends IItemProvider> block) {
         return blockItem(block, "");
     }
     
-    public ItemModelBuilder blockItem(Supplier<? extends Block> block, String suffix) {
+    public ItemModelBuilder blockItem(Supplier<? extends IItemProvider> block, String suffix) {
         return withExistingParent(name(block), new ResourceLocation(modid(block), "block/" + name(block) + suffix));
     }
 
-    public ItemModelBuilder blockWithInventoryModel(Supplier<? extends Block> block) {
+    public ItemModelBuilder blockWithInventoryModel(Supplier<? extends IItemProvider> block) {
         return withExistingParent(name(block), new ResourceLocation(modid(block), "block/" + name(block) + "_inventory"));
     }
     
-    public ItemModelBuilder blockSprite(Supplier<? extends Block> block) {
+    public ItemModelBuilder blockSprite(Supplier<? extends IItemProvider> block) {
         return blockSprite(block, modLoc("block/" + name(block)));
     }
     
-    public ItemModelBuilder blockSprite(Supplier<? extends Block> block, ResourceLocation texture) {
+    public ItemModelBuilder blockSprite(Supplier<? extends IItemProvider> block, ResourceLocation texture) {
         return generated(() -> block.get().asItem(), texture);
     }
     
