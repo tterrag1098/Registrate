@@ -5,6 +5,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import javax.annotation.Nullable;
+
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -13,6 +15,7 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.tags.Tag;
 
 /**
@@ -51,8 +54,41 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
     public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory) {
+        return create(owner, parent, name, callback, factory, null);
+    }
+    
+    /**
+     * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The block will be assigned the following data:
+     * <ul>
+     * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
+     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>An {@link ItemGroup} set in the properties from the group supplier parameter, if non-null</li>
+     * </ul>
+     * 
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link Registrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the item
+     * @param group
+     *            The {@link ItemGroup} for the object, can be null for none
+     * @return A new {@link ItemBuilder} with reasonable default data generators.
+     */
+    public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory, @Nullable Supplier<? extends ItemGroup> group) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
-                .defaultModel().defaultLang();
+                .defaultModel().defaultLang()
+                .transform(ib -> group == null ? ib : ib.group(group));
     }
 
     private final Function<Item.Properties, T> factory;
@@ -78,6 +114,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     public ItemBuilder<T, P> properties(UnaryOperator<Item.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
         return this;
+    }
+    
+    public ItemBuilder<T, P> group(Supplier<? extends ItemGroup> group) {
+        return properties(p -> p.group(group.get()));
     }
     
     /**

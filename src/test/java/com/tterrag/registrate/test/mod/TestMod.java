@@ -44,10 +44,10 @@ public class TestMod {
     }
 
     public TestMod() {
-        Registrate registrate = Registrate.create("testmod");
+        Registrate registrate = Registrate.create("testmod").itemGroup(() -> ItemGroup.MISC);
         RegistryObject<Item> testitem = registrate.object("testitem")
                 .item(Item::new)
-                    .properties(p -> p.group(ItemGroup.MISC).food(new Food.Builder().hunger(1).saturation(0.2f).build()))
+                    .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
                     .tag(ItemTags.BEDS)
                     .model(ctx -> ctx.getProvider()
                             .withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
@@ -73,7 +73,6 @@ public class TestMod {
                     })
                     .tag(BlockTags.BAMBOO_PLANTABLE_ON)
                     .item()
-                        .properties(p -> p.group(ItemGroup.MISC))
                         .model(ctx -> ctx.getProvider()
                                 .withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                         .build()

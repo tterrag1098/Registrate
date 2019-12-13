@@ -33,6 +33,7 @@ import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
@@ -115,6 +116,7 @@ public class Registrate {
     private final String modid;
     
     private String currentName;
+    private Supplier<? extends ItemGroup> currentGroup;
     
     /**
      * Construct a new Registrate for the given mod ID.
@@ -293,6 +295,18 @@ public class Registrate {
     }
     
     /**
+     * Set the default item group for all future items created with this Registrate, until the next time this method is called.
+     * 
+     * @param group
+     *            The group to use for future items
+     * @return this {@link Registrate}
+     */
+    public Registrate itemGroup(Supplier<? extends ItemGroup> group) {
+        this.currentGroup = group;
+        return this;
+    }
+    
+    /**
      * Apply a transformation to this {@link Registrate}. Useful to apply helper methods within a fluent chain, e.g.
      * 
      * <pre>
@@ -393,7 +407,7 @@ public class Registrate {
     }
     
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, Function<Item.Properties, T> factory) {
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory));
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, this.currentGroup));
     }
     
     // Blocks
