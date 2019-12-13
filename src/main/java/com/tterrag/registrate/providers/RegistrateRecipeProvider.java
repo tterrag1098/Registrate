@@ -3,6 +3,8 @@ package com.tterrag.registrate.providers;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import com.google.gson.JsonObject;
 import com.tterrag.registrate.Registrate;
 
@@ -34,10 +36,11 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
         return LogicalSide.SERVER;
     }
     
+    @Nullable
     private Consumer<IFinishedRecipe> callback;
     
     @Override
-    public void accept(IFinishedRecipe t) {
+    public void accept(@Nullable IFinishedRecipe t) {
         if (callback == null) {
             throw new IllegalStateException("Cannot accept recipes outside of a call to registerRecipes");
         }

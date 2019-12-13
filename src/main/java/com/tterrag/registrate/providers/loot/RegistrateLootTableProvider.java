@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -18,6 +17,8 @@ import com.mojang.datafixers.util.Pair;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.LootTableProvider;
@@ -41,7 +42,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         
         LootParameterSet getLootSet();
         
-        static <T extends RegistrateLootTables> LootType<T> register(String name, LootParameterSet set, BiFunction<Registrate, Consumer<T>, T> factory) {
+        static <T extends RegistrateLootTables> LootType<T> register(String name, LootParameterSet set, NonNullBiFunction<Registrate, Consumer<T>, T> factory) {
             LootType<T> type = new LootType<T>() {
                 @Override
                 public T getLootCreator(Registrate parent, Consumer<T> callback) {
@@ -87,7 +88,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     }
     
     @SuppressWarnings("unchecked")
-    public <T extends RegistrateLootTables> void addLootAction(LootType<T> type, Consumer<T> action) {
+    public <T extends RegistrateLootTables> void addLootAction(LootType<T> type, NonNullConsumer<T> action) {
         this.specialLootActions.put(type, (Consumer<? super RegistrateLootTables>) action);
     }
     

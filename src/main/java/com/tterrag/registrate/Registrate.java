@@ -2,12 +2,15 @@ package com.tterrag.registrate;
 
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
@@ -23,6 +26,11 @@ import com.tterrag.registrate.builders.TileEntityBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import lombok.Getter;
 import lombok.Value;
@@ -115,8 +123,10 @@ public class Registrate {
     @Getter
     private final String modid;
     
+    @Nullable
     private String currentName;
-    private Supplier<? extends ItemGroup> currentGroup;
+    @Nullable
+    private NonNullSupplier<? extends ItemGroup> currentGroup;
     
     /**
      * Construct a new Registrate for the given mod ID.
@@ -151,6 +161,12 @@ public class Registrate {
         event.getGenerator().addProvider(new RegistrateDataProvider(this, modid, event));
     }
     
+    private String currentName() {
+        String name = currentName;
+        Objects.requireNonNull(name, "Current name not set");
+        return name;
+    }
+    
     /**
      * Allows retrieval of a previously created entry, of the current name (from the last invocation of {@link #object(String)}. Useful to retrieve a different entry than the final state of your
      * chain may produce, e.g.
@@ -175,9 +191,11 @@ public class Registrate {
      * @return A {@link RegistryObject} which will supply the requested entry, if it exists
      * @throws IllegalArgumentException
      *             if no such registration has been done
+     * @throws NullPointerException 
+     *             if current name has not been set via {@link #object(String)}
      */
     public <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> get(Class<? super R> type) {
-        return this.<R, T>get(currentName, type);
+        return this.<R, T>get(currentName(), type);
     }
 
     /**
@@ -243,7 +261,7 @@ public class Registrate {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <T extends RegistrateProvider> void setDataGenerator(String entry, ProviderType<T> type, Consumer<? extends T> cons) {
+    public <T extends RegistrateProvider> void setDataGenerator(String entry, ProviderType<T> type, NonNullConsumer<? extends T> cons) {
         Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(entry, type, cons);
         if (existing != null) {
             datagens.remove(type, existing);
@@ -301,7 +319,7 @@ public class Registrate {
      *            The group to use for future items
      * @return this {@link Registrate}
      */
-    public Registrate itemGroup(Supplier<? extends ItemGroup> group) {
+    public Registrate itemGroup(NonNullSupplier<? extends ItemGroup> group) {
         this.currentGroup = group;
         return this;
     }
@@ -321,7 +339,7 @@ public class Registrate {
      *            The {@link UnaryOperator function} to apply
      * @return this {@link Registrate}
      */
-    public Registrate transform(UnaryOperator<Registrate> func) {
+    public Registrate transform(NonNullUnaryOperator<Registrate> func) {
         return func.apply(this);
     }
     
@@ -346,7 +364,7 @@ public class Registrate {
      *            The {@link Function function} to apply
      * @return the resultant {@link Builder}
      */
-    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S transform(Function<Registrate, S> func) {
+    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S transform(NonNullFunction<Registrate, S> func) {
         return func.apply(this);
     }
     
@@ -363,8 +381,8 @@ public class Registrate {
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
-    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(BiFunction<String, BuilderCallback, S> factory) {
-        return entry(currentName, callback -> factory.apply(currentName, callback));
+    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(NonNullBiFunction<String, BuilderCallback, S> factory) {
+        return entry(currentName(), callback -> factory.apply(currentName(), callback));
     }
 
     /**
@@ -380,11 +398,11 @@ public class Registrate {
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
-    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(String name, Function<BuilderCallback, S> factory) {
+    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(String name, NonNullFunction<BuilderCallback, S> factory) {
         return factory.apply(this::accept);
     }
     
-    private <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> accept(String name, Class<? super R> type, Supplier<? extends T> creator) {
+    private <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> accept(String name, Class<? super R> type, NonNullSupplier<? extends T> creator) {
         Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, creator);
         registrations.put(name, type, reg);
         return reg.getDelegate();
@@ -394,37 +412,37 @@ public class Registrate {
     
     // Items
     
-    public <T extends Item> ItemBuilder<T, Registrate> item(Function<Item.Properties, T> factory) {
+    public <T extends Item> ItemBuilder<T, Registrate> item(NonNullFunction<Item.Properties, T> factory) {
         return item(this, factory);
     }
     
-    public <T extends Item> ItemBuilder<T, Registrate> item(String name, Function<Item.Properties, T> factory) {
+    public <T extends Item> ItemBuilder<T, Registrate> item(String name, NonNullFunction<Item.Properties, T> factory) {
         return item(this, name, factory);
     }
     
-    public <T extends Item, P> ItemBuilder<T, P> item(P parent, Function<Item.Properties, T> factory) {
-        return item(parent, currentName, factory);
+    public <T extends Item, P> ItemBuilder<T, P> item(P parent, NonNullFunction<Item.Properties, T> factory) {
+        return item(parent, currentName(), factory);
     }
     
-    public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, Function<Item.Properties, T> factory) {
+    public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, this.currentGroup));
     }
     
     // Blocks
     
-    public <T extends Block> BlockBuilder<T, Registrate> block(Function<Block.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<T, Registrate> block(NonNullFunction<Block.Properties, T> factory) {
         return block(this, factory);
     }
     
-    public <T extends Block> BlockBuilder<T, Registrate> block(String name, Function<Block.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<T, Registrate> block(String name, NonNullFunction<Block.Properties, T> factory) {
         return block(this, name, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, Function<Block.Properties, T> factory) {
-        return block(parent, currentName, factory);
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, NonNullFunction<Block.Properties, T> factory) {
+        return block(parent, currentName(), factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Function<Block.Properties, T> factory) {
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<Block.Properties, T> factory) {
         return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory));
     }
     
@@ -439,7 +457,7 @@ public class Registrate {
     }
     
     public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, EntityType.IFactory<T> factory, EntityClassification classification) {
-        return entity(parent, currentName, factory, classification);
+        return entity(parent, currentName(), factory, classification);
     }
     
     public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, String name, EntityType.IFactory<T> factory, EntityClassification classification) {
@@ -448,19 +466,19 @@ public class Registrate {
     
     // Tile Entities
     
-    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(Supplier<? extends T> factory) {
+    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(NonNullSupplier<? extends T> factory) {
         return tileEntity(this, factory);
     }
     
-    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(String name, Supplier<? extends T> factory) {
+    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(String name, NonNullSupplier<? extends T> factory) {
         return tileEntity(this, name, factory);
     }
     
-    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, Supplier<? extends T> factory) {
-        return tileEntity(parent, currentName, factory);
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, NonNullSupplier<? extends T> factory) {
+        return tileEntity(parent, currentName(), factory);
     }
     
-    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, Supplier<? extends T> factory) {
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, NonNullSupplier<? extends T> factory) {
         return entry(name, callback -> TileEntityBuilder.create(this, parent, name, callback, factory));
     }
     
@@ -480,12 +498,12 @@ public class Registrate {
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            Function<ForgeFlowingFluid.Properties, T> factory) {
+            NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(this, stillTexture, flowingTexture, factory);
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, Function<ForgeFlowingFluid.Properties, T> factory) {
+            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(this, stillTexture, flowingTexture, attributesFactory, factory);
     }
     
@@ -503,36 +521,36 @@ public class Registrate {
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            Function<ForgeFlowingFluid.Properties, T> factory) {
+            NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(this, name, stillTexture, flowingTexture, factory);
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, Function<ForgeFlowingFluid.Properties, T> factory) {
+            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(this, name, stillTexture, flowingTexture, attributesFactory, factory);
     }
         
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent) {
-        return fluid(parent, currentName);
+        return fluid(parent, currentName());
     }
     
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return fluid(parent, currentName, stillTexture, flowingTexture);
+        return fluid(parent, currentName(), stillTexture, flowingTexture);
     }
     
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return fluid(parent, currentName, stillTexture, flowingTexture, attributesFactory);
+        return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory);
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            Function<ForgeFlowingFluid.Properties, T> factory) {
-        return fluid(parent, currentName, stillTexture, flowingTexture, factory);
+            NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+        return fluid(parent, currentName(), stillTexture, flowingTexture, factory);
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, Function<ForgeFlowingFluid.Properties, T> factory) {
-        return fluid(parent, currentName, stillTexture, flowingTexture, attributesFactory, factory);
+            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+        return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory, factory);
     }
     
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name) {
@@ -549,12 +567,12 @@ public class Registrate {
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            Function<ForgeFlowingFluid.Properties, T> factory) {
+            NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, factory));
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, Function<ForgeFlowingFluid.Properties, T> factory) {
+            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory));
     }
 }

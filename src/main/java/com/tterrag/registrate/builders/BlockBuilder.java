@@ -1,11 +1,9 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+
+import javax.annotation.Nonnull;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -15,6 +13,12 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -61,17 +65,17 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            Factory to create the block
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
-    public static <T extends Block, P> BlockBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
+    public static <T extends Block, P> BlockBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
         return new BlockBuilder<>(owner, parent, name, callback, factory)
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
 
-    private final Function<Block.Properties, T> factory;
-    private final Supplier<Block.Properties> properties = () -> Block.Properties.create(Material.ROCK);
+    private final NonNullFunction<Block.Properties, T> factory;
+    private final NonNullSupplier<Block.Properties> properties = () -> Block.Properties.create(Material.ROCK);
     
-    private Function<Block.Properties, Block.Properties> propertiesCallback = UnaryOperator.identity();
+    private NonNullFunction<Block.Properties, Block.Properties> propertiesCallback = NonNullUnaryOperator.identity();
 
-    protected BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Block.Properties, T> factory) {
+    protected BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
         super(owner, parent, name, callback, Block.class);
         this.factory = factory;
     }
@@ -86,7 +90,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            The action to perform on the properties
      * @return this {@link BlockBuilder}
      */
-    public BlockBuilder<T, P> properties(UnaryOperator<Block.Properties> func) {
+    public BlockBuilder<T, P> properties(NonNullUnaryOperator<Block.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
@@ -119,8 +123,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            A factory for the item, which accepts the block object and properties and returns a new item
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
-    public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(BiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().get(), p)).model(ctx -> ctx.getProvider().blockItem(get()));
+    public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
+        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().getNonNull("Entry not registered"), p)).model(ctx -> ctx.getProvider().blockItem(get().asNonNull()));
     }
 
     /**
@@ -132,8 +136,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            A factory for the tile entity
      * @return this {@link BlockBuilder}
      */
-    public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(Supplier<? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(get()).build();
+    public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(NonNullSupplier<? extends TE> factory) {
+        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(get().asNonNull()).build();
     }
 
     /**
@@ -154,7 +158,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      * @see #setData(ProviderType, Consumer)
      */
-    public BlockBuilder<T, P> blockstate(Consumer<DataGenContext<RegistrateBlockstateProvider, Block, T>> cons) {
+    public BlockBuilder<T, P> blockstate(NonNullConsumer<DataGenContext<RegistrateBlockstateProvider, Block, T>> cons) {
         return setData(ProviderType.BLOCKSTATE, cons);
     }
 
@@ -199,7 +203,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            The callback which will be invoked during block loot table creation.
      * @return this {@link BlockBuilder}
      */
-    public BlockBuilder<T, P> loot(BiConsumer<RegistrateBlockLootTables, T> cons) {
+    public BlockBuilder<T, P> loot(NonNullBiConsumer<RegistrateBlockLootTables, T> cons) {
         return setData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.BLOCK, prov -> {
             if (!ctx.getEntry().getLootTable().equals(LootTables.EMPTY)) {
                 cons.accept(prov, ctx.getEntry());
@@ -215,7 +219,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      * @see #setData(ProviderType, Consumer)
      */
-    public BlockBuilder<T, P> recipe(Consumer<DataGenContext<RegistrateRecipeProvider, Block, T>> cons) {
+    public BlockBuilder<T, P> recipe(NonNullConsumer<DataGenContext<RegistrateRecipeProvider, Block, T>> cons) {
         return setData(ProviderType.RECIPE, cons);
     }
 
@@ -232,7 +236,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     @Override
     protected T createEntry() {
-        Block.Properties properties = this.properties.get();
+        @Nonnull Block.Properties properties = this.properties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }

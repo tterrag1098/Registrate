@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;

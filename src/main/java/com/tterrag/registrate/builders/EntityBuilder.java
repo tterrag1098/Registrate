@@ -1,7 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
@@ -11,6 +9,8 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.loot.RegistrateEntityLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
 import com.tterrag.registrate.util.LazySpawnEggItem;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
@@ -19,6 +19,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.NonNullSupplier;
 
 /**
  * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
@@ -62,9 +63,9 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
                 .defaultLang();
     }
 
-    private final Supplier<EntityType.Builder<T>> builder;
+    private final NonNullSupplier<EntityType.Builder<T>> builder;
     
-    private Consumer<EntityType.Builder<T>> builderCallback = $ -> {};
+    private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
 
     protected EntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
@@ -79,7 +80,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The action to perform on the properties
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> properties(Consumer<EntityType.Builder<T>> cons) {
+    public EntityBuilder<T, P> properties(NonNullConsumer<EntityType.Builder<T>> cons) {
         builderCallback = builderCallback.andThen(cons);
         return this;
     }
@@ -134,7 +135,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The callback which will be invoked during entity loot table creation.
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> loot(BiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
+    public EntityBuilder<T, P> loot(NonNullBiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
         return setData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.ENTITY, prov -> cons.accept(prov, ctx.getEntry())));
     }
 

@@ -1,5 +1,6 @@
 package com.tterrag.registrate.builders;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -9,6 +10,10 @@ import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonnullType;
+import com.tterrag.registrate.util.nullness.NullableSupplier;
 
 import net.minecraft.tags.Tag;
 import net.minecraftforge.fml.RegistryObject;
@@ -68,7 +73,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
      * @see Registrate#get(Class)
      */
-    default Supplier<T> get(Class<? super R> registryType) {
+    default NullableSupplier<T> get(Class<? super R> registryType) {
         return () -> getOwner().<R, T> get(getName(), registryType).get();
     }
 
@@ -90,7 +95,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S setData(ProviderType<D> type, Class<? super R> registryType, Consumer<DataGenContext<D, R, T>> cons) {
+    default <D extends RegistrateProvider> S setData(ProviderType<D> type, Class<? super R> registryType, NonNullConsumer<DataGenContext<D, R, T>> cons) {
         getOwner().setDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(prov, this, registryType)));
         return (S) this;
     }
@@ -126,7 +131,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this {@link Builder}
      */
     default S tag(ProviderType<RegistrateTagsProvider<R>> type, Class<? super R> registryType, Tag<R> tag) {
-        return setData(type, registryType, ctx -> ctx.getProvider().getBuilder(tag).add(get(registryType).get()));
+        return setData(type, registryType, ctx -> ctx.getProvider().getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get(registryType).get(), "Object not registered")));
     }
 
     /**
@@ -150,7 +155,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return the {@link Builder} returned by the given function
      */
     @SuppressWarnings("unchecked")
-    default <R2 extends IForgeRegistryEntry<R2>, T2 extends R2, P2, S2 extends Builder<R2, T2, P2, S2>> S2 transform(Function<S, S2> func) {
+    default <R2 extends IForgeRegistryEntry<R2>, T2 extends R2, P2, S2 extends Builder<R2, T2, P2, S2>> S2 transform(NonNullFunction<S, S2> func) {
         return func.apply((S) this);
     }
 

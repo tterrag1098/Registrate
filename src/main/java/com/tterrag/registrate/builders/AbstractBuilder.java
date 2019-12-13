@@ -1,8 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
@@ -11,11 +8,15 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonnullType;
+import com.tterrag.registrate.util.nullness.NullableSupplier;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.tags.Tag;
+import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -39,7 +40,6 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     private final P parent;
     @Getter(onMethod = @__({ @Override }))
     private final String name;
-    @Getter(AccessLevel.PROTECTED)
     private final BuilderCallback callback;
     private final Class<? super R> registryType;
 
@@ -48,7 +48,8 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      * 
      * @return The built entry
      */
-    protected abstract T createEntry();
+    @SuppressWarnings("null")
+    protected abstract @NonnullType T createEntry();
 
     @Override
     public RegistryObject<T> register() {
@@ -61,8 +62,12 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
      * @see Registrate#get(Class)
      */
-    public Supplier<T> get() {
+    public NullableSupplier<T> get() {
         return get(registryType);
+    }
+    
+    protected BuilderCallback getCallback() {
+        return callback;
     }
 
     /**
@@ -80,7 +85,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      *            The callback to execute when the provider is run
      * @return this {@link Builder}
      */
-    public <D extends RegistrateProvider> S setData(ProviderType<D> type, Consumer<DataGenContext<D, R, T>> cons) {
+    public <D extends RegistrateProvider> S setData(ProviderType<D> type, NonNullConsumer<DataGenContext<D, R, T>> cons) {
         return setData(type, registryType, cons);
     }
 
@@ -92,8 +97,8 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      *            A function to get the translation key from the entry
      * @return this {@link Builder}
      */
-    public S lang(Function<T, String> langKeyProvider) {
-        return lang(langKeyProvider, RegistrateLangProvider::getAutomaticName);
+    public S lang(NonNullFunction<T, String> langKeyProvider) {
+        return lang(langKeyProvider, (p, t) -> p.getAutomaticName(t));
     }
 
     /**
@@ -105,11 +110,11 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      *            The name to use
      * @return this {@link Builder}
      */
-    public S lang(Function<T, String> langKeyProvider, String name) {
+    public S lang(NonNullFunction<T, String> langKeyProvider, String name) {
         return lang(langKeyProvider, (p, s) -> name);
     }
 
-    private S lang(Function<T, String> langKeyProvider, BiFunction<RegistrateLangProvider, Supplier<T>, String> localizedNameProvider) {
+    private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, Supplier<? extends T>, String> localizedNameProvider) {
         return setData(ProviderType.LANG, ctx -> ctx.getProvider().add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(ctx.getProvider(), ctx::getEntry)));
     }
 

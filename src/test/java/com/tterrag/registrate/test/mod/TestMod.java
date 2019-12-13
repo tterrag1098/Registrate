@@ -2,6 +2,7 @@ package com.tterrag.registrate.test.mod;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -105,7 +106,7 @@ public class TestMod {
                 .register();
     }
     
-    private <T extends Block, P> BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
+    private <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
         return builder.loot((prov, block) -> prov.registerDropping(block, Items.DIAMOND));
     }
 }

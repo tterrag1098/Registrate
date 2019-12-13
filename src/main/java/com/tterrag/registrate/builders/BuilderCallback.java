@@ -3,6 +3,7 @@ package com.tterrag.registrate.builders;
 import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -28,6 +29,6 @@ public interface BuilderCallback {
      *            A {@link Supplier} that will create the entry
      * @return A {@link RegistryObject} that will supply the registered entry
      */
-    <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> accept(String name, Class<? super R> type, Supplier<? extends T> factory);
+    <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> accept(String name, Class<? super R> type, NonNullSupplier<? extends T> factory);
 
 }

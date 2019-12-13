@@ -1,11 +1,15 @@
 package com.tterrag.registrate.providers;
 
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
+import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
@@ -30,6 +34,8 @@ import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
  */
 @FunctionalInterface
 @SuppressWarnings("deprecation")
+@FieldsAreNonnullByDefault
+@ParametersAreNonnullByDefault
 public interface ProviderType<T extends RegistrateProvider> {
 
     // CLIENT DATA
@@ -47,18 +53,20 @@ public interface ProviderType<T extends RegistrateProvider> {
 
     T create(Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing);
     
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, Function<ProviderType<T>, BiFunction<Registrate, GatherDataEvent, T>> type) {
+    @Nonnull
+    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullFunction<ProviderType<T>, NonNullBiFunction<Registrate, GatherDataEvent, T>> type) {
         ProviderType<T> ret = new ProviderType<T>() {
             
             @Override
-            public T create(Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
+            public T create(@Nonnull Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
                 return type.apply(this).apply(parent, event);
             }
         };
         return register(name, ret);
     }
     
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, BiFunction<Registrate, GatherDataEvent, T> type) {
+    @Nonnull
+    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullBiFunction<Registrate, GatherDataEvent, T> type) {
         ProviderType<T> ret = new ProviderType<T>() {
             
             @Override
@@ -69,6 +77,7 @@ public interface ProviderType<T extends RegistrateProvider> {
         return register(name, ret);
     }
 
+    @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> register(String name, ProviderType<T> type) {
         RegistrateDataProvider.TYPES.put(name, type);
         return type;

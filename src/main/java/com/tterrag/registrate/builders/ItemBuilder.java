@@ -1,10 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.Registrate;
@@ -13,6 +8,10 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -53,7 +52,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            Factory to create the item
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory) {
+    public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         return create(owner, parent, name, callback, factory, null);
     }
     
@@ -85,18 +84,18 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The {@link ItemGroup} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory, @Nullable Supplier<? extends ItemGroup> group) {
+    public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends ItemGroup> group) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
                 .defaultModel().defaultLang()
                 .transform(ib -> group == null ? ib : ib.group(group));
     }
 
-    private final Function<Item.Properties, T> factory;
-    private final Supplier<Item.Properties> properties = Item.Properties::new;
+    private final NonNullFunction<Item.Properties, T> factory;
+    private final NonNullSupplier<Item.Properties> properties = Item.Properties::new;
     
-    private Function<Item.Properties, Item.Properties> propertiesCallback = UnaryOperator.identity();
+    private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     
-    protected ItemBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Function<Item.Properties, T> factory) {
+    protected ItemBuilder(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
         this.factory = factory;
     }
@@ -111,12 +110,12 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The action to perform on the properties
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> properties(UnaryOperator<Item.Properties> func) {
+    public ItemBuilder<T, P> properties(NonNullUnaryOperator<Item.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
     
-    public ItemBuilder<T, P> group(Supplier<? extends ItemGroup> group) {
+    public ItemBuilder<T, P> group(NonNullSupplier<? extends ItemGroup> group) {
         return properties(p -> p.group(group.get()));
     }
     
@@ -137,7 +136,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, Consumer)
      */
-    public ItemBuilder<T, P> model(Consumer<DataGenContext<RegistrateItemModelProvider, Item, T>> cons) {
+    public ItemBuilder<T, P> model(NonNullConsumer<DataGenContext<RegistrateItemModelProvider, Item, T>> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
     }
     
@@ -168,9 +167,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link ItemBuilder}
-     * @see #setData(ProviderType, Consumer)
+     * @see #setData(ProviderType, NonNullConsumer)
      */
-    public ItemBuilder<T, P> recipe(Consumer<DataGenContext<RegistrateRecipeProvider, Item, T>> cons) {
+    public ItemBuilder<T, P> recipe(NonNullConsumer<DataGenContext<RegistrateRecipeProvider, Item, T>> cons) {
         return setData(ProviderType.RECIPE, cons);
     }
     

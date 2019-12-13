@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
@@ -43,14 +44,14 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
      *            Factory to create the tile entity
      * @return A new {@link TileEntityBuilder} with reasonable default data generators.
      */
-    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, Supplier<? extends T> factory) {
+    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
         return new TileEntityBuilder<>(owner, parent, name, callback, factory);
     }
 
-    private final Supplier<? extends T> factory;
-    private final Set<Supplier<? extends Block>> validBlocks = new HashSet<>();
+    private final NonNullSupplier<? extends T> factory;
+    private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
 
-    protected TileEntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, Supplier<? extends T> factory) {
+    protected TileEntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
         super(owner, parent, name, callback, TileEntityType.class);
         this.factory = factory;
     }
@@ -62,14 +63,14 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
      *            A supplier for the block to add at registration time
      * @return this {@link TileEntityBuilder}
      */
-    public TileEntityBuilder<T, P> validBlock(Supplier<? extends Block> block) {
+    public TileEntityBuilder<T, P> validBlock(NonNullSupplier<? extends Block> block) {
         validBlocks.add(block);
         return this;
     }
 
     @Override
     protected TileEntityType<T> createEntry() {
-        return TileEntityType.Builder.<T>create(factory, validBlocks.stream().map(Supplier::get).toArray(Block[]::new))
+        return TileEntityType.Builder.<T>create(factory, validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
                 .build(null);
     }
 }
