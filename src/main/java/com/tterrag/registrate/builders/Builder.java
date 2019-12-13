@@ -73,7 +73,9 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     }
 
     /**
-     * Add a data provider callback for this entry, which will be invoked when the provider of the given type executes.
+     * Set the data provider callback for this entry for the given provider type, which will be invoked when the provider of the given type executes.
+     * <p>
+     * If called multiple times for the same type, the existing callback will be <em>overwritten</em>.
      * <p>
      * This is mostly unneeded, and instead helper methods for specific data types should be used when possible.
      * 
@@ -88,8 +90,27 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S addData(ProviderType<D> type, Class<? super R> registryType, Consumer<DataGenContext<D, R, T>> cons) {
-        getOwner().addDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(prov, this, registryType)));
+    default <D extends RegistrateProvider> S setData(ProviderType<D> type, Class<? super R> registryType, Consumer<DataGenContext<D, R, T>> cons) {
+        getOwner().setDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(prov, this, registryType)));
+        return (S) this;
+    }
+
+    /**
+     * Add a data provider callback which will be invoked when the provider of the given type executes.
+     * <p>
+     * Calling this multiple times for the same type will <em>not</em> overwrite an existing callback.
+     * 
+     * @param <D>
+     *            The type of provider
+     * @param type
+     *            The {@link ProviderType} for the desired provider
+     * @param cons
+     *            The callback to execute when the provider is run
+     * @return this builder
+     */
+    @SuppressWarnings("unchecked")
+    default <D extends RegistrateProvider> S addMiscData(ProviderType<D> type, Consumer<? extends D> cons) {
+        getOwner().addDataGenerator(type, cons);
         return (S) this;
     }
 
@@ -105,7 +126,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this {@link Builder}
      */
     default S tag(ProviderType<RegistrateTagsProvider<R>> type, Class<? super R> registryType, Tag<R> tag) {
-        return addData(type, registryType, ctx -> ctx.getProvider().getBuilder(tag).add(get(registryType).get()));
+        return setData(type, registryType, ctx -> ctx.getProvider().getBuilder(tag).add(get(registryType).get()));
     }
 
     /**

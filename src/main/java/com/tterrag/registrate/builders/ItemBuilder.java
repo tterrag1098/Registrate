@@ -95,10 +95,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data creation
      * @return this {@link ItemBuilder}
-     * @see #addData(ProviderType, Consumer)
+     * @see #setData(ProviderType, Consumer)
      */
     public ItemBuilder<T, P> model(Consumer<DataGenContext<RegistrateItemModelProvider, Item, T>> cons) {
-        return addData(ProviderType.ITEM_MODEL, cons);
+        return setData(ProviderType.ITEM_MODEL, cons);
     }
     
     /**
@@ -128,10 +128,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link ItemBuilder}
-     * @see #addData(ProviderType, Consumer)
+     * @see #setData(ProviderType, Consumer)
      */
     public ItemBuilder<T, P> recipe(Consumer<DataGenContext<RegistrateRecipeProvider, Item, T>> cons) {
-        return addData(ProviderType.RECIPE, cons);
+        return setData(ProviderType.RECIPE, cons);
     }
     
     /**

@@ -80,8 +80,8 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      *            The callback to execute when the provider is run
      * @return this {@link Builder}
      */
-    public <D extends RegistrateProvider> S addData(ProviderType<D> type, Consumer<DataGenContext<D, R, T>> cons) {
-        return addData(type, registryType, cons);
+    public <D extends RegistrateProvider> S setData(ProviderType<D> type, Consumer<DataGenContext<D, R, T>> cons) {
+        return setData(type, registryType, cons);
     }
 
     /**
@@ -110,7 +110,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     }
 
     private S lang(Function<T, String> langKeyProvider, BiFunction<RegistrateLangProvider, Supplier<T>, String> localizedNameProvider) {
-        return addData(ProviderType.LANG, ctx -> ctx.getProvider().add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(ctx.getProvider(), ctx::getEntry)));
+        return setData(ProviderType.LANG, ctx -> ctx.getProvider().add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(ctx.getProvider(), ctx::getEntry)));
     }
 
     /**

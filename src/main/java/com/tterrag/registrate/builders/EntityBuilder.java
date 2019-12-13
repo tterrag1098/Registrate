@@ -135,7 +135,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @return this {@link EntityBuilder}
      */
     public EntityBuilder<T, P> loot(BiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
-        return addData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.ENTITY, prov -> cons.accept(prov, ctx.getEntry())));
+        return setData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.ENTITY, prov -> cons.accept(prov, ctx.getEntry())));
     }
 
     /**

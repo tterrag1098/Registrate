@@ -152,10 +152,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
-     * @see #addData(ProviderType, Consumer)
+     * @see #setData(ProviderType, Consumer)
      */
     public BlockBuilder<T, P> blockstate(Consumer<DataGenContext<RegistrateBlockstateProvider, Block, T>> cons) {
-        return addData(ProviderType.BLOCKSTATE, cons);
+        return setData(ProviderType.BLOCKSTATE, cons);
     }
 
     /**
@@ -200,7 +200,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> loot(BiConsumer<RegistrateBlockLootTables, T> cons) {
-        return addData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.BLOCK, prov -> {
+        return setData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.BLOCK, prov -> {
             if (!ctx.getEntry().getLootTable().equals(LootTables.EMPTY)) {
                 cons.accept(prov, ctx.getEntry());
             }
@@ -213,10 +213,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
-     * @see #addData(ProviderType, Consumer)
+     * @see #setData(ProviderType, Consumer)
      */
     public BlockBuilder<T, P> recipe(Consumer<DataGenContext<RegistrateRecipeProvider, Block, T>> cons) {
-        return addData(ProviderType.RECIPE, cons);
+        return setData(ProviderType.RECIPE, cons);
     }
 
     /**

@@ -10,6 +10,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
@@ -103,7 +105,8 @@ public class Registrate {
     }
     
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
-    private final Table<String, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagens = HashBasedTable.create();
+    private final Table<String, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
+    private final Multimap<ProviderType<?>, Consumer<? extends RegistrateProvider>> datagens = HashMultimap.create();
 
     /**
      * @return The mod ID that this {@link Registrate} is creating objects for
@@ -225,9 +228,41 @@ public class Registrate {
     public <R extends IForgeRegistryEntry<R>> Collection<RegistryObject<R>> getAll(Class<? super R> type) {
         return registrations.column(type).values().stream().map(r -> (RegistryObject<R>) r.getDelegate()).collect(Collectors.toList());
     }
+
+    /**
+     * Mostly internal, sets the data generator for a certain entry/type combination. This will replace an existing data gen callback if it exists.
+     * 
+     * @param <T>
+     *            The type of provider
+     * @param entry
+     *            The name of the entry which the provider is for
+     * @param type
+     *            The {@link ProviderType} to generate data for
+     * @param cons
+     *            A callback to be invoked during data generation
+     */
+    public <T extends RegistrateProvider> void setDataGenerator(String entry, ProviderType<T> type, Consumer<? extends T> cons) {
+        Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(entry, type, cons);
+        if (existing != null) {
+            datagens.remove(type, existing);
+        }
+        addDataGenerator(type, cons);
+    }
     
-    public <T extends RegistrateProvider> void addDataGenerator(String name, ProviderType<T> type, Consumer<T> cons) {
-        datagens.put(name, type, cons);
+    /**
+     * Add a data generator callback that is not associated with any entry, which can never replace an existing data generator.
+     * <p>
+     * This is useful to add data generator callbacks for miscellaneous data not strictly associated with an entry.
+     * 
+     * @param <T>
+     *            The type of provider
+     * @param type
+     *            The {@link ProviderType} to generate data for
+     * @param cons
+     *            A callback to be invoked during data generation
+     */
+    public <T extends RegistrateProvider> void addDataGenerator(ProviderType<T> type, Consumer<? extends T> cons) {
+        datagens.put(type, cons);
     }
     
     /**
@@ -241,7 +276,7 @@ public class Registrate {
      */
     @SuppressWarnings("unchecked")
     public <T extends RegistrateProvider> void genData(ProviderType<T> type, T gen) {
-        datagens.column(type).values().forEach(cons -> ((Consumer<T>)cons).accept(gen));
+        datagens.get(type).forEach(cons -> ((Consumer<T>)cons).accept(gen));
     }
     
     /**
