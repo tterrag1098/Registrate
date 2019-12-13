@@ -2,6 +2,7 @@ package com.tterrag.registrate.providers;
 
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -29,7 +30,8 @@ public class DataGenContext<T extends RegistrateProvider, R extends IForgeRegist
     String name;
     ResourceLocation id;
 
-    public E getEntry() {
+    @SuppressWarnings("null")
+    public @NonnullType E getEntry() {
         return entry.get();
     }
 

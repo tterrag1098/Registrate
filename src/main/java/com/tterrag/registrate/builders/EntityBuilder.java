@@ -1,7 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Supplier;
-
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -11,6 +9,7 @@ import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootTyp
 import com.tterrag.registrate.util.LazySpawnEggItem;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
@@ -19,7 +18,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.NonNullSupplier;
 
 /**
  * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
@@ -107,7 +105,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(Supplier)}. This is the default, so it is generally not necessary to call, unless for undoing
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for undoing
      * previous changes.
      * 
      * @return this {@link EntityBuilder}

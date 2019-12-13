@@ -10,6 +10,7 @@ import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import com.tterrag.registrate.util.nullness.NullableSupplier;
 
@@ -90,7 +91,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     }
 
     /**
-     * Set the lang key for this entry to the default value (specified by {@link RegistrateLangProvider#getAutomaticName(Supplier)}). Generally, specific helpers from concrete builders should be used
+     * Set the lang key for this entry to the default value (specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}). Generally, specific helpers from concrete builders should be used
      * instead.
      * 
      * @param langKeyProvider
@@ -114,7 +115,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
         return lang(langKeyProvider, (p, s) -> name);
     }
 
-    private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, Supplier<? extends T>, String> localizedNameProvider) {
+    private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
         return setData(ProviderType.LANG, ctx -> ctx.getProvider().add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(ctx.getProvider(), ctx::getEntry)));
     }
 

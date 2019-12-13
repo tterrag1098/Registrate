@@ -1,7 +1,6 @@
 package com.tterrag.registrate.builders;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -64,10 +63,10 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @param flowingTexture
      *            The texture to use for flowing fluids
      * @return A new {@link FluidBuilder} with reasonable default data generators.
-     * @see #create(Registrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, BiFunction, Function)
+     * @see #create(Registrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, NonNullFunction)
      */
     public static <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> create(Registrate owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, (BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes>) null);
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, (NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes>) null);
     }
     
     /**
@@ -90,10 +89,10 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @param attributesFactory
      *            A factory that creates the fluid attributes instance
      * @return A new {@link FluidBuilder} with reasonable default data generators.
-     * @see #create(Registrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, BiFunction, Function)
+     * @see #create(Registrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, NonNullFunction)
      */
     public static <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> create(Registrate owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+            @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return create(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, ForgeFlowingFluid.Flowing::new);
     }
     
@@ -119,7 +118,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @param factory
      *            A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
-     * @see #create(Registrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, BiFunction, Function)
+     * @see #create(Registrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, NonNullFunction)
      */
     public static <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
@@ -160,7 +159,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory)
                 .defaultSource().defaultBlock().defaultBucket()
                 .tag(FluidTags.WATER);
@@ -221,7 +220,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * Create a standard {@link ForgeFlowingFluid.Source} for this fluid which will be built and registered along with this fluid.
      * 
      * @return this {@link FluidBuilder}
-     * @see #source(Function)
+     * @see #source(NonNullFunction)
      */
     public FluidBuilder<T, P> defaultSource() {
         return source(ForgeFlowingFluid.Source::new);

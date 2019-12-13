@@ -3,7 +3,6 @@ package com.tterrag.registrate;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -62,7 +61,7 @@ import net.minecraftforge.registries.RegistryManager;
  * Generally <em>not</em> thread-safe, as it holds the current name of the object being built statefully, and uses non-concurrent collections.
  * <p>
  * Begin a new object via {@link #object(String)}. This name will be used for all future entries until the next invocation of {@link #object(String)}. Alternatively, the methods that accept a name
- * parameter (such as {@link #block(String, Function)}) can be used. These do not affect the current name state.
+ * parameter (such as {@link #block(String, NonNullFunction)}) can be used. These do not affect the current name state.
  * <p>
  * A simple use may look like:
  * 
@@ -344,7 +343,7 @@ public class Registrate {
     }
     
     /**
-     * Apply a transformation to this {@link Registrate}. Similar to {@link #transform(UnaryOperator)}, but for actions that return a builder in-progress. Useful to apply helper methods within a
+     * Apply a transformation to this {@link Registrate}. Similar to {@link #transform(NonNullUnaryOperator)}, but for actions that return a builder in-progress. Useful to apply helper methods within a
      * fluent chain, e.g.
      * 
      * <pre>
@@ -493,7 +492,7 @@ public class Registrate {
     }
     
     public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(this, stillTexture, flowingTexture, attributesFactory);
     }
     
@@ -503,7 +502,7 @@ public class Registrate {
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(this, stillTexture, flowingTexture, attributesFactory, factory);
     }
     
@@ -516,7 +515,7 @@ public class Registrate {
     }
     
     public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(this, name, stillTexture, flowingTexture, attributesFactory);
     }
     
@@ -526,7 +525,7 @@ public class Registrate {
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(this, name, stillTexture, flowingTexture, attributesFactory, factory);
     }
         
@@ -539,7 +538,7 @@ public class Registrate {
     }
     
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory);
     }
     
@@ -549,7 +548,7 @@ public class Registrate {
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory, factory);
     }
     
@@ -562,7 +561,7 @@ public class Registrate {
     }
     
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, attributesFactory));
     }
     
@@ -572,7 +571,7 @@ public class Registrate {
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory));
     }
 }

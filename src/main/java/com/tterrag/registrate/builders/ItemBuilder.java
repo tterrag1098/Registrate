@@ -134,14 +134,14 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data creation
      * @return this {@link ItemBuilder}
-     * @see #setData(ProviderType, Consumer)
+     * @see #setData(ProviderType, NonNullConsumer)
      */
     public ItemBuilder<T, P> model(NonNullConsumer<DataGenContext<RegistrateItemModelProvider, Item, T>> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
     }
     
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(Supplier)}. This is the default, so it is generally not necessary to call, unless for undoing
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for undoing
      * previous changes.
      * 
      * @return this {@link ItemBuilder}

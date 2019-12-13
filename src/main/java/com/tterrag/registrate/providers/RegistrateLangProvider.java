@@ -7,9 +7,12 @@ import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.block.Block;
@@ -36,7 +39,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         }
 
         @Override
-        public void add(String key, String value) {
+        public void add(@Nullable String key, @Nullable String value) {
             super.add(key, value);
         }
 
@@ -75,38 +78,38 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
                 .collect(Collectors.joining(" "));
     }
     
-    public String getAutomaticName(Supplier<? extends IForgeRegistryEntry<?>> sup) {
+    public String getAutomaticName(NonNullSupplier<? extends IForgeRegistryEntry<?>> sup) {
         return toEnglishName(sup.get().getRegistryName().getPath());
     }
     
-    public void addBlock(Supplier<? extends Block> block) {
+    public void addBlock(NonNullSupplier<? extends Block> block) {
         addBlock(block, getAutomaticName(block));
     }
     
-    public void addBlockWithTooltip(Supplier<? extends Block> block, String tooltip) {
+    public void addBlockWithTooltip(NonNullSupplier<? extends Block> block, String tooltip) {
         addBlock(block);
         addTooltip(block, tooltip);
     }
     
-    public void addBlockWithTooltip(Supplier<? extends Block> block, String name, String tooltip) {
+    public void addBlockWithTooltip(NonNullSupplier<? extends Block> block, String name, String tooltip) {
         addBlock(block, name);
         addTooltip(block, tooltip);
     }
     
-    public void addItem(Supplier<? extends Item> item) {
+    public void addItem(NonNullSupplier<? extends Item> item) {
         addItem(item, getAutomaticName(item));
     }
     
-    public void addItemWithTooltip(Supplier<? extends Item> block, String name, List<String> tooltip) {
+    public void addItemWithTooltip(NonNullSupplier<? extends Item> block, String name, List<@NonnullType String> tooltip) {
         addItem(block, name);
         addTooltip(block, tooltip);
     }
     
-    public void addTooltip(Supplier<? extends IItemProvider> item, String tooltip) {
+    public void addTooltip(NonNullSupplier<? extends IItemProvider> item, String tooltip) {
         add(item.get().asItem().getTranslationKey() + ".desc", tooltip);
     }
     
-    public void addTooltip(Supplier<? extends IItemProvider> item, List<String> tooltip) {
+    public void addTooltip(NonNullSupplier<? extends IItemProvider> item, List<@NonnullType String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
             add(item.get().asItem().getTranslationKey() + ".desc." + i, tooltip.get(i));
         }
@@ -116,11 +119,11 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         add(group.getTranslationKey(), name);
     }
     
-    public void addEntityType(Supplier<? extends EntityType<?>> entity) {
+    public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
         addEntityType(entity, getAutomaticName(entity));
     }
     
-    public void addBiome(Supplier<? extends Biome> biome) {
+    public void addBiome(NonNullSupplier<? extends Biome> biome) {
         addBiome(biome, getAutomaticName(biome));
     }
     

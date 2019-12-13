@@ -1,8 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import javax.annotation.Nonnull;
 
 import com.tterrag.registrate.Registrate;
@@ -156,14 +153,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
-     * @see #setData(ProviderType, Consumer)
+     * @see #setData(ProviderType, NonNullConsumer)
      */
     public BlockBuilder<T, P> blockstate(NonNullConsumer<DataGenContext<RegistrateBlockstateProvider, Block, T>> cons) {
         return setData(ProviderType.BLOCKSTATE, cons);
     }
 
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(Supplier)}. This is the default, so it is generally not necessary to call, unless for undoing
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for undoing
      * previous changes.
      * 
      * @return this {@link BlockBuilder}
@@ -217,7 +214,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
-     * @see #setData(ProviderType, Consumer)
+     * @see #setData(ProviderType, NonNullConsumer)
      */
     public BlockBuilder<T, P> recipe(NonNullConsumer<DataGenContext<RegistrateRecipeProvider, Block, T>> cons) {
         return setData(ProviderType.RECIPE, cons);
