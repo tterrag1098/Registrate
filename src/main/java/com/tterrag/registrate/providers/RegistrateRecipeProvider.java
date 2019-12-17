@@ -11,7 +11,6 @@ import com.tterrag.registrate.Registrate;
 import net.minecraft.advancements.criterion.EnterBlockTrigger;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.advancements.criterion.ItemPredicate;
-import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DirectoryCache;
@@ -62,9 +61,6 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
 
     @Override
     public EnterBlockTrigger.Instance enteredBlock(Block blockIn) { return super.enteredBlock(blockIn); }
-
-    @Override
-    public InventoryChangeTrigger.Instance hasItem(MinMaxBounds.IntBound amount, IItemProvider itemIn) { return super.hasItem(amount, itemIn); }
 
     @Override
     public InventoryChangeTrigger.Instance hasItem(IItemProvider itemIn) { return super.hasItem(itemIn); }

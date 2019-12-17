@@ -21,7 +21,7 @@ import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.Tag;
-import net.minecraft.util.LazyLoadBase;
+import net.minecraft.util.LazyValue;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -326,7 +326,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
     
     private Supplier<ForgeFlowingFluid.Source> getSource() {
-        return new LazyLoadBase<>(() -> getOwner().<Fluid, ForgeFlowingFluid.Source>get(sourceName, Fluid.class).get())::getValue;
+        return new LazyValue<>(() -> getOwner().<Fluid, ForgeFlowingFluid.Source>get(sourceName, Fluid.class).get())::getValue;
     }
     
     private ForgeFlowingFluid.Properties makeProperties() {

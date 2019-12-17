@@ -27,7 +27,7 @@ import net.minecraft.world.storage.loot.LootParameterSet;
 import net.minecraft.world.storage.loot.LootParameterSets;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.LootTable.Builder;
-import net.minecraft.world.storage.loot.ValidationResults;
+import net.minecraft.world.storage.loot.ValidationTracker;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
@@ -83,7 +83,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     }
     
     @Override
-    protected void validate(Map<ResourceLocation, LootTable> map, ValidationResults validationresults) {
+    protected void validate(Map<ResourceLocation, LootTable> map, ValidationTracker validationresults) {
         currentLootCreators.forEach(c -> c.validate(map, validationresults));
     }
     
