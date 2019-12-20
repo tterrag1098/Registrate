@@ -1,6 +1,7 @@
 package com.tterrag.registrate;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -10,6 +11,9 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.MarkerManager;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
@@ -25,6 +29,7 @@ import com.tterrag.registrate.builders.TileEntityBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
+import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -151,8 +156,13 @@ public class Registrate {
             log.debug("Skipping unknown builder class " + event.getRegistry().getRegistrySuperType());
             return;
         }
-        for (Entry<String, Registration<?, ?>> e : registrations.column(type).entrySet()) {
-            e.getValue().register((IForgeRegistry) event.getRegistry());
+        Map<String, Registration<?, ?>> registrationsForType = registrations.column(type);
+        if (registrationsForType.size() > 0) {
+            log.debug(DebugMarkers.REGISTER, "Registering {} known objects of type {}", registrationsForType.size(), type.getName());
+            for (Entry<String, Registration<?, ?>> e : registrationsForType.entrySet()) {
+                e.getValue().register((IForgeRegistry) event.getRegistry());
+                log.debug(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistry().getRegistryName());
+            }
         }
     }
     
@@ -295,7 +305,23 @@ public class Registrate {
      */
     @SuppressWarnings("unchecked")
     public <T extends RegistrateProvider> void genData(ProviderType<T> type, T gen) {
-        datagens.get(type).forEach(cons -> ((Consumer<T>)cons).accept(gen));
+        datagens.get(type).forEach(cons -> {
+            if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
+                String entry = null;
+                for (Map.Entry<String, Consumer<? extends RegistrateProvider>> e : datagensByEntry.column(type).entrySet()) {
+                    if (e.getValue() == cons) {
+                        entry = e.getKey();
+                        break;
+                    }
+                }
+                if (entry != null) {
+                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {}", RegistrateDataProvider.getTypeName(type), entry);
+                } else {
+                    log.debug(DebugMarkers.DATA, "Generating unassociated data of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
+                }
+            }
+            ((Consumer<T>)cons).accept(gen);
+        });
     }
     
     /**
@@ -403,6 +429,7 @@ public class Registrate {
     
     private <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> accept(String name, Class<? super R> type, NonNullSupplier<? extends T> creator) {
         Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, creator);
+        log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.getName());
         registrations.put(name, type, reg);
         return reg.getDelegate();
     }

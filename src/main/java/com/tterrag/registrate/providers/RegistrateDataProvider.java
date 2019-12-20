@@ -6,16 +6,29 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.tterrag.registrate.Registrate;
+import javax.annotation.Nullable;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.util.DebugMarkers;
+import com.tterrag.registrate.util.nullness.NonnullType;
+
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.data.DirectoryCache;
 import net.minecraft.data.IDataProvider;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
+@Log4j2
 public class RegistrateDataProvider implements IDataProvider {
 
-    static final Map<String, ProviderType<?>> TYPES = new LinkedHashMap<>();
+    @SuppressWarnings("null")
+    static final BiMap<String, ProviderType<?>> TYPES = HashBiMap.create();
+    
+    public static @Nullable String getTypeName(ProviderType<?> type) {
+        return TYPES.inverse().get(type);
+    }
 
     private final String mod;
     private final Map<ProviderType<?>, RegistrateProvider> subProviders = new LinkedHashMap<>();
@@ -29,9 +42,13 @@ public class RegistrateDataProvider implements IDataProvider {
         if (event.includeClient()) {
             sides.add(LogicalSide.CLIENT);
         }
-        for (ProviderType<?> type : TYPES.values()) {
+        
+        log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
+        for (String id : TYPES.keySet()) {
+            ProviderType<?> type = TYPES.get(id);
             RegistrateProvider prov = type.create(parent, event, subProviders);
             if (sides.contains(prov.getSide())) {
+                log.debug(DebugMarkers.DATA, "Adding provider for type: {}", id);
                 subProviders.put(type, prov);
             }
         }
@@ -39,8 +56,9 @@ public class RegistrateDataProvider implements IDataProvider {
 
     @Override
     public void act(DirectoryCache cache) throws IOException {
-        for (RegistrateProvider provider : subProviders.values()) {
-            provider.act(cache);
+        for (Map.Entry<@NonnullType ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
+            log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
+            e.getValue().act(cache);
         }
     }
 
