@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Table;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
@@ -114,7 +114,7 @@ public class Registrate {
     
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
     private final Table<String, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
-    private final Multimap<ProviderType<?>, Consumer<? extends RegistrateProvider>> datagens = HashMultimap.create();
+    private final ListMultimap<ProviderType<?>, Consumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
 
     /**
      * @return The mod ID that this {@link Registrate} is creating objects for
