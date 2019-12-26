@@ -16,6 +16,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DirectoryCache;
 import net.minecraft.data.IDataProvider;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.LogicalSide;
 
 @Log4j2
@@ -34,6 +35,14 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
     @Override
     public LogicalSide getSide() {
         return LogicalSide.SERVER;
+    }
+    
+    public TranslationTextComponent title(String name, String title) {
+        return owner.addLang("advancement." + name + ".title", title);
+    }
+    
+    public TranslationTextComponent desc(String name, String desc) {
+        return owner.addLang("advancement." + name + ".description", desc);
     }
     
     private DirectoryCache cache;

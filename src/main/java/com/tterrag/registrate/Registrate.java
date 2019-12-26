@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.MarkerManager;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
@@ -48,6 +47,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -292,6 +292,12 @@ public class Registrate {
      */
     public <T extends RegistrateProvider> void addDataGenerator(ProviderType<T> type, Consumer<? extends T> cons) {
         datagens.put(type, cons);
+    }
+    
+    public TranslationTextComponent addLang(String key, String value) {
+        final String prefixedKey = getModid() + "." + key;
+        addDataGenerator(ProviderType.LANG, p -> p.add(prefixedKey, value));
+        return new TranslationTextComponent(prefixedKey);
     }
     
     /**

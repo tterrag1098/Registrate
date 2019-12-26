@@ -4,10 +4,10 @@
       "item": "minecraft:egg"
     },
     "title": {
-      "text": "Test Advancement"
+      "translate": "testmod.advancement.root.title"
     },
     "description": {
-      "text": "Get an egg."
+      "translate": "testmod.advancement.root.description"
     },
     "frame": "task",
     "show_toast": true,

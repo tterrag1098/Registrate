@@ -5,5 +5,7 @@
   "item.testmod.testentity_spawn_egg": "bb\u018E u\u028D\u0250dS \u028E\u0287\u0131\u0287u\u01DD\u0287s\u01DD\u27D8",
   "item.testmod.testfluid_bucket": "\u0287\u01DD\u029E\u0254n\u15FA p\u0131n\u05DF\u025F\u0287s\u01DD\u27D8",
   "item.testmod.testitem": "\u026F\u01DD\u0287\u0131\u0287s\u01DD\u27D8",
-  "test.custom.lang": "\u0287s\u01DD\u27D8"
+  "testmod.advancement.root.description": "\u02D9bb\u01DD u\u0250 \u0287\u01DD\u2141",
+  "testmod.advancement.root.title": "\u0287u\u01DD\u026F\u01DD\u0254u\u0250\u028Cp\u2C6F \u0287s\u01DD\u27D8",
+  "testmod.test.custom.lang": "\u0287s\u01DD\u27D8"
 }
