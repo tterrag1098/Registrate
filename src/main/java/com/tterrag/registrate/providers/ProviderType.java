@@ -45,6 +45,7 @@ public interface ProviderType<T extends RegistrateProvider> {
 
     // SERVER DATA
     public static final ProviderType<RegistrateRecipeProvider> RECIPE = register("recipe", (p, e) -> new RegistrateRecipeProvider(p, e.getGenerator()));
+    public static final ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = register("advancement", (p, e) -> new RegistrateAdvancementProvider(p, e.getGenerator()));
     public static final ProviderType<RegistrateLootTableProvider> LOOT = register("loot", (p, e) -> new RegistrateLootTableProvider(p, e.getGenerator()));
     public static final ProviderType<RegistrateTagsProvider<Block>> BLOCK_TAGS = register("tags/block", type -> (p, e) -> new RegistrateTagsProvider<Block>(p, type, "blocks", BlockTags::setCollection, e.getGenerator(), Registry.BLOCK));
     public static final ProviderType<RegistrateTagsProvider<Item>> ITEM_TAGS = register("tags/item", type -> (p, e) -> new RegistrateTagsProvider<Item>(p, type, "items", ItemTags::setCollection, e.getGenerator(), Registry.ITEM));

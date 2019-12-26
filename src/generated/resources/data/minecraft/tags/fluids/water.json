@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "testmod:testfluid",
-    "testmod:flowing_testfluid"
+    "testmod:flowing_testfluid",
+    "testmod:testfluid"
   ]
 }
