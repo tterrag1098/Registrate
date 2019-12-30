@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:egg"
+    },
+    "title": {
+      "translate": "testmod.advancement.root.title"
+    },
+    "description": {
+      "translate": "testmod.advancement.root.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false,
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png"
+  },
+  "criteria": {
+    "has_egg": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:egg"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_egg"
+    ]
+  ]
+}

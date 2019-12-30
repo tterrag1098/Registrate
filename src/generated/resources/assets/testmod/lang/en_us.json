@@ -4,5 +4,8 @@
   "entity.testmod.testentity": "Testentity",
   "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",
   "item.testmod.testfluid_bucket": "Testfluid Bucket",
-  "item.testmod.testitem": "Testitem"
+  "item.testmod.testitem": "Testitem",
+  "testmod.advancement.root.description": "Get an egg.",
+  "testmod.advancement.root.title": "Test Advancement",
+  "testmod.test.custom.lang": "Test"
 }

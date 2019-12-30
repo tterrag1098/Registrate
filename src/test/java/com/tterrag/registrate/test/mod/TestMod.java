@@ -2,8 +2,12 @@ package com.tterrag.registrate.test.mod;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.FrameType;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.data.CookingRecipeBuilder;
@@ -22,6 +26,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.ConstantRange;
 import net.minecraft.world.storage.loot.ItemLootEntry;
@@ -104,6 +109,16 @@ public class TestMod {
                 .attributes(a -> a.luminosity(15))
                 .properties(p -> p.canMultiply())
                 .register();
+        
+        registrate.addLang("test.custom.lang", "Test");
+        registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
+            Advancement.Builder.builder()
+                .withCriterion("has_egg", InventoryChangeTrigger.Instance.forItems(Items.EGG))
+                .withDisplay(Items.EGG,
+                        adv.title("root", "Test Advancement"), adv.desc("root", "Get an egg."), 
+                        new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
+                .register(adv, registrate.getModid() + ":root");
+        });
     }
     
     private <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
