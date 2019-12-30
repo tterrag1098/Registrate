@@ -37,7 +37,7 @@ project.buildnumber = System.getenv('BUILD_NUMBER') != null ? System.getenv('BUI
 version = "MC${minecraft_version}-${mod_version}.${buildnumber}"
 group = "com.tterrag.registrate"
 archivesBaseName = "Registrate"
-
+1
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
