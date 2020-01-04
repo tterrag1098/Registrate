@@ -169,8 +169,15 @@ public class Registrate {
     protected void onData(GatherDataEvent event) {
         event.getGenerator().addProvider(new RegistrateDataProvider(this, modid, event));
     }
-    
-    private String currentName() {
+
+    /**
+     * Get the current name (from the last call to {@link #object(String)}), throwing an exception if it is not set.
+     * 
+     * @return The current entry name
+     * @throws NullPointerException
+     *             if {@link #currentName} is null
+     */
+    protected String currentName() {
         String name = currentName;
         Objects.requireNonNull(name, "Current name not set");
         return name;
@@ -586,7 +593,7 @@ public class Registrate {
     }
     
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name) {
-        return fluid(parent, name, new ResourceLocation(getModid(), "block/" + currentName + "_still"), new ResourceLocation(getModid(), "block/" + currentName + "_flow"));
+        return fluid(parent, name, new ResourceLocation(getModid(), "block/" + currentName() + "_still"), new ResourceLocation(getModid(), "block/" + currentName() + "_flow"));
     }
 
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
