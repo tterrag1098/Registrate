@@ -39,6 +39,7 @@ import lombok.Getter;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -476,7 +477,23 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<Block.Properties, T> factory) {
-        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory));
+        return block(parent, name, factory, Material.ROCK);
+    }
+    
+    public <T extends Block> BlockBuilder<T, S> block(Material material, NonNullFunction<Block.Properties, T> factory) {
+        return block(self(), factory);
+    }
+    
+    public <T extends Block> BlockBuilder<T, S> block(String name, Material material, NonNullFunction<Block.Properties, T> factory) {
+        return block(self(), name, factory);
+    }
+    
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, Material material, NonNullFunction<Block.Properties, T> factory) {
+        return block(parent, currentName(), factory);
+    }
+    
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<Block.Properties, T> factory, Material material) {
+        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory, material));
     }
     
     // Entities

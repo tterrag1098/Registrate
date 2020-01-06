@@ -19,7 +19,9 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialColor;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
@@ -62,19 +64,20 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            Factory to create the block
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
-    public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
-        return new BlockBuilder<>(owner, parent, name, callback, factory)
+    public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory, Material material) {
+        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> Block.Properties.create(material))
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
 
     private final NonNullFunction<Block.Properties, T> factory;
-    private final NonNullSupplier<Block.Properties> properties = () -> Block.Properties.create(Material.ROCK);
     
+    private NonNullSupplier<Block.Properties> initialProperties;
     private NonNullFunction<Block.Properties, Block.Properties> propertiesCallback = NonNullUnaryOperator.identity();
 
-    protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
+    protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory, NonNullSupplier<Block.Properties> initialProperties) {
         super(owner, parent, name, callback, Block.class);
         this.factory = factory;
+        this.initialProperties = initialProperties;
     }
 
     /**
@@ -89,6 +92,46 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public BlockBuilder<T, P> properties(NonNullUnaryOperator<Block.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
+        return this;
+    }
+    
+    /**
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * 
+     * @param material
+     *            The material of the initial properties
+     * @param color
+     *            The color of the intial properties
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> initialProperties(Material material, DyeColor color) {
+        initialProperties = () -> Block.Properties.create(material, color);
+        return this;
+    }
+
+    /**
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * 
+     * @param material
+     *            The material of the initial properties
+     * @param color
+     *            The color of the intial properties
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> initialProperties(Material material, MaterialColor color) {
+        initialProperties = () -> Block.Properties.create(material, color);
+        return this;
+    }
+
+    /**
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * 
+     * @param block
+     *            The block to create the initial properties from (via {@link Block.Properties#from(Block)})
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
+        initialProperties = () -> Block.Properties.from(block.get());
         return this;
     }
 
@@ -233,7 +276,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     @Override
     protected T createEntry() {
-        @Nonnull Block.Properties properties = this.properties.get();
+        @Nonnull Block.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }
