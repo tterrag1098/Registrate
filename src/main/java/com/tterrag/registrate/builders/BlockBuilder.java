@@ -2,7 +2,7 @@ package com.tterrag.registrate.builders;
 
 import javax.annotation.Nonnull;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
@@ -51,7 +51,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param <P>
      *            Parent object type
      * @param owner
-     *            The owning {@link Registrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
      *            The parent object
      * @param name
@@ -62,7 +62,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            Factory to create the block
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
-    public static <T extends Block, P> BlockBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
+    public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
         return new BlockBuilder<>(owner, parent, name, callback, factory)
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
@@ -72,7 +72,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullFunction<Block.Properties, Block.Properties> propertiesCallback = NonNullUnaryOperator.identity();
 
-    protected BlockBuilder(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
+    protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory) {
         super(owner, parent, name, callback, Block.class);
         this.factory = factory;
     }

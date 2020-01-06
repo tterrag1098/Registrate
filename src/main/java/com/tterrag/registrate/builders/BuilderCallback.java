@@ -2,14 +2,14 @@ package com.tterrag.registrate.builders;
 
 import java.util.function.Supplier;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
- * A callback passed to {@link Builder builders} from the owning {@link Registrate} which will add a registration for the built entry that lazily creates and registers it.
+ * A callback passed to {@link Builder builders} from the owning {@link AbstractRegistrate} which will add a registration for the built entry that lazily creates and registers it.
  */
 @FunctionalInterface
 public interface BuilderCallback {

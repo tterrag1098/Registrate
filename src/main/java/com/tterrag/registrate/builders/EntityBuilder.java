@@ -1,6 +1,6 @@
 package com.tterrag.registrate.builders;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
@@ -42,7 +42,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @param <P>
      *            Parent object type
      * @param owner
-     *            The owning {@link Registrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
      *            The parent object
      * @param name
@@ -55,7 +55,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The {@link EntityClassification} of the entity
      * @return A new {@link EntityBuilder} with reasonable default data generators.
      */
-    public static <T extends Entity, P> EntityBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory,
+    public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory,
             EntityClassification classification) {
         return new EntityBuilder<>(owner, parent, name, callback, factory, classification)
                 .defaultLang();
@@ -65,7 +65,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
 
-    protected EntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
+    protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
         this.builder = () -> EntityType.Builder.create(factory, classification);
     }

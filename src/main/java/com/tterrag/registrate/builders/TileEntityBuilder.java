@@ -2,9 +2,8 @@ package com.tterrag.registrate.builders;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Supplier;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
@@ -33,7 +32,7 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
      * @param <P>
      *            Parent object type
      * @param owner
-     *            The owning {@link Registrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
      *            The parent object
      * @param name
@@ -44,14 +43,14 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
      *            Factory to create the tile entity
      * @return A new {@link TileEntityBuilder} with reasonable default data generators.
      */
-    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
+    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
         return new TileEntityBuilder<>(owner, parent, name, callback, factory);
     }
 
     private final NonNullSupplier<? extends T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
 
-    protected TileEntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
+    protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
         super(owner, parent, name, callback, TileEntityType.class);
         this.factory = factory;
     }

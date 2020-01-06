@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
@@ -33,7 +33,7 @@ public class RegistrateDataProvider implements IDataProvider {
     private final String mod;
     private final Map<ProviderType<?>, RegistrateProvider> subProviders = new LinkedHashMap<>();
 
-    public RegistrateDataProvider(Registrate parent, String modid, GatherDataEvent event) {
+    public RegistrateDataProvider(AbstractRegistrate<?> parent, String modid, GatherDataEvent event) {
         this.mod = modid;
         EnumSet<LogicalSide> sides = EnumSet.noneOf(LogicalSide.class);
         if (event.includeServer()) {

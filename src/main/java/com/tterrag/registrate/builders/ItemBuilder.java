@@ -2,7 +2,7 @@ package com.tterrag.registrate.builders;
 
 import javax.annotation.Nullable;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateItemModelProvider;
@@ -41,7 +41,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param <P>
      *            Parent object type
      * @param owner
-     *            The owning {@link Registrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
      *            The parent object
      * @param name
@@ -52,7 +52,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            Factory to create the item
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         return create(owner, parent, name, callback, factory, null);
     }
     
@@ -71,7 +71,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param <P>
      *            Parent object type
      * @param owner
-     *            The owning {@link Registrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
      *            The parent object
      * @param name
@@ -84,7 +84,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The {@link ItemGroup} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends ItemGroup> group) {
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends ItemGroup> group) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
                 .defaultModel().defaultLang()
                 .transform(ib -> group == null ? ib : ib.group(group));
@@ -95,7 +95,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     
-    protected ItemBuilder(Registrate owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+    protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
         this.factory = factory;
     }

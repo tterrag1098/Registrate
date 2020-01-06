@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 
 import lombok.RequiredArgsConstructor;
 import net.minecraft.block.Block;
@@ -19,7 +19,7 @@ import net.minecraft.world.storage.loot.conditions.ILootCondition;
 @RequiredArgsConstructor
 public class RegistrateBlockLootTables extends BlockLootTables implements RegistrateLootTables {
     
-    private final Registrate parent;
+    private final AbstractRegistrate<?> parent;
     private final Consumer<RegistrateBlockLootTables> callback;
     
     @Override

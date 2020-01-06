@@ -55,7 +55,6 @@ import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
@@ -84,7 +83,7 @@ import net.minecraftforge.registries.RegistryManager;
  * For specifics as to building different registry entries, read the documentation on their respective builders.
  */
 @Log4j2
-public class Registrate {
+public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     @Value
     private class Registration<R extends IForgeRegistryEntry<R>, T extends R> {
@@ -105,24 +104,12 @@ public class Registrate {
         }
     }
     
-    /**
-     * Create a new {@link Registrate} and register event listeners for registration and data generation. Used in lieu of adding side-effects to constructor, so that alternate initialization
-     * strategies can be done in subclasses.
-     * 
-     * @param modid
-     *            The mod ID for which objects will be registered
-     * @return The {@link Registrate} instance
-     */
-    public static Registrate create(String modid) {
-        return new Registrate(modid).registerEventListeners(FMLJavaModLoadingContext.get().getModEventBus());
-    }
-    
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
     private final Table<String, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, Consumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
 
     /**
-     * @return The mod ID that this {@link Registrate} is creating objects for
+     * @return The mod ID that this {@link AbstractRegistrate} is creating objects for
      */
     @Getter
     private final String modid;
@@ -138,14 +125,19 @@ public class Registrate {
      * @param modid
      *            The mod ID for which objects will be registered
      */
-    protected Registrate(String modid) {
+    protected AbstractRegistrate(String modid) {
         this.modid = modid;
     }
     
-    protected Registrate registerEventListeners(IEventBus bus) {
+    @SuppressWarnings("unchecked")
+    protected S self() {
+        return (S) this;
+    }
+    
+    protected S registerEventListeners(IEventBus bus) {
         bus.addListener(this::onRegister);
         bus.addListener(this::onData);
-        return this;
+        return self();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -343,11 +335,11 @@ public class Registrate {
      * 
      * @param name
      *            The name to use for future entries
-     * @return this {@link Registrate}
+     * @return this {@link AbstractRegistrate}
      */
-    public Registrate object(String name) {
+    public S object(String name) {
         this.currentName = name;
-        return this;
+        return self();
     }
     
     /**
@@ -355,15 +347,15 @@ public class Registrate {
      * 
      * @param group
      *            The group to use for future items
-     * @return this {@link Registrate}
+     * @return this {@link AbstractRegistrate}
      */
-    public Registrate itemGroup(NonNullSupplier<? extends ItemGroup> group) {
+    public S itemGroup(NonNullSupplier<? extends ItemGroup> group) {
         this.currentGroup = group;
-        return this;
+        return self();
     }
     
     /**
-     * Apply a transformation to this {@link Registrate}. Useful to apply helper methods within a fluent chain, e.g.
+     * Apply a transformation to this {@link AbstractRegistrate}. Useful to apply helper methods within a fluent chain, e.g.
      * 
      * <pre>
      * {@code
@@ -375,14 +367,14 @@ public class Registrate {
      * 
      * @param func
      *            The {@link UnaryOperator function} to apply
-     * @return this {@link Registrate}
+     * @return this {@link AbstractRegistrate}
      */
-    public Registrate transform(NonNullUnaryOperator<Registrate> func) {
-        return func.apply(this);
+    public S transform(NonNullUnaryOperator<S> func) {
+        return func.apply(self());
     }
     
     /**
-     * Apply a transformation to this {@link Registrate}. Similar to {@link #transform(NonNullUnaryOperator)}, but for actions that return a builder in-progress. Useful to apply helper methods within a
+     * Apply a transformation to this {@link AbstractRegistrate}. Similar to {@link #transform(NonNullUnaryOperator)}, but for actions that return a builder in-progress. Useful to apply helper methods within a
      * fluent chain, e.g.
      * 
      * <pre>
@@ -402,8 +394,8 @@ public class Registrate {
      *            The {@link Function function} to apply
      * @return the resultant {@link Builder}
      */
-    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S transform(NonNullFunction<Registrate, S> func) {
-        return func.apply(this);
+    public <R extends IForgeRegistryEntry<R>, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 transform(NonNullFunction<S, S2> func) {
+        return func.apply(self());
     }
     
     /**
@@ -419,6 +411,7 @@ public class Registrate {
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
+    @SuppressWarnings("hiding")
     public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(NonNullBiFunction<String, BuilderCallback, S> factory) {
         return entry(currentName(), callback -> factory.apply(currentName(), callback));
     }
@@ -436,6 +429,7 @@ public class Registrate {
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
+    @SuppressWarnings("hiding")
     public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(String name, NonNullFunction<BuilderCallback, S> factory) {
         return factory.apply(this::accept);
     }
@@ -451,12 +445,12 @@ public class Registrate {
     
     // Items
     
-    public <T extends Item> ItemBuilder<T, Registrate> item(NonNullFunction<Item.Properties, T> factory) {
-        return item(this, factory);
+    public <T extends Item> ItemBuilder<T, S> item(NonNullFunction<Item.Properties, T> factory) {
+        return item(self(), factory);
     }
     
-    public <T extends Item> ItemBuilder<T, Registrate> item(String name, NonNullFunction<Item.Properties, T> factory) {
-        return item(this, name, factory);
+    public <T extends Item> ItemBuilder<T, S> item(String name, NonNullFunction<Item.Properties, T> factory) {
+        return item(self(), name, factory);
     }
     
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, NonNullFunction<Item.Properties, T> factory) {
@@ -469,12 +463,12 @@ public class Registrate {
     
     // Blocks
     
-    public <T extends Block> BlockBuilder<T, Registrate> block(NonNullFunction<Block.Properties, T> factory) {
-        return block(this, factory);
+    public <T extends Block> BlockBuilder<T, S> block(NonNullFunction<Block.Properties, T> factory) {
+        return block(self(), factory);
     }
     
-    public <T extends Block> BlockBuilder<T, Registrate> block(String name, NonNullFunction<Block.Properties, T> factory) {
-        return block(this, name, factory);
+    public <T extends Block> BlockBuilder<T, S> block(String name, NonNullFunction<Block.Properties, T> factory) {
+        return block(self(), name, factory);
     }
     
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, NonNullFunction<Block.Properties, T> factory) {
@@ -487,12 +481,12 @@ public class Registrate {
     
     // Entities
     
-    public <T extends Entity> EntityBuilder<T, Registrate> entity(EntityType.IFactory<T> factory, EntityClassification classification) {
-        return entity(this, factory, classification);
+    public <T extends Entity> EntityBuilder<T, S> entity(EntityType.IFactory<T> factory, EntityClassification classification) {
+        return entity(self(), factory, classification);
     }
     
-    public <T extends Entity> EntityBuilder<T, Registrate> entity(String name, EntityType.IFactory<T> factory, EntityClassification classification) {
-        return entity(this, name, factory, classification);
+    public <T extends Entity> EntityBuilder<T, S> entity(String name, EntityType.IFactory<T> factory, EntityClassification classification) {
+        return entity(self(), name, factory, classification);
     }
     
     public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, EntityType.IFactory<T> factory, EntityClassification classification) {
@@ -505,12 +499,12 @@ public class Registrate {
     
     // Tile Entities
     
-    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(NonNullSupplier<? extends T> factory) {
-        return tileEntity(this, factory);
+    public <T extends TileEntity> TileEntityBuilder<T, S> tileEntity(NonNullSupplier<? extends T> factory) {
+        return tileEntity(self(), factory);
     }
     
-    public <T extends TileEntity> TileEntityBuilder<T, Registrate> tileEntity(String name, NonNullSupplier<? extends T> factory) {
-        return tileEntity(this, name, factory);
+    public <T extends TileEntity> TileEntityBuilder<T, S> tileEntity(String name, NonNullSupplier<? extends T> factory) {
+        return tileEntity(self(), name, factory);
     }
     
     public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, NonNullSupplier<? extends T> factory) {
@@ -523,50 +517,50 @@ public class Registrate {
     
     // Fluids
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid() {
-        return fluid(this);
+    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid() {
+        return fluid(self());
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return fluid(this, stillTexture, flowingTexture);
+    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+        return fluid(self(), stillTexture, flowingTexture);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return fluid(this, stillTexture, flowingTexture, attributesFactory);
+        return fluid(self(), stillTexture, flowingTexture, attributesFactory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        return fluid(this, stillTexture, flowingTexture, factory);
+        return fluid(self(), stillTexture, flowingTexture, factory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        return fluid(this, stillTexture, flowingTexture, attributesFactory, factory);
+        return fluid(self(), stillTexture, flowingTexture, attributesFactory, factory);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid(String name) {
-        return fluid(this, name);
+    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(String name) {
+        return fluid(self(), name);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return fluid(this, name, stillTexture, flowingTexture);
+    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+        return fluid(self(), name, stillTexture, flowingTexture);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return fluid(this, name, stillTexture, flowingTexture, attributesFactory);
+        return fluid(self(), name, stillTexture, flowingTexture, attributesFactory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        return fluid(this, name, stillTexture, flowingTexture, factory);
+        return fluid(self(), name, stillTexture, flowingTexture, factory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, Registrate> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        return fluid(this, name, stillTexture, flowingTexture, attributesFactory, factory);
+        return fluid(self(), name, stillTexture, flowingTexture, attributesFactory, factory);
     }
         
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent) {

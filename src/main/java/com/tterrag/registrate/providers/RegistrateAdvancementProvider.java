@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.advancements.Advancement;
@@ -24,10 +24,10 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
 
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
 
-    private final Registrate owner;
+    private final AbstractRegistrate<?> owner;
     private final DataGenerator generator;
 
-    public RegistrateAdvancementProvider(Registrate owner, DataGenerator generatorIn) {
+    public RegistrateAdvancementProvider(AbstractRegistrate<?> owner, DataGenerator generatorIn) {
         this.owner = owner;
         this.generator = generatorIn;
     }

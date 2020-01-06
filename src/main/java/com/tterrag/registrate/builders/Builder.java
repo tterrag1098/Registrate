@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
@@ -23,7 +23,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * A Builder creates registry entries. A Builder instance has a constant name which will be used for the resultant object, they cannot be reused for different names. It holds a parent object that will
  * be returned from some final methods.
  * <p>
- * When a builder is completed via {@link #register()} or {@link #build()}, the object will be lazily registered (through the owning {@link Registrate} object).
+ * When a builder is completed via {@link #register()} or {@link #build()}, the object will be lazily registered (through the owning {@link AbstractRegistrate} object).
  * 
  * @param <R>
  *            Type of the registry for the current object. This is the concrete base class that all registry entries must extend, and the type used for the forge registry itself.
@@ -45,11 +45,11 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     RegistryObject<T> register();
 
     /**
-     * The owning {@link Registrate} that created this builder.
+     * The owning {@link AbstractRegistrate} that created this builder.
      * 
-     * @return the owner {@link Registrate}
+     * @return the owner {@link AbstractRegistrate}
      */
-    Registrate getOwner();
+    AbstractRegistrate<?> getOwner();
 
     /**
      * The parent object.
@@ -59,7 +59,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     P getParent();
 
     /**
-     * The name of the entry being created, and combined with the mod ID of the parent {@link Registrate}, the registry name.
+     * The name of the entry being created, and combined with the mod ID of the parent {@link AbstractRegistrate}, the registry name.
      * 
      * @return the name of the current entry
      */
@@ -71,7 +71,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @param registryType
      *            a {@link Class} representing the type of the registry for this builder
      * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
-     * @see Registrate#get(Class)
+     * @see AbstractRegistrate#get(Class)
      */
     default NullableSupplier<T> get(Class<? super R> registryType) {
         return () -> getOwner().<R, T> get(getName(), registryType).get();
@@ -160,8 +160,8 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     }
 
     /**
-     * Register the entry and return the parent object. The {@link RegistryObject} will be created but not returned. It can be retrieved later with {@link Registrate#get(Class)} or
-     * {@link Registrate#get(String, Class)}.
+     * Register the entry and return the parent object. The {@link RegistryObject} will be created but not returned. It can be retrieved later with {@link AbstractRegistrate#get(Class)} or
+     * {@link AbstractRegistrate#get(String, Class)}.
      * 
      * @return the parent object
      */

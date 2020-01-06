@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 
 import lombok.RequiredArgsConstructor;
 import net.minecraft.data.loot.EntityLootTables;
@@ -16,7 +16,7 @@ import net.minecraft.world.storage.loot.LootTable;
 @RequiredArgsConstructor
 public class RegistrateEntityLootTables extends EntityLootTables implements RegistrateLootTables {
     
-    private final Registrate parent;
+    private final AbstractRegistrate<?> parent;
     private final Consumer<RegistrateEntityLootTables> callback;
     
     @Override

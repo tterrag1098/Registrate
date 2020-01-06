@@ -14,7 +14,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.mojang.datafixers.util.Pair;
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
@@ -38,14 +38,14 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         static LootType<RegistrateBlockLootTables> BLOCK = register("block", LootParameterSets.BLOCK, RegistrateBlockLootTables::new);
         static LootType<RegistrateEntityLootTables> ENTITY = register("entity", LootParameterSets.ENTITY, RegistrateEntityLootTables::new);
 
-        T getLootCreator(Registrate parent, Consumer<T> callback);
+        T getLootCreator(AbstractRegistrate<?> parent, Consumer<T> callback);
         
         LootParameterSet getLootSet();
         
-        static <T extends RegistrateLootTables> LootType<T> register(String name, LootParameterSet set, NonNullBiFunction<Registrate, Consumer<T>, T> factory) {
+        static <T extends RegistrateLootTables> LootType<T> register(String name, LootParameterSet set, NonNullBiFunction<AbstractRegistrate, Consumer<T>, T> factory) {
             LootType<T> type = new LootType<T>() {
                 @Override
-                public T getLootCreator(Registrate parent, Consumer<T> callback) {
+                public T getLootCreator(AbstractRegistrate<?> parent, Consumer<T> callback) {
                     return factory.apply(parent, callback);
                 }
                 
@@ -61,13 +61,13 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     
     private static final Map<String, LootType<?>> LOOT_TYPES = new HashMap<>();
     
-    private final Registrate parent;
+    private final AbstractRegistrate<?> parent;
     
     private final Multimap<LootType<?>, Consumer<? super RegistrateLootTables>> specialLootActions = HashMultimap.create();
     private final Multimap<LootParameterSet, Consumer<BiConsumer<ResourceLocation, Builder>>> lootActions = HashMultimap.create();
     private final Set<RegistrateLootTables> currentLootCreators = new HashSet<>();
 
-    public RegistrateLootTableProvider(Registrate parent, DataGenerator dataGeneratorIn) {
+    public RegistrateLootTableProvider(AbstractRegistrate<?> parent, DataGenerator dataGeneratorIn) {
         super(dataGeneratorIn);
         this.parent = parent;
     }
@@ -96,7 +96,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         this.lootActions.put(set, action);
     }
     
-    private Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>> getLootCreator(Registrate parent, LootType<?> type) {
+    private Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>> getLootCreator(AbstractRegistrate<?> parent, LootType<?> type) {
         return () -> {
             RegistrateLootTables creator = type.getLootCreator(parent, cons -> specialLootActions.get(type).forEach(c -> c.accept(cons)));
             currentLootCreators.add(creator);

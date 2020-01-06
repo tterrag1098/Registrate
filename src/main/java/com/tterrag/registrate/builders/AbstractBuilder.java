@@ -2,7 +2,7 @@ package com.tterrag.registrate.builders;
 
 import java.util.function.Supplier;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
@@ -36,7 +36,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
 
     @Getter(onMethod = @__({ @Override }))
-    private final Registrate owner;
+    private final AbstractRegistrate<?> owner;
     @Getter(onMethod = @__({ @Override }))
     private final P parent;
     @Getter(onMethod = @__({ @Override }))
@@ -61,7 +61,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      * Allows retrieval of the built entry. Mostly used internally by builder classes.
      *
      * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
-     * @see Registrate#get(Class)
+     * @see AbstractRegistrate#get(Class)
      */
     public NullableSupplier<T> get() {
         return get(registryType);
