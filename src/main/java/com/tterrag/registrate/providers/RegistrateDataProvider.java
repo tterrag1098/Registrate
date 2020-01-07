@@ -2,6 +2,7 @@ package com.tterrag.registrate.providers;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,9 +45,11 @@ public class RegistrateDataProvider implements IDataProvider {
         }
         
         log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
+        Map<ProviderType<?>, RegistrateProvider> known = new HashMap<>();
         for (String id : TYPES.keySet()) {
             ProviderType<?> type = TYPES.get(id);
-            RegistrateProvider prov = type.create(parent, event, subProviders);
+            RegistrateProvider prov = type.create(parent, event, known);
+            known.put(type, prov);
             if (sides.contains(prov.getSide())) {
                 log.debug(DebugMarkers.DATA, "Adding provider for type: {}", id);
                 subProviders.put(type, prov);
