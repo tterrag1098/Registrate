@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -25,7 +26,6 @@ import net.minecraft.util.LazyLoadBase;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.fml.RegistryObject;
 
 /**
  * A builder for fluids, allows for customization of the {@link ForgeFlowingFluid.Properties} and {@link FluidAttributes}, and creation of the source variant, fluid block, and bucket item, as well as
@@ -347,7 +347,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * Additionally registers the source fluid.
      */
     @Override
-    public RegistryObject<T> register() {
+    public RegistryEntry<T> register() {
         NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
             getCallback().accept(sourceName, Fluid.class, source);

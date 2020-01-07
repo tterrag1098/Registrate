@@ -11,4 +11,8 @@ public interface NonNullSupplier<@NonnullType T> extends Supplier<T> {
     static <T> NonNullSupplier<T> of(Supplier<@NullableType T> sup) {
         return ((NullableSupplier<T>)sup::get).asNonNull();
     }
+    
+    static <T> NonNullSupplier<T> of(Supplier<@NullableType T> sup, NonNullSupplier<String> errorMsg) {
+        return ((NullableSupplier<T>)sup::get).asNonNull(errorMsg);
+    }
 }

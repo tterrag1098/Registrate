@@ -3,6 +3,7 @@ package com.tterrag.registrate.test.mod;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
@@ -15,6 +16,7 @@ import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -35,8 +37,8 @@ import net.minecraft.world.storage.loot.RandomValueRange;
 import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
 import net.minecraft.world.storage.loot.functions.SetCount;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
 @Mod("testmod")
 public class TestMod {
@@ -50,14 +52,14 @@ public class TestMod {
 
     public TestMod() {
         Registrate registrate = Registrate.create("testmod").itemGroup(() -> ItemGroup.MISC);
-        RegistryObject<Item> testitem = registrate.object("testitem")
+        RegistryEntry<Item> testitem = registrate.object("testitem")
                 .item(Item::new)
                     .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
                     .tag(ItemTags.BEDS)
                     .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                     .register();
         
-        RegistryObject<Block> testblock = registrate.object("testblock")
+        RegistryEntry<Block> testblock = registrate.object("testblock")
                 .block(Block::new)
                     .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                                     prov.withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
@@ -81,10 +83,11 @@ public class TestMod {
                     .tileEntity(ChestTileEntity::new)
                     .register();
         
-        RegistryObject<TileEntityType<ChestTileEntity>> testblockte = registrate.get(TileEntityType.class);
+        RegistryEntry<BlockItem> testblockitem = testblock.getSibling(Item.class);
+        RegistryEntry<TileEntityType<ChestTileEntity>> testblockte = testblock.getSibling(ForgeRegistries.TILE_ENTITIES);
         
         @SuppressWarnings("deprecation")
-        RegistryObject<EntityType<TestEntity>> testentity = registrate.object("testentity")
+        RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
                 .entity(TestEntity::new, EntityClassification.CREATURE)
                 .defaultSpawnEgg(0xFF0000, 0x00FF00)
                 .loot((prov, type) -> prov.registerLootTable(type, LootTable.builder()
@@ -96,11 +99,11 @@ public class TestMod {
                 .tag(EntityTypeTags.RAIDERS)
                 .register();
         
-        RegistryObject<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")
+        RegistryEntry<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")
                 .tileEntity(ChestTileEntity::new)
                 .register();
         
-        RegistryObject<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
+        RegistryEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
                 .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
                 .attributes(a -> a.luminosity(15))
                 .properties(p -> p.canMultiply())

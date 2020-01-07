@@ -29,6 +29,7 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.DebugMarkers;
+import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -91,13 +92,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         ResourceLocation name;
         Class<? super R> type;
         Supplier<? extends T> creator;        
-        RegistryObject<T> delegate;
+        RegistryEntry<T> delegate;
         
         Registration(ResourceLocation name, Class<? super R> type, Supplier<? extends T> creator) {
             this.name = name;
             this.type = type;
             this.creator =  creator;
-            this.delegate = RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type));
+            this.delegate = new RegistryEntry<>(AbstractRegistrate.this, RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
         }
         
         void register(IForgeRegistry<R> registry) {
@@ -197,13 +198,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The type of the entry to return
      * @param type
      *            A class representing the registry type
-     * @return A {@link RegistryObject} which will supply the requested entry, if it exists
+     * @return A {@link RegistryEntry} which will supply the requested entry, if it exists
      * @throws IllegalArgumentException
      *             if no such registration has been done
      * @throws NullPointerException 
      *             if current name has not been set via {@link #object(String)}
      */
-    public <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> get(Class<? super R> type) {
+    public <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> get(Class<? super R> type) {
         return this.<R, T>get(currentName(), type);
     }
 
@@ -231,12 +232,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The name of the registry entry to request
      * @param type
      *            A class representing the registry type
-     * @return A {@link RegistryObject} which will supply the requested entry, if it exists
+     * @return A {@link RegistryEntry} which will supply the requested entry, if it exists
      * @throws IllegalArgumentException
      *             if no such registration has been done
      */
     @SuppressWarnings("unchecked")
-    public <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> get(String name, Class<? super R> type) {
+    public <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> get(String name, Class<? super R> type) {
         Registration<R, T> reg = (Registration<R, T>) registrations.get(name, type);
         if (reg != null) {
             return reg.getDelegate();
@@ -251,11 +252,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The type of the registry for which to retrieve the entries
      * @param type
      *            A class representing the registry type
-     * @return A {@link Collection} of {@link RegistryObject RegistryObjects} representing all known registered entries of the given type.
+     * @return A {@link Collection} of {@link RegistryEntry RegistryEntries} representing all known registered entries of the given type.
      */
     @SuppressWarnings("unchecked")
-    public <R extends IForgeRegistryEntry<R>> Collection<RegistryObject<R>> getAll(Class<? super R> type) {
-        return registrations.column(type).values().stream().map(r -> (RegistryObject<R>) r.getDelegate()).collect(Collectors.toList());
+    public <R extends IForgeRegistryEntry<R>> Collection<RegistryEntry<R>> getAll(Class<? super R> type) {
+        return registrations.column(type).values().stream().map(r -> (RegistryEntry<R>) r.getDelegate()).collect(Collectors.toList());
     }
 
     /**
@@ -435,7 +436,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return factory.apply(this::accept);
     }
     
-    private <R extends IForgeRegistryEntry<R>, T extends R> RegistryObject<T> accept(String name, Class<? super R> type, NonNullSupplier<? extends T> creator) {
+    private <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, NonNullSupplier<? extends T> creator) {
         Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, creator);
         log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.getName());
         registrations.put(name, type, reg);

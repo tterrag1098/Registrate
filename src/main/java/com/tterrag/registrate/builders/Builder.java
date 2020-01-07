@@ -10,6 +10,7 @@ import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -37,12 +38,12 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> {
 
     /**
-     * Complete the current entry, and return the {@link RegistryObject} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
+     * Complete the current entry, and return the {@link RegistryEntry} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
      * output, as long as it is before registration takes place (before forge registry events).
      * 
-     * @return The {@link RegistryObject} supplying the built entry.
+     * @return The {@link RegistryEntry} supplying the built entry.
      */
-    RegistryObject<T> register();
+    RegistryEntry<T> register();
 
     /**
      * The owning {@link AbstractRegistrate} that created this builder.

@@ -8,6 +8,7 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -18,7 +19,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
@@ -53,7 +53,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     protected abstract @NonnullType T createEntry();
 
     @Override
-    public RegistryObject<T> register() {
+    public RegistryEntry<T> register() {
         return callback.accept(name, registryType, this::createEntry);
     }
 

@@ -164,7 +164,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().getNonNull("Entry not registered"), p))
+        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().getNonNull(() -> "Entry not registered"), p))
                 .model((ctx, prov) -> prov.blockItem(get().asNonNull()));
     }
 
