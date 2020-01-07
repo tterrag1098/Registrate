@@ -274,8 +274,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
                     FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
                     return p.lightValue(attrs.getLuminosity());
                 })
-                .blockstate(ctx -> ctx.getProvider()
-                        .simpleBlock(ctx.getEntry(), ctx.getProvider().getBuilder(sourceName)
+                .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
     }
     
@@ -309,7 +308,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      */
     public <I extends BucketItem> ItemBuilder<I, FluidBuilder<T, P>> bucket(NonNullBiFunction<Supplier<? extends ForgeFlowingFluid>, Item.Properties, ? extends I> factory) {
         return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(getSource(), p))
-                .model(ctx -> ctx.getProvider().generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
+                .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
     
     /**

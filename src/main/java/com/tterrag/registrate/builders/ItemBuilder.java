@@ -8,6 +8,7 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -125,7 +126,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> defaultModel() {
-        return model(ctx -> ctx.getProvider().generated(ctx::getEntry));
+        return model((ctx, prov) -> prov.generated(ctx::getEntry));
     }
 
     /**
@@ -136,7 +137,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, NonNullConsumer)
      */
-    public ItemBuilder<T, P> model(NonNullConsumer<DataGenContext<RegistrateItemModelProvider, Item, T>> cons) {
+    public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
     }
     
@@ -169,7 +170,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, NonNullConsumer)
      */
-    public ItemBuilder<T, P> recipe(NonNullConsumer<DataGenContext<RegistrateRecipeProvider, Item, T>> cons) {
+    public ItemBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
         return setData(ProviderType.RECIPE, cons);
     }
     

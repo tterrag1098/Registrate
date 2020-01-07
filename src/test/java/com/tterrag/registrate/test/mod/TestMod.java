@@ -54,32 +54,29 @@ public class TestMod {
                 .item(Item::new)
                     .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
                     .tag(ItemTags.BEDS)
-                    .model(ctx -> ctx.getProvider()
-                            .withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
+                    .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                     .register();
         
         RegistryObject<Block> testblock = registrate.object("testblock")
                 .block(Block::new)
-                    .blockstate(ctx -> ctx.getProvider()
-                            .simpleBlock(ctx.getEntry(),
-                                    ctx.getProvider().withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
+                    .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                                    prov.withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
                     .transform(this::applyDiamondDrop)
-                    .recipe(ctx -> {
+                    .recipe((ctx, prov) -> {
                         ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())
                                 .patternLine("DDD").patternLine("DED").patternLine("DDD")
                                 .key('D', Items.DIAMOND)
                                 .key('E', Items.EGG)
-                                .addCriterion("has_egg", ctx.getProvider().hasItem(Items.EGG))
-                                .build(ctx.getProvider());
+                                .addCriterion("has_egg", prov.hasItem(Items.EGG))
+                                .build(prov);
                         
                         CookingRecipeBuilder.smeltingRecipe(Ingredient.fromItems(ctx.getEntry()), Blocks.DIAMOND_BLOCK, 1f, 200)
-                                .addCriterion("has_testitem", ctx.getProvider().hasItem(ctx.getEntry()))
-                                .build(ctx.getProvider(), new ResourceLocation("testmod", "diamond_block_from_" + ctx.getName()));
+                                .addCriterion("has_testitem", prov.hasItem(ctx.getEntry()))
+                                .build(prov, new ResourceLocation("testmod", "diamond_block_from_" + ctx.getName()));
                     })
                     .tag(BlockTags.BAMBOO_PLANTABLE_ON)
                     .item()
-                        .model(ctx -> ctx.getProvider()
-                                .withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
+                        .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                         .build()
                     .tileEntity(ChestTileEntity::new)
                     .register();

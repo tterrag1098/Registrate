@@ -164,7 +164,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().getNonNull("Entry not registered"), p)).model(ctx -> ctx.getProvider().blockItem(get().asNonNull()));
+        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().getNonNull("Entry not registered"), p))
+                .model((ctx, prov) -> prov.blockItem(get().asNonNull()));
     }
 
     /**
@@ -187,7 +188,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> defaultBlockstate() {
-        return blockstate(ctx -> ctx.getProvider().simpleBlock(ctx.getEntry()));
+        return blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()));
     }
 
     /**
@@ -198,7 +199,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      * @see #setData(ProviderType, NonNullConsumer)
      */
-    public BlockBuilder<T, P> blockstate(NonNullConsumer<DataGenContext<RegistrateBlockstateProvider, Block, T>> cons) {
+    public BlockBuilder<T, P> blockstate(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> cons) {
         return setData(ProviderType.BLOCKSTATE, cons);
     }
 
@@ -244,9 +245,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> loot(NonNullBiConsumer<RegistrateBlockLootTables, T> cons) {
-        return setData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.BLOCK, prov -> {
+        return setData(ProviderType.LOOT, (ctx, prov) -> prov.addLootAction(LootType.BLOCK, tb -> {
             if (!ctx.getEntry().getLootTable().equals(LootTables.EMPTY)) {
-                cons.accept(prov, ctx.getEntry());
+                cons.accept(tb, ctx.getEntry());
             }
         }));
     }
@@ -259,7 +260,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      * @see #setData(ProviderType, NonNullConsumer)
      */
-    public BlockBuilder<T, P> recipe(NonNullConsumer<DataGenContext<RegistrateRecipeProvider, Block, T>> cons) {
+    public BlockBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateRecipeProvider> cons) {
         return setData(ProviderType.RECIPE, cons);
     }
 

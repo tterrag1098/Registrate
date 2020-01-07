@@ -10,7 +10,7 @@ import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import com.tterrag.registrate.util.nullness.NullableSupplier;
@@ -95,8 +95,8 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S setData(ProviderType<D> type, Class<? super R> registryType, NonNullConsumer<DataGenContext<D, R, T>> cons) {
-        getOwner().setDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(prov, this, registryType)));
+    default <D extends RegistrateProvider> S setData(ProviderType<D> type, Class<? super R> registryType, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
+        getOwner().setDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(this, registryType), prov));
         return (S) this;
     }
 
@@ -131,7 +131,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this {@link Builder}
      */
     default S tag(ProviderType<RegistrateTagsProvider<R>> type, Class<? super R> registryType, Tag<R> tag) {
-        return setData(type, registryType, ctx -> ctx.getProvider().getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get(registryType).get(), "Object not registered")));
+        return setData(type, registryType, (ctx, prov) -> prov.getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get(registryType).get(), "Object not registered")));
     }
 
     /**

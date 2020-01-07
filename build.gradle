@@ -92,7 +92,7 @@ minecraft {
                 }
             }
             
-            args '--mod', 'testmod', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"'
+            args '--mod', 'testmod', '--server', '--client', '--output', '"' + rootProject.file('src/generated/resources/') + '"'
         }
     }
 }
