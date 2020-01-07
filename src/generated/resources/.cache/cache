@@ -1,7 +1,7 @@
 539ba580bd22c7822c059998a2479aefa78dde61 assets\testmod\blockstates\testblock.json
 209c1eedcb8fbc05ed7146cb3ed3077cb0e2172f assets\testmod\blockstates\testfluid.json
-611bad1bb8375821cf1845f5802775aec0368942 assets\testmod\lang\en_ud.json
-512fa8c569b52785194ebec13066b25104d1034e assets\testmod\lang\en_us.json
+49f639ea73c88a740cea69e737a1978f9e00ef42 assets\testmod\lang\en_ud.json
+788cd661cbcd05d0ae8899b5338200b546457c8d assets\testmod\lang\en_us.json
 1d0720fe6815c846066afd8d3e0b9f5238b1d4a1 assets\testmod\models\block\testblock.json
 af7c5f088daaecd9f562a9b4e35d7fe18603d659 assets\testmod\models\block\testfluid.json
 bd8b54414abb50543de09ce62bd38f6a2ca882fd assets\testmod\models\item\testblock.json
@@ -13,7 +13,7 @@ b27f8565b143ba660c58d74121b2358a5a53c5c7 data\minecraft\tags\entity_types\raider
 c9e95e928aae7b806f272f029519f7da88217864 data\minecraft\tags\fluids\water.json
 f388aaa8e3ca0f0ae20c8df06d1f2a2295cf1f51 data\minecraft\tags\items\beds.json
 9b49fa4ce6dec484c6043f642abbeba8c091f9e6 data\testmod\advancements\recipes\building_blocks\diamond_block_from_testblock.json
-1f9d4ea3ff63546bf258a2a3b7d826913b2e3060 data\testmod\advancements\recipes\misc\testblock.json
+1f9d4ea3ff63546bf258a2a3b7d826913b2e3060 data\testmod\advancements\recipes\testmod\testblock.json
 486b1c28e1872f2841e9f7f11ac66efb395800c2 data\testmod\advancements\root.json
 584afe0097ffcd23949a055522e22a8194506ff9 data\testmod\loot_tables\blocks\testblock.json
 2e2bc9fedc2380a91b82f1161c30db25016623da data\testmod\loot_tables\entities\testentity.json

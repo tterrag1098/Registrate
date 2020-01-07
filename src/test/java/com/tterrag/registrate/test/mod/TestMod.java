@@ -20,6 +20,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Food;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.tags.BlockTags;
@@ -43,6 +44,18 @@ import net.minecraftforge.registries.ForgeRegistries;
 @Mod("testmod")
 public class TestMod {
     
+    private static class TestItemGroup extends ItemGroup {
+
+        public TestItemGroup() {
+            super("testmod");
+        }
+
+        @Override
+        public ItemStack createIcon() {
+            return new ItemStack(Items.EGG);
+        }
+    }
+    
     private static class TestEntity extends PigEntity {
 
         public TestEntity(EntityType<? extends PigEntity> p_i50250_1_, World p_i50250_2_) {
@@ -51,7 +64,7 @@ public class TestMod {
     }
 
     public TestMod() {
-        Registrate registrate = Registrate.create("testmod").itemGroup(() -> ItemGroup.MISC);
+        Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
         RegistryEntry<Item> testitem = registrate.object("testitem")
                 .item(Item::new)
                     .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))

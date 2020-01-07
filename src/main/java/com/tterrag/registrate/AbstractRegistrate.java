@@ -29,6 +29,7 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.DebugMarkers;
+import com.tterrag.registrate.util.LazyValue;
 import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -119,7 +120,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @Nullable
     private String currentName;
     @Nullable
-    private NonNullSupplier<? extends ItemGroup> currentGroup;
+    private LazyValue<? extends ItemGroup> currentGroup;
     
     /**
      * Construct a new Registrate for the given mod ID.
@@ -295,6 +296,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         datagens.put(type, cons);
     }
     
+    /**
+     * Add a custom translation mapping, prepending this registrate's {@link #getModid() mod id} to the translation key.
+     * 
+     * @param key
+     *            The translation key
+     * @param value
+     *            The (English) translation value
+     * @return A {@link TranslationTextComponent} representing the translated text
+     */
     public TranslationTextComponent addLang(String key, String value) {
         final String prefixedKey = getModid() + "." + key;
         addDataGenerator(ProviderType.LANG, p -> p.add(prefixedKey, value));
@@ -344,17 +354,35 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         this.currentName = name;
         return self();
     }
-    
+
     /**
-     * Set the default item group for all future items created with this Registrate, until the next time this method is called.
+     * Set the default item group for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * entry.
      * 
      * @param group
      *            The group to use for future items
      * @return this {@link AbstractRegistrate}
      */
     public S itemGroup(NonNullSupplier<? extends ItemGroup> group) {
-        this.currentGroup = group;
+        this.currentGroup = new LazyValue<>(group);
         return self();
+    }
+
+    /**
+     * Set the default item group for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * entry.
+     * <p>
+     * Additionally, add a translation for the item group.
+     * 
+     * @param group
+     *            The group to use for future items
+     * @param localizedName
+     *            The english name to use for the item group title
+     * @return this {@link AbstractRegistrate}
+     */
+    public S itemGroup(NonNullSupplier<? extends ItemGroup> group, String localizedName) {
+        this.addDataGenerator(ProviderType.LANG, prov -> prov.add(group.get(), localizedName));
+        return itemGroup(group);
     }
     
     /**
