@@ -27,9 +27,13 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * Provides the most basic functionality, and some utility methods that remove the need to pass the registry class.
  *
  * @param <R>
+ *            Type of the registry for the current object. This is the concrete base class that all registry entries must extend, and the type used for the forge registry itself.
  * @param <T>
+ *            Actual type of the object being built.
  * @param <P>
+ *            Type of the parent object, this is returned from {@link #build()} and {@link #getParent()}.
  * @param <S>
+ *            Self type
  * @see Builder
  */
 @RequiredArgsConstructor

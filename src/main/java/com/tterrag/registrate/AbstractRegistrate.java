@@ -305,6 +305,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * For internal use, calls upon registered data generators to actually create their data.
      * 
      * @param <T>
+     *            The type of the provider
      * @param type
      *            The type of provider to run
      * @param gen
@@ -376,8 +377,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     /**
-     * Apply a transformation to this {@link AbstractRegistrate}. Similar to {@link #transform(NonNullUnaryOperator)}, but for actions that return a builder in-progress. Useful to apply helper methods within a
-     * fluent chain, e.g.
+     * Apply a transformation to this {@link AbstractRegistrate}. Similar to {@link #transform(NonNullUnaryOperator)}, but for actions that return a builder in-progress. Useful to apply helper methods
+     * within a fluent chain, e.g.
      * 
      * <pre>
      * {@code
@@ -389,9 +390,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * </pre>
      * 
      * @param <R>
+     *            Registry type
      * @param <T>
+     *            Entry type
      * @param <P>
-     * @param <S>
+     *            Parent type
+     * @param <S2>
+     *            Self type
      * @param func
      *            The {@link Function function} to apply
      * @return the resultant {@link Builder}
@@ -406,15 +411,18 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Uses the currently set name (via {@link #object(String)}) as the name for the new entry, and passes it to the factory as the first parameter.
      * 
      * @param <R>
+     *            Registry type
      * @param <T>
+     *            Entry type
      * @param <P>
-     * @param <S>
+     *            Parent type
+     * @param <S2>
+     *            Self type
      * @param factory
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
-    @SuppressWarnings("hiding")
-    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(NonNullBiFunction<String, BuilderCallback, S> factory) {
+    public <R extends IForgeRegistryEntry<R>, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 entry(NonNullBiFunction<String, BuilderCallback, S2> factory) {
         return entry(currentName(), callback -> factory.apply(currentName(), callback));
     }
 
@@ -422,17 +430,20 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Create a builder for a new entry. This is typically not needed, unless you are implementing a <a href="https://github.com/tterrag1098/Registrate/wiki/Custom-Builders">custom builder type</a>.
      * 
      * @param <R>
+     *            Registry type
      * @param <T>
+     *            Entry type
      * @param <P>
-     * @param <S>
+     *            Parent type
+     * @param <S2>
+     *            Self type
      * @param name
      *            The name to use for the entry
      * @param factory
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
-    @SuppressWarnings("hiding")
-    public <R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> S entry(String name, NonNullFunction<BuilderCallback, S> factory) {
+    public <R extends IForgeRegistryEntry<R>, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 entry(String name, NonNullFunction<BuilderCallback, S2> factory) {
         return factory.apply(this::accept);
     }
     

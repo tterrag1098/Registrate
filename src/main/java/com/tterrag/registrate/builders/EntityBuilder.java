@@ -84,9 +84,17 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
+     * Create a spawn egg item for this entity using the given colors, not allowing for any extra configuration.
+     * 
      * @deprecated This does not work properly, see <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
      *             <p>
      *             As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
+     * 
+     * @param primaryColor
+     *            The primary color of the egg
+     * @param secondaryColor
+     *            The secondary color of the egg
+     * @return this {@link EntityBuilder}
      */
     @Deprecated
     public EntityBuilder<T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
@@ -94,9 +102,17 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
+     * Create a spawn egg item for this entity using the given colors, and return the builder for further configuration.
+     * 
      * @deprecated This does not work properly, see <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
      *             <p>
      *             As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
+     * 
+     * @param primaryColor
+     *            The primary color of the egg
+     * @param secondaryColor
+     *            The secondary color of the egg
+     * @return the {@link ItemBuilder} for the egg item
      */
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {

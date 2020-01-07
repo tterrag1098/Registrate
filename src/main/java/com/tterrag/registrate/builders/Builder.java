@@ -148,9 +148,13 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * </pre>
      * 
      * @param <R2>
+     *            Registry type
      * @param <T2>
+     *            Entry type
      * @param <P2>
+     *            Parent type
      * @param <S2>
+     *            Self type
      * @param func
      *            The {@link Function function} to apply
      * @return the {@link Builder} returned by the given function

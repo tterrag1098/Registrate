@@ -11,10 +11,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
- * A context bean passed to data generator callbacks. Contains the provider itself, as well as the entry that data is being created for, and some metadata about the entry.
+ * A context bean passed to data generator callbacks. Contains the entry that data is being created for, and some metadata about the entry.
  *
- * @param <T>
- *            Provider type
  * @param <R>
  *            Type of the registry to which the entry belongs
  * @param <E>

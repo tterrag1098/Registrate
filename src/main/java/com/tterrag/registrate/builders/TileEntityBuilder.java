@@ -23,9 +23,7 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
     /**
      * Create a new {@link TileEntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
-     * The block will be assigned the following data:
-     * <ul>
-     * </ul>
+     * The tile entity will be assigned the following data:
      * 
      * @param <T>
      *            The type of the builder

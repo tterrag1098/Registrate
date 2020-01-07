@@ -15,6 +15,12 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
+/**
+ * Wraps a {@link RegistryObject}, providing a cleaner API with null-safe access, and registrate-specific extensions such as {@link #getSibling(Class)}.
+ *
+ * @param <T>
+ *            The type of the entry
+ */
 public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements NonNullSupplier<T> {
 
     @SuppressWarnings("null") // Safe to call with null here and only here
@@ -45,12 +51,22 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         this.delegate = delegate;
     }
 
+    /**
+     * Get the entry, throwing an exception if it is not present for any reason.
+     * 
+     * @return The (non-null) entry
+     */
     @Override
     public @NonnullType T get() {
         RegistryObject<T> delegate = this.delegate;
         return NonNullSupplier.of(this::getUnchecked, () -> delegate == null ? "Registry entry is empty" : "Registry entry not present: " + delegate.getId()).get();
     }
 
+    /**
+     * Get the entry without performing any checks.
+     * 
+     * @return The (nullable) entry
+     */
     public @Nullable T getUnchecked() {
         RegistryObject<T> delegate = this.delegate;
         return delegate == null ? null : delegate.get();

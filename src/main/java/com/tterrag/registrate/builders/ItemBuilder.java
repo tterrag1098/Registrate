@@ -9,7 +9,6 @@ import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
@@ -135,7 +134,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data creation
      * @return this {@link ItemBuilder}
-     * @see #setData(ProviderType, NonNullConsumer)
+     * @see #setData(ProviderType, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
@@ -168,7 +167,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link ItemBuilder}
-     * @see #setData(ProviderType, NonNullConsumer)
+     * @see #setData(ProviderType, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
         return setData(ProviderType.RECIPE, cons);
