@@ -1,7 +1,7 @@
 539ba580bd22c7822c059998a2479aefa78dde61 assets\testmod\blockstates\testblock.json
 209c1eedcb8fbc05ed7146cb3ed3077cb0e2172f assets\testmod\blockstates\testfluid.json
-49f639ea73c88a740cea69e737a1978f9e00ef42 assets\testmod\lang\en_ud.json
-788cd661cbcd05d0ae8899b5338200b546457c8d assets\testmod\lang\en_us.json
+a6115871021469cfb13858ffee0ccc19db1ec7cd assets\testmod\lang\en_ud.json
+ecb8619e9f467056036a9ec8bd9758ce051888d2 assets\testmod\lang\en_us.json
 1d0720fe6815c846066afd8d3e0b9f5238b1d4a1 assets\testmod\models\block\testblock.json
 af7c5f088daaecd9f562a9b4e35d7fe18603d659 assets\testmod\models\block\testfluid.json
 bd8b54414abb50543de09ce62bd38f6a2ca882fd assets\testmod\models\item\testblock.json
@@ -17,5 +17,6 @@ f388aaa8e3ca0f0ae20c8df06d1f2a2295cf1f51 data\minecraft\tags\items\beds.json
 486b1c28e1872f2841e9f7f11ac66efb395800c2 data\testmod\advancements\root.json
 584afe0097ffcd23949a055522e22a8194506ff9 data\testmod\loot_tables\blocks\testblock.json
 2e2bc9fedc2380a91b82f1161c30db25016623da data\testmod\loot_tables\entities\testentity.json
+f0266b86d509baafb030ddb9915394ea06d372cd data\testmod\loot_tables\entities\testitem.json
 a5715702ab3c5d70e72667c431c89d822c50d1b4 data\testmod\recipes\diamond_block_from_testblock.json
 35613f32d620ae3fe5854e279597c0ff452d56f9 data\testmod\recipes\testblock.json

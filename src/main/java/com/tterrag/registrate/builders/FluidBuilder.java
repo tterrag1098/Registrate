@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -320,7 +321,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      */
     public FluidBuilder<T, P> tag(Tag<Fluid> tag) {
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tag);
-        ret.getOwner().setDataGenerator(ret, ProviderType.FLUID_TAGS, prov -> prov.getBuilder(FluidTags.WATER).add(ret.getSource().get()));
+        ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS, prov -> prov.getBuilder(FluidTags.WATER).add(ret.getSource().get()));
         return ret;
     }
     
