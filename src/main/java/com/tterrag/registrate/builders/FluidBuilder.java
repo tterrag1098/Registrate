@@ -320,7 +320,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      */
     public FluidBuilder<T, P> tag(Tag<Fluid> tag) {
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tag);
-        ret.getOwner().setDataGenerator(ret.sourceName, ProviderType.FLUID_TAGS, prov -> prov.getBuilder(FluidTags.WATER).add(ret.getSource().get()));
+        ret.getOwner().setDataGenerator(ret, ProviderType.FLUID_TAGS, prov -> prov.getBuilder(FluidTags.WATER).add(ret.getSource().get()));
         return ret;
     }
     

@@ -72,6 +72,11 @@ public class TestMod {
                     .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                     .register();
         
+        RegistryEntry<EntityType<TestEntity>> testduplicatename = registrate.object("testitem")
+                .entity(TestEntity::new, EntityClassification.CREATURE)
+                .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
+                .register();
+        
         RegistryEntry<Block> testblock = registrate.object("testblock")
                 .block(Block::new)
                     .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),

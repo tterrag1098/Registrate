@@ -46,6 +46,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     @Getter(onMethod = @__({ @Override }))
     private final String name;
     private final BuilderCallback callback;
+    @Getter(onMethod = @__({ @Override }))
     private final Class<? super R> registryType;
 
     /**

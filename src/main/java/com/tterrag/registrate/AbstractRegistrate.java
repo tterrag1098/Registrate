@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -108,7 +109,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
-    private final Table<String, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
+    private final Table<Pair<String, Class<?>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, Consumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
 
     /**
@@ -263,17 +264,39 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Mostly internal, sets the data generator for a certain entry/type combination. This will replace an existing data gen callback if it exists.
      * 
-     * @param <T>
+     * @param <P>
      *            The type of provider
-     * @param entry
-     *            The name of the entry which the provider is for
+     * @param <R>
+     *            The registry type
+     * @param builder
+     *            The builder for the entry
      * @param type
      *            The {@link ProviderType} to generate data for
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <T extends RegistrateProvider> void setDataGenerator(String entry, ProviderType<T> type, NonNullConsumer<? extends T> cons) {
-        Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(entry, type, cons);
+    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> void setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
+        this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryType(), type, cons);
+    }
+
+    /**
+     * Mostly internal, sets the data generator for a certain entry/type combination. This will replace an existing data gen callback if it exists.
+     * 
+     * @param <P>
+     *            The type of provider
+     * @param <R>
+     *            The registry type
+     * @param entry
+     *            The name of the entry which the provider is for
+     * @param registryType
+     *            A {@link Class} representing the registry type of the entry
+     * @param type
+     *            The {@link ProviderType} to generate data for
+     * @param cons
+     *            A callback to be invoked during data generation
+     */
+    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> void setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
+        Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
         if (existing != null) {
             datagens.remove(type, existing);
         }
@@ -325,15 +348,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public <T extends RegistrateProvider> void genData(ProviderType<T> type, T gen) {
         datagens.get(type).forEach(cons -> {
             if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
-                String entry = null;
-                for (Map.Entry<String, Consumer<? extends RegistrateProvider>> e : datagensByEntry.column(type).entrySet()) {
+                Pair<String, Class<?>> entry = null;
+                for (Map.Entry<Pair<String, Class<?>>, Consumer<? extends RegistrateProvider>> e : datagensByEntry.column(type).entrySet()) {
                     if (e.getValue() == cons) {
                         entry = e.getKey();
                         break;
                     }
                 }
                 if (entry != null) {
-                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {}", RegistrateDataProvider.getTypeName(type), entry);
+                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.getLeft(), entry.getRight().getSimpleName());
                 } else {
                     log.debug(DebugMarkers.DATA, "Generating unassociated data of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
                 }

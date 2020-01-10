@@ -65,6 +65,8 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return the name of the current entry
      */
     String getName();
+    
+    Class<? super R> getRegistryType();
 
     /**
      * Allows retrieval of the built entry. Mostly used internally by builder classes.
@@ -97,7 +99,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      */
     @SuppressWarnings("unchecked")
     default <D extends RegistrateProvider> S setData(ProviderType<D> type, Class<? super R> registryType, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
-        getOwner().setDataGenerator(getName(), type, prov -> cons.accept(DataGenContext.from(this, registryType), prov));
+        getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this, registryType), prov));
         return (S) this;
     }
 
