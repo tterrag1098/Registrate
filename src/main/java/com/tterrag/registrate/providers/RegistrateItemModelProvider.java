@@ -1,6 +1,6 @@
 package com.tterrag.registrate.providers;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.data.DataGenerator;
@@ -14,9 +14,9 @@ import net.minecraftforge.fml.LogicalSide;
 
 public class RegistrateItemModelProvider extends ItemModelProvider implements RegistrateProvider {
     
-    private final Registrate parent;
+    private final AbstractRegistrate<?> parent;
 
-    public RegistrateItemModelProvider(Registrate parent, DataGenerator generator, ExistingFileHelper existingFileHelper) {
+    public RegistrateItemModelProvider(AbstractRegistrate<?> parent, DataGenerator generator, ExistingFileHelper existingFileHelper) {
         super(generator, parent.getModid(), existingFileHelper);
         this.parent = parent;
     }

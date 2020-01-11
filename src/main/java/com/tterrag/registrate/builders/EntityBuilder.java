@@ -1,6 +1,6 @@
 package com.tterrag.registrate.builders;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
@@ -42,7 +42,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @param <P>
      *            Parent object type
      * @param owner
-     *            The owning {@link Registrate} object
+     *            The owning {@link AbstractRegistrate} object
      * @param parent
      *            The parent object
      * @param name
@@ -55,7 +55,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The {@link EntityClassification} of the entity
      * @return A new {@link EntityBuilder} with reasonable default data generators.
      */
-    public static <T extends Entity, P> EntityBuilder<T, P> create(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory,
+    public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory,
             EntityClassification classification) {
         return new EntityBuilder<>(owner, parent, name, callback, factory, classification)
                 .defaultLang();
@@ -65,7 +65,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
 
-    protected EntityBuilder(Registrate owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
+    protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
         this.builder = () -> EntityType.Builder.create(factory, classification);
     }
@@ -84,9 +84,17 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
+     * Create a spawn egg item for this entity using the given colors, not allowing for any extra configuration.
+     * 
      * @deprecated This does not work properly, see <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
      *             <p>
      *             As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
+     * 
+     * @param primaryColor
+     *            The primary color of the egg
+     * @param secondaryColor
+     *            The secondary color of the egg
+     * @return this {@link EntityBuilder}
      */
     @Deprecated
     public EntityBuilder<T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
@@ -94,14 +102,22 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
+     * Create a spawn egg item for this entity using the given colors, and return the builder for further configuration.
+     * 
      * @deprecated This does not work properly, see <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
      *             <p>
      *             As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
+     * 
+     * @param primaryColor
+     *            The primary color of the egg
+     * @param secondaryColor
+     *            The secondary color of the egg
+     * @return the {@link ItemBuilder} for the egg item
      */
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
         return getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(get(), primaryColor, secondaryColor, p)).properties(p -> p.group(ItemGroup.MISC))
-                .model(ctx -> ctx.getProvider().withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
     }
 
     /**
@@ -134,7 +150,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @return this {@link EntityBuilder}
      */
     public EntityBuilder<T, P> loot(NonNullBiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
-        return setData(ProviderType.LOOT, ctx -> ctx.getProvider().addLootAction(LootType.ENTITY, prov -> cons.accept(prov, ctx.getEntry())));
+        return setData(ProviderType.LOOT, (ctx, prov) -> prov.addLootAction(LootType.ENTITY, tb -> cons.accept(tb, ctx.getEntry())));
     }
 
     /**

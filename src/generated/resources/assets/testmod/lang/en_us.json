@@ -2,9 +2,11 @@
   "block.testmod.testblock": "Testblock",
   "block.testmod.testfluid": "Testfluid",
   "entity.testmod.testentity": "Testentity",
+  "entity.testmod.testitem": "Testitem",
   "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",
   "item.testmod.testfluid_bucket": "Testfluid Bucket",
   "item.testmod.testitem": "Testitem",
+  "itemGroup.testmod": "Test Mod",
   "testmod.advancement.root.description": "Get an egg.",
   "testmod.advancement.root.title": "Test Advancement",
   "testmod.test.custom.lang": "Test"

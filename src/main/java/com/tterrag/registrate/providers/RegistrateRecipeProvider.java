@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.advancements.criterion.EnterBlockTrigger;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
@@ -23,9 +23,9 @@ import net.minecraftforge.fml.LogicalSide;
 
 public class RegistrateRecipeProvider extends RecipeProvider implements RegistrateProvider, Consumer<IFinishedRecipe> {
     
-    private final Registrate owner;
+    private final AbstractRegistrate<?> owner;
 
-    public RegistrateRecipeProvider(Registrate owner, DataGenerator generatorIn) {
+    public RegistrateRecipeProvider(AbstractRegistrate<?> owner, DataGenerator generatorIn) {
         super(generatorIn);
         this.owner = owner;
     }

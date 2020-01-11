@@ -9,10 +9,10 @@ public interface NullableSupplier<@NullableType T> extends Supplier<T> {
     T get();
 
     default T getNonNull() {
-        return getNonNull("Unexpected null value from supplier");
+        return getNonNull(() -> "Unexpected null value from supplier");
     }
     
-    default T getNonNull(String errorMsg) {
+    default T getNonNull(NonNullSupplier<String> errorMsg) {
         T res = get();
         Objects.requireNonNull(res, errorMsg);
         return res;
@@ -20,5 +20,9 @@ public interface NullableSupplier<@NullableType T> extends Supplier<T> {
     
     default NonNullSupplier<T> asNonNull() {
         return () -> getNonNull();
+    }
+    
+    default NonNullSupplier<T> asNonNull(NonNullSupplier<String> errorMsg) {
+        return () -> getNonNull(errorMsg);
     }
 }

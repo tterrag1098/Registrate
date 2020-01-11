@@ -2,6 +2,7 @@ package com.tterrag.registrate.providers;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,7 +11,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
@@ -33,7 +34,7 @@ public class RegistrateDataProvider implements IDataProvider {
     private final String mod;
     private final Map<ProviderType<?>, RegistrateProvider> subProviders = new LinkedHashMap<>();
 
-    public RegistrateDataProvider(Registrate parent, String modid, GatherDataEvent event) {
+    public RegistrateDataProvider(AbstractRegistrate<?> parent, String modid, GatherDataEvent event) {
         this.mod = modid;
         EnumSet<LogicalSide> sides = EnumSet.noneOf(LogicalSide.class);
         if (event.includeServer()) {
@@ -44,9 +45,11 @@ public class RegistrateDataProvider implements IDataProvider {
         }
         
         log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
+        Map<ProviderType<?>, RegistrateProvider> known = new HashMap<>();
         for (String id : TYPES.keySet()) {
             ProviderType<?> type = TYPES.get(id);
-            RegistrateProvider prov = type.create(parent, event, subProviders);
+            RegistrateProvider prov = type.create(parent, event, known);
+            known.put(type, prov);
             if (sides.contains(prov.getSide())) {
                 log.debug(DebugMarkers.DATA, "Adding provider for type: {}", id);
                 subProviders.put(type, prov);

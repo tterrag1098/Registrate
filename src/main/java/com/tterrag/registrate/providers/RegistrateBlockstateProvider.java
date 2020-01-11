@@ -1,6 +1,6 @@
 package com.tterrag.registrate.providers;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.DoorBlock;
@@ -27,9 +27,9 @@ import net.minecraftforge.fml.LogicalSide;
 
 public class RegistrateBlockstateProvider extends BlockStateProvider implements RegistrateProvider {
 
-    private final Registrate parent;
+    private final AbstractRegistrate<?> parent;
 
-    public RegistrateBlockstateProvider(Registrate parent, DataGenerator gen, ExistingFileHelper exFileHelper) {
+    public RegistrateBlockstateProvider(AbstractRegistrate<?> parent, DataGenerator gen, ExistingFileHelper exFileHelper) {
         super(gen, parent.getModid(), exFileHelper);
         this.parent = parent;
     }

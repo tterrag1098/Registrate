@@ -7,4 +7,8 @@ public interface NonNullBiConsumer<@NonnullType T, @NonnullType U> extends BiCon
     
     @Override
     void accept(T t, U u);
+
+    static <T, U> NonNullBiConsumer<T, U> noop() {
+        return (t, u) -> {};
+    }
 }

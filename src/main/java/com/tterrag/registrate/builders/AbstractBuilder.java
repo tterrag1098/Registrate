@@ -2,14 +2,15 @@ package com.tterrag.registrate.builders;
 
 import java.util.function.Supplier;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.RegistryEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import com.tterrag.registrate.util.nullness.NullableSupplier;
@@ -18,7 +19,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
@@ -27,21 +27,26 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * Provides the most basic functionality, and some utility methods that remove the need to pass the registry class.
  *
  * @param <R>
+ *            Type of the registry for the current object. This is the concrete base class that all registry entries must extend, and the type used for the forge registry itself.
  * @param <T>
+ *            Actual type of the object being built.
  * @param <P>
+ *            Type of the parent object, this is returned from {@link #build()} and {@link #getParent()}.
  * @param <S>
+ *            Self type
  * @see Builder
  */
 @RequiredArgsConstructor
 public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
 
     @Getter(onMethod = @__({ @Override }))
-    private final Registrate owner;
+    private final AbstractRegistrate<?> owner;
     @Getter(onMethod = @__({ @Override }))
     private final P parent;
     @Getter(onMethod = @__({ @Override }))
     private final String name;
     private final BuilderCallback callback;
+    @Getter(onMethod = @__({ @Override }))
     private final Class<? super R> registryType;
 
     /**
@@ -53,7 +58,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     protected abstract @NonnullType T createEntry();
 
     @Override
-    public RegistryObject<T> register() {
+    public RegistryEntry<T> register() {
         return callback.accept(name, registryType, this::createEntry);
     }
 
@@ -61,7 +66,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      * Allows retrieval of the built entry. Mostly used internally by builder classes.
      *
      * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
-     * @see Registrate#get(Class)
+     * @see AbstractRegistrate#get(Class)
      */
     public NullableSupplier<T> get() {
         return get(registryType);
@@ -86,7 +91,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      *            The callback to execute when the provider is run
      * @return this {@link Builder}
      */
-    public <D extends RegistrateProvider> S setData(ProviderType<D> type, NonNullConsumer<DataGenContext<D, R, T>> cons) {
+    public <D extends RegistrateProvider> S setData(ProviderType<D> type, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
         return setData(type, registryType, cons);
     }
 
@@ -116,7 +121,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     }
 
     private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
-        return setData(ProviderType.LANG, ctx -> ctx.getProvider().add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(ctx.getProvider(), ctx::getEntry)));
+        return setData(ProviderType.LANG, (ctx, prov) -> prov.add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(prov, ctx::getEntry)));
     }
 
     /**

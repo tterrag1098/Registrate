@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
@@ -47,11 +47,11 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         protected void addTranslations() {}
     }
     
-    private final Registrate owner;
+    private final AbstractRegistrate<?> owner;
     
     private final AccessibleLanguageProvider upsideDown;
 
-    public RegistrateLangProvider(Registrate owner, DataGenerator gen) {
+    public RegistrateLangProvider(AbstractRegistrate<?> owner, DataGenerator gen) {
         super(gen, owner.getModid(), "en_us");
         this.owner = owner;
         this.upsideDown = new AccessibleLanguageProvider(gen, owner.getModid(), "en_ud");

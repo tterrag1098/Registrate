@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import com.tterrag.registrate.Registrate;
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
 import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
@@ -52,14 +52,14 @@ public interface ProviderType<T extends RegistrateProvider> {
     public static final ProviderType<RegistrateItemModelProvider> ITEM_MODEL = register("item_model", (p, e, existing) -> new RegistrateItemModelProvider(p, e.getGenerator(), ((RegistrateBlockstateProvider)existing.get(BLOCKSTATE)).getExistingFileHelper()));
     public static final ProviderType<RegistrateLangProvider> LANG = register("lang", (p, e) -> new RegistrateLangProvider(p, e.getGenerator()));
 
-    T create(Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing);
+    T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing);
     
     @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullFunction<ProviderType<T>, NonNullBiFunction<Registrate, GatherDataEvent, T>> type) {
+    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullFunction<ProviderType<T>, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T>> type) {
         ProviderType<T> ret = new ProviderType<T>() {
             
             @Override
-            public T create(@Nonnull Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
+            public T create(@Nonnull AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
                 return type.apply(this).apply(parent, event);
             }
         };
@@ -67,11 +67,11 @@ public interface ProviderType<T extends RegistrateProvider> {
     }
     
     @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullBiFunction<Registrate, GatherDataEvent, T> type) {
+    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T> type) {
         ProviderType<T> ret = new ProviderType<T>() {
             
             @Override
-            public T create(Registrate parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
+            public T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
                 return type.apply(parent, event);
             }
         };
