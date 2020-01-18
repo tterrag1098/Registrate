@@ -127,53 +127,6 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         addBiome(biome, getAutomaticName(biome));
     }
     
-    // @formatter:off
-    // GENERATED START
-
-    @Override
-    public void addBlock(Supplier<? extends Block> key, String name) { super.addBlock(key, name); }
-
-    @Override
-    public void add(Block key, String name) { super.add(key, name); }
-
-    @Override
-    public void addItem(Supplier<? extends Item> key, String name) { super.addItem(key, name); }
-
-    @Override
-    public void add(Item key, String name) { super.add(key, name); }
-
-    @Override
-    public void addItemStack(Supplier<ItemStack> key, String name) { super.addItemStack(key, name); }
-
-    @Override
-    public void add(ItemStack key, String name) { super.add(key, name); }
-
-    @Override
-    public void addEnchantment(Supplier<? extends Enchantment> key, String name) { super.addEnchantment(key, name); }
-
-    @Override
-    public void add(Enchantment key, String name) { super.add(key, name); }
-
-    @Override
-    public void addBiome(Supplier<? extends Biome> key, String name) { super.addBiome(key, name); }
-
-    @Override
-    public void add(Biome key, String name) { super.add(key, name); }
-
-    @Override
-    public void addEffect(Supplier<? extends Effect> key, String name) { super.addEffect(key, name); }
-
-    @Override
-    public void add(Effect key, String name) { super.add(key, name); }
-
-    @Override
-    public void addEntityType(Supplier<? extends EntityType<?>> key, String name) { super.addEntityType(key, name); }
-
-    @Override
-    public void add(EntityType<?> key, String name) { super.add(key, name); }
-
-    // GENERATED END
-    
     // Automatic en_ud generation
 
     private static final String NORMAL_CHARS = 

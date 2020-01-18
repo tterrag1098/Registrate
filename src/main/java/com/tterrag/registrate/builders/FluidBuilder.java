@@ -275,7 +275,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
                     FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
                     return p.lightValue(attrs.getLuminosity());
                 })
-                .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.getBuilder(sourceName)
+                .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
     }
     

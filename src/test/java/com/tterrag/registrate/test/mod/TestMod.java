@@ -80,7 +80,7 @@ public class TestMod {
         RegistryEntry<Block> testblock = registrate.object("testblock")
                 .block(Block::new)
                     .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                                    prov.withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
+                                    prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
                     .transform(this::applyDiamondDrop)
                     .recipe((ctx, prov) -> {
                         ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())
