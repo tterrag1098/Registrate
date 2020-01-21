@@ -127,12 +127,14 @@ public class TestMod {
                 .properties(p -> p.canMultiply())
                 .register();
         
-        registrate.addLang("test.custom.lang", "Test");
+        registrate.addRawLang("testmod.custom.lang", "Test");
+        registrate.addLang("tooltip", testblock.getId(), "Egg.");
+        registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
         registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
             Advancement.Builder.builder()
                 .withCriterion("has_egg", InventoryChangeTrigger.Instance.forItems(Items.EGG))
                 .withDisplay(Items.EGG,
-                        adv.title("root", "Test Advancement"), adv.desc("root", "Get an egg."), 
+                        adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."), 
                         new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
                 .register(adv, registrate.getModid() + ":root");
         });

@@ -2,10 +2,13 @@ package com.tterrag.registrate.providers;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.google.common.collect.Sets;
+import javax.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -37,26 +40,35 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
         return LogicalSide.SERVER;
     }
     
-    public TranslationTextComponent title(String name, String title) {
-        return owner.addLang("advancement." + name + ".title", title);
+    public TranslationTextComponent title(String category, String name, String title) {
+        return owner.addLang("advancements", new ResourceLocation(category, name), "title", title);
     }
     
-    public TranslationTextComponent desc(String name, String desc) {
-        return owner.addLang("advancement." + name + ".description", desc);
+    public TranslationTextComponent desc(String category, String name, String desc) {
+        return owner.addLang("advancements", new ResourceLocation(category, name), "description", desc);
     }
     
-    private DirectoryCache cache;
-    private Set<ResourceLocation> seenAdvancements = Sets.newHashSet();
+    private @Nullable DirectoryCache cache;
+    private Set<ResourceLocation> seenAdvancements = new HashSet<>();
 
     @Override
     public void act(DirectoryCache cache) throws IOException {
-        this.cache = cache;
-        this.seenAdvancements.clear();
-        owner.genData(ProviderType.ADVANCEMENT, this);
+        try {
+            this.cache = cache;
+            this.seenAdvancements.clear();
+            owner.genData(ProviderType.ADVANCEMENT, this);
+        } finally {
+            this.cache = null;
+        }
     }
     
     @Override
-    public void accept(Advancement t) {
+    public void accept(@Nullable Advancement t) {
+        DirectoryCache cache = this.cache;
+        if (cache == null) {
+            throw new IllegalStateException("Cannot accept advancements outside of act");
+        }
+        Objects.requireNonNull(t, "Cannot accept a null advancement");
         Path path = this.generator.getOutputFolder();
         if (!seenAdvancements.add(t.getId())) {
             throw new IllegalStateException("Duplicate advancement " + t.getId());
