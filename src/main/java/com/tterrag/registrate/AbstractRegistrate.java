@@ -346,7 +346,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     /**
-     * Add a custom translation mapping using the vanilla style of ResourceLocation -> translation key conversion.
+     * Add a custom translation mapping using the vanilla style of ResourceLocation -&gt; translation key conversion.
      * 
      * @param type
      *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
@@ -361,7 +361,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     /**
-     * Add a custom translation mapping using the vanilla style of ResourceLocation -> translation key conversion. Also appends a suffix to the key.
+     * Add a custom translation mapping using the vanilla style of ResourceLocation -&gt; translation key conversion. Also appends a suffix to the key.
      * 
      * @param type
      *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
