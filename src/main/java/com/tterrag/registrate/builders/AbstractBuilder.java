@@ -1,19 +1,13 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Supplier;
-
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
-import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
-import com.tterrag.registrate.util.nullness.NullableSupplier;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -61,38 +55,9 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     public RegistryEntry<T> register() {
         return callback.accept(name, registryType, this::createEntry);
     }
-
-    /**
-     * Allows retrieval of the built entry. Mostly used internally by builder classes.
-     *
-     * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
-     * @see AbstractRegistrate#get(Class)
-     */
-    public NullableSupplier<T> get() {
-        return get(registryType);
-    }
     
     protected BuilderCallback getCallback() {
         return callback;
-    }
-
-    /**
-     * Add a data provider callback for this entry, which will be invoked when the provider of the given type executes.
-     * <p>
-     * The consumer accepts a {@link DataGenContext} which contains the current data provider instance, the built object, and other utilities for creating data.
-     * <p>
-     * This is mostly unneeded, and instead helper methods for specific data types should be used when possible.
-     * 
-     * @param <D>
-     *            The type of provider
-     * @param type
-     *            The {@link ProviderType} for the desired provider
-     * @param cons
-     *            The callback to execute when the provider is run
-     * @return this {@link Builder}
-     */
-    public <D extends RegistrateProvider> S setData(ProviderType<D> type, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
-        return setData(type, registryType, cons);
     }
 
     /**
@@ -134,6 +99,6 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      * @return this {@link Builder}
      */
     public S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R> tag) {
-        return tag(type, registryType, tag);
+        return tag(type, tag);
     }
 }
