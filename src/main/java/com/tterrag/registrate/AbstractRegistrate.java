@@ -279,8 +279,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> void setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
-        this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryType(), type, cons);
+    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
+        return this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryType(), type, cons);
     }
 
     /**
@@ -299,12 +299,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> void setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
+    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
         Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
         if (existing != null) {
             datagens.remove(type, existing);
         }
-        addDataGenerator(type, cons);
+        return addDataGenerator(type, cons);
     }
     
     /**
@@ -319,8 +319,9 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <T extends RegistrateProvider> void addDataGenerator(ProviderType<T> type, Consumer<? extends T> cons) {
+    public <T extends RegistrateProvider> S addDataGenerator(ProviderType<T> type, Consumer<? extends T> cons) {
         datagens.put(type, cons);
+        return self();
     }
     
     private final LazyValue<List<Pair<String, String>>> extraLang = new LazyValue<>(() -> {
