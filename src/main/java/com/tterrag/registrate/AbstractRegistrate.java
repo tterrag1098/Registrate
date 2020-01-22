@@ -323,8 +323,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         datagens.put(type, cons);
     }
     
-    private final LazyValue<List<Pair<@NonnullType String, @NonnullType String>>> extraLang = new LazyValue<>(() -> {
-        final List<Pair<@NonnullType String, @NonnullType String>> ret = new ArrayList<>();
+    private final LazyValue<List<Pair<String, String>>> extraLang = new LazyValue<>(() -> {
+        final List<Pair<String, String>> ret = new ArrayList<>();
         addDataGenerator(ProviderType.LANG, prov -> ret.forEach(p -> prov.add(p.getKey(), p.getValue())));
         return ret;
     });
