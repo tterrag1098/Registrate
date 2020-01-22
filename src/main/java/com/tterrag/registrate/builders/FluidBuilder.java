@@ -268,7 +268,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
     public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, Block.Properties, ? extends B> factory) {
-        return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(get().asNonNull(), p))
+        return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(this, p))
                 .properties(p -> Block.Properties.from(Blocks.WATER).noDrops())
                 .properties(p -> {
                     // TODO is this ok?
@@ -332,7 +332,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private ForgeFlowingFluid.Properties makeProperties() {
         FluidAttributes.Builder attributes = this.attributes.get();
         attributesCallback.accept(attributes);
-        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(getSource(), get(), attributes);
+        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(getSource(), this, attributes);
         properties.accept(ret);
         return ret;
     }

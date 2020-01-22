@@ -3,7 +3,6 @@ package com.tterrag.registrate.builders;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
-import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -11,7 +10,6 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -87,18 +85,5 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
 
     private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
         return setData(ProviderType.LANG, (ctx, prov) -> prov.add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(prov, ctx::getEntry)));
-    }
-
-    /**
-     * Tag this entry with a tag of the correct type.
-     * 
-     * @param type
-     *            The provider type (which must be a tag provider)
-     * @param tag
-     *            The tag to use
-     * @return this {@link Builder}
-     */
-    public S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R> tag) {
-        return tag(type, tag);
     }
 }

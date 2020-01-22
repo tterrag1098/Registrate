@@ -172,9 +172,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get().getNonNull(() -> "Entry not registered"), p))
+        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
-                .model((ctx, prov) -> prov.blockItem(get().asNonNull()));
+                .model((ctx, prov) -> prov.blockItem(this));
     }
 
     /**
@@ -187,7 +187,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(NonNullSupplier<? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(get().asNonNull()).build();
+        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this).build();
     }
 
     /**

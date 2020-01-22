@@ -13,8 +13,8 @@ import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
-import com.tterrag.registrate.util.nullness.NullableSupplier;
 
 import net.minecraft.tags.Tag;
 import net.minecraftforge.fml.RegistryObject;
@@ -35,7 +35,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * @param <S>
  *            Self type
  */
-public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> {
+public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<T> {
 
     /**
      * Complete the current entry, and return the {@link RegistryEntry} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
@@ -74,8 +74,9 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
      * @see AbstractRegistrate#get(Class)
      */
-    default NullableSupplier<T> get() {
-        return () -> getOwner().<R, T> get(getName(), getRegistryType()).get();
+    @Override
+    default T get() {
+        return getOwner().<R, T>get(getName(), getRegistryType()).get();
     }
 
     /**
@@ -128,7 +129,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this {@link Builder}
      */
     default S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R> tag) {
-        return setData(type, (ctx, prov) -> prov.getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get().get(), "Object not registered")));
+        return setData(type, (ctx, prov) -> prov.getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get(), "Object not registered")));
     }
 
     /**
