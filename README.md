@@ -43,7 +43,7 @@ public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.object(
 
 This customized version will create a BlockItem (with its own default model and lang entry), add the block to a tag, configure the blockstate for stair properties, and add a custom localization.
 
-To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/javadoc/). For more advanced usage, read the [wiki](https://github.com/tterrag1098/Registrate/wiki) (WIP).
+To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/job/1.14/javadoc/). For more advanced usage, read the [wiki](https://github.com/tterrag1098/Registrate/wiki) (WIP).
 
 ## Project Setup
 
