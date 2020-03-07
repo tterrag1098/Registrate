@@ -39,7 +39,6 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.Getter;
 import lombok.Value;
@@ -324,7 +323,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
     
-    private final LazyValue<List<Pair<String, String>>> extraLang = new LazyValue<>(() -> {
+    private final NonNullLazyValue<List<Pair<String, String>>> extraLang = new NonNullLazyValue<>(() -> {
         final List<Pair<String, String>> ret = new ArrayList<>();
         addDataGenerator(ProviderType.LANG, prov -> ret.forEach(p -> prov.add(p.getKey(), p.getValue())));
         return ret;
