@@ -119,10 +119,13 @@ delombok {
     ]
 }
 
-jar.manifest {
-    attributes(
-        'FMLModType': 'LIBRARY'
-    )
+jar {
+    exclude('assets/**', 'data/**', '.cache/**') // Exclude generated assets, can't find a better way to do this :(
+    manifest {
+        attributes(
+            'FMLModType': 'LIBRARY'
+        )
+    }
 }
 
 task sourceJar(type: Jar, dependsOn: classes) {

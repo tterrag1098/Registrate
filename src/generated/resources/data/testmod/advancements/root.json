@@ -4,10 +4,10 @@
       "item": "minecraft:egg"
     },
     "title": {
-      "translate": "testmod.advancement.root.title"
+      "translate": "advancements.testmod.root.title"
     },
     "description": {
-      "translate": "testmod.advancement.root.description"
+      "translate": "advancements.testmod.root.description"
     },
     "frame": "task",
     "show_toast": true,

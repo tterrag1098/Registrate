@@ -1,6 +1,8 @@
 package com.tterrag.registrate;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -37,6 +39,7 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.Getter;
 import lombok.Value;
@@ -51,6 +54,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -275,8 +279,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> void setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
-        this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryType(), type, cons);
+    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
+        return this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryType(), type, cons);
     }
 
     /**
@@ -295,12 +299,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> void setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
+    public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
         Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
         if (existing != null) {
             datagens.remove(type, existing);
         }
-        addDataGenerator(type, cons);
+        return addDataGenerator(type, cons);
     }
     
     /**
@@ -315,9 +319,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <T extends RegistrateProvider> void addDataGenerator(ProviderType<T> type, Consumer<? extends T> cons) {
+    public <T extends RegistrateProvider> S addDataGenerator(ProviderType<T> type, Consumer<? extends T> cons) {
         datagens.put(type, cons);
+        return self();
     }
+    
+    private final LazyValue<List<Pair<String, String>>> extraLang = new LazyValue<>(() -> {
+        final List<Pair<String, String>> ret = new ArrayList<>();
+        addDataGenerator(ProviderType.LANG, prov -> ret.forEach(p -> prov.add(p.getKey(), p.getValue())));
+        return ret;
+    });
     
     /**
      * Add a custom translation mapping, prepending this registrate's {@link #getModid() mod id} to the translation key.
@@ -328,10 +339,57 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The (English) translation value
      * @return A {@link TranslationTextComponent} representing the translated text
      */
+    @Deprecated
     public TranslationTextComponent addLang(String key, String value) {
         final String prefixedKey = getModid() + "." + key;
         addDataGenerator(ProviderType.LANG, p -> p.add(prefixedKey, value));
         return new TranslationTextComponent(prefixedKey);
+    }
+    
+    /**
+     * Add a custom translation mapping using the vanilla style of ResourceLocation -&gt; translation key conversion.
+     * 
+     * @param type
+     *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
+     * @param id
+     *            ID of the object, which will be converted to a lang key via {@link Util#makeTranslationKey(String, ResourceLocation)}
+     * @param localizedName
+     *            (English) translation value
+     * @return A {@link TranslationTextComponent} representing the translated text
+     */
+    public TranslationTextComponent addLang(String type, ResourceLocation id, String localizedName) {
+        return addRawLang(Util.makeTranslationKey(type, id), localizedName);
+    }
+    
+    /**
+     * Add a custom translation mapping using the vanilla style of ResourceLocation -&gt; translation key conversion. Also appends a suffix to the key.
+     * 
+     * @param type
+     *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
+     * @param id
+     *            ID of the object, which will be converted to a lang key via {@link Util#makeTranslationKey(String, ResourceLocation)}
+     * @param suffix
+     *            A suffix which will be appended to the generated key (separated by a dot)
+     * @param localizedName
+     *            (English) translation value
+     * @return A {@link TranslationTextComponent} representing the translated text
+     */
+    public TranslationTextComponent addLang(String type, ResourceLocation id, String suffix, String localizedName) {
+        return addRawLang(Util.makeTranslationKey(type, id) + "." + suffix, localizedName);
+    }
+
+    /**
+     * Add a custom translation mapping directly to the lang provider.
+     * 
+     * @param key
+     *            The translation key
+     * @param value
+     *            The (English) translation value
+     * @return A {@link TranslationTextComponent} representing the translated text
+     */
+    public TranslationTextComponent addRawLang(String key, String value) {
+        extraLang.get().add(Pair.of(key, value));
+        return new TranslationTextComponent(key);
     }
     
     /**

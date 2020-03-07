@@ -13,8 +13,8 @@ import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
-import com.tterrag.registrate.util.nullness.NullableSupplier;
 
 import net.minecraft.tags.Tag;
 import net.minecraftforge.fml.RegistryObject;
@@ -35,7 +35,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * @param <S>
  *            Self type
  */
-public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> {
+public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<T> {
 
     /**
      * Complete the current entry, and return the {@link RegistryEntry} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
@@ -71,13 +71,12 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     /**
      * Allows retrieval of the built entry. Mostly used internally by builder classes.
      *
-     * @param registryType
-     *            a {@link Class} representing the type of the registry for this builder
      * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
      * @see AbstractRegistrate#get(Class)
      */
-    default NullableSupplier<T> get(Class<? super R> registryType) {
-        return () -> getOwner().<R, T> get(getName(), registryType).get();
+    @Override
+    default T get() {
+        return getOwner().<R, T>get(getName(), getRegistryType()).get();
     }
 
     /**
@@ -91,15 +90,13 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      *            The type of provider
      * @param type
      *            The {@link ProviderType} for the desired provider
-     * @param registryType
-     *            A {@link Class} representing the type of the registry for this builder
      * @param cons
      *            The callback to execute when the provider is run
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S setData(ProviderType<D> type, Class<? super R> registryType, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
-        getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this, registryType), prov));
+    default <D extends RegistrateProvider> S setData(ProviderType<D> type, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
+        getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this, getRegistryType()), prov));
         return (S) this;
     }
 
@@ -127,14 +124,12 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * 
      * @param type
      *            The provider type (which must be a tag provider)
-     * @param registryType
-     *            A {@link Class} representing the type of the registry for this builder
      * @param tag
      *            The tag to use
      * @return this {@link Builder}
      */
-    default S tag(ProviderType<RegistrateTagsProvider<R>> type, Class<? super R> registryType, Tag<R> tag) {
-        return setData(type, registryType, (ctx, prov) -> prov.getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get(registryType).get(), "Object not registered")));
+    default S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R> tag) {
+        return setData(type, (ctx, prov) -> prov.getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get(), "Object not registered")));
     }
 
     /**

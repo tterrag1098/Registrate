@@ -116,7 +116,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      */
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
-        return getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(get(), primaryColor, secondaryColor, p)).properties(p -> p.group(ItemGroup.MISC))
+        return getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(this, primaryColor, secondaryColor, p)).properties(p -> p.group(ItemGroup.MISC))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
     }
 
