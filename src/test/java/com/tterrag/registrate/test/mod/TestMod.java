@@ -11,6 +11,7 @@ import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.data.CookingRecipeBuilder;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.entity.EntityClassification;
@@ -79,8 +80,10 @@ public class TestMod {
         
         RegistryEntry<Block> testblock = registrate.object("testblock")
                 .block(Block::new)
+                    .properties(p -> p.func_226896_b_())
+                    .addLayer(() -> RenderType::func_228643_e_)
                     .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                                    prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
+                                    prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass"))))
                     .transform(this::applyDiamondDrop)
                     .recipe((ctx, prov) -> {
                         ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())

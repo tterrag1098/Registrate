@@ -1,7 +1,14 @@
 package com.tterrag.registrate.builders;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import javax.annotation.Nonnull;
 
+import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -20,12 +27,16 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.storage.loot.LootTables;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -75,6 +86,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullSupplier<Block.Properties> initialProperties;
     private NonNullFunction<Block.Properties, Block.Properties> propertiesCallback = NonNullUnaryOperator.identity();
+    private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
 
     protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory, NonNullSupplier<Block.Properties> initialProperties) {
         super(owner, parent, name, callback, Block.class);
@@ -134,6 +146,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
         initialProperties = () -> Block.Properties.from(block.get());
+        return this;
+    }
+
+    public BlockBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            Preconditions.checkArgument(RenderType.func_228661_n_().contains(layer.get().get()), "Invalid block layer: " + layer);
+        });
+        this.renderLayers.add(layer);
         return this;
     }
 
@@ -289,5 +309,21 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         @Nonnull Block.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
+    }
+
+    @Override
+    public void postRegister(T entry) {
+        super.postRegister(entry);
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            if (renderLayers.size() == 1) {
+                final RenderType layer = renderLayers.get(0).get().get();
+                RenderTypeLookup.setRenderLayer(entry, layer);
+            } else if (renderLayers.size() > 1) {
+                final Set<RenderType> layers = renderLayers.stream()
+                        .map(s -> s.get().get())
+                        .collect(Collectors.toSet());
+                RenderTypeLookup.setRenderLayer(entry, layers::contains);
+            }
+        });
     }
 }
