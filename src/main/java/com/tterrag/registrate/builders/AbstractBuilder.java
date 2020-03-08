@@ -51,7 +51,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
 
     @Override
     public RegistryEntry<T> register() {
-        return callback.accept(name, registryType, this::createEntry);
+        return callback.accept(name, registryType, this, this::createEntry);
     }
     
     protected BuilderCallback getCallback() {

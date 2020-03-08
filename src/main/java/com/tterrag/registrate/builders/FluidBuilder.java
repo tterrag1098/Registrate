@@ -347,11 +347,12 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * <p>
      * Additionally registers the source fluid.
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public RegistryEntry<T> register() {
         NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, Fluid.class, source);
+            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source);
         }
         return super.register();
     }
