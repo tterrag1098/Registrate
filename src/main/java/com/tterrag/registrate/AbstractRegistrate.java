@@ -97,18 +97,22 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private class Registration<R extends IForgeRegistryEntry<R>, T extends R> {
         ResourceLocation name;
         Class<? super R> type;
+        Builder<R, T, ?, ?> builder;
         Supplier<? extends T> creator;        
         RegistryEntry<T> delegate;
         
-        Registration(ResourceLocation name, Class<? super R> type, Supplier<? extends T> creator) {
+        Registration(ResourceLocation name, Class<? super R> type, Builder<R, T, ?, ?> builder, Supplier<? extends T> creator) {
             this.name = name;
             this.type = type;
+            this.builder = builder;
             this.creator =  creator;
             this.delegate = new RegistryEntry<>(AbstractRegistrate.this, RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
         }
         
         void register(IForgeRegistry<R> registry) {
-            registry.register(creator.get().setRegistryName(name));
+            T entry = creator.get();
+            registry.register(entry.setRegistryName(name));
+            builder.postRegister(entry);
         }
     }
     
@@ -556,8 +560,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return factory.apply(this::accept);
     }
     
-    private <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, NonNullSupplier<? extends T> creator) {
-        Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, creator);
+    private <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator) {
+        Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, builder, creator);
         log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.getName());
         registrations.put(name, type, reg);
         return reg.getDelegate();

@@ -171,4 +171,6 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
         register(); // Ignore return value
         return getParent();
     }
+
+    default void postRegister(T entry) {}
 }

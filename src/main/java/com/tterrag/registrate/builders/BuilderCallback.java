@@ -29,6 +29,6 @@ public interface BuilderCallback {
      *            A {@link Supplier} that will create the entry
      * @return A {@link RegistryEntry} that will supply the registered entry
      */
-    <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, NonNullSupplier<? extends T> factory);
+    <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory);
 
 }
