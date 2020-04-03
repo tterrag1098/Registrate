@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -16,6 +17,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.message.Message;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
@@ -39,6 +41,7 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.Getter;
 import lombok.Value;
@@ -62,6 +65,7 @@ import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
@@ -118,7 +122,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
     private final Table<Pair<String, Class<?>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
-    private final ListMultimap<ProviderType<?>, Consumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
+    private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
 
     /**
      * @return The mod ID that this {@link AbstractRegistrate} is creating objects for
@@ -130,6 +134,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private String currentName;
     @Nullable
     private NonNullLazyValue<? extends ItemGroup> currentGroup;
+    private boolean skipErrors;
     
     /**
      * Construct a new Registrate for the given mod ID.
@@ -157,15 +162,24 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     protected void onRegister(RegistryEvent.Register<?> event) {
         Class<?> type = event.getRegistry().getRegistrySuperType();
         if (type == null) {
-            log.debug("Skipping unknown builder class " + event.getRegistry().getRegistrySuperType());
+            log.debug(DebugMarkers.REGISTER, "Skipping invalid registry with no supertype: " + event.getRegistry().getRegistryName());
             return;
         }
         Map<String, Registration<?, ?>> registrationsForType = registrations.column(type);
         if (registrationsForType.size() > 0) {
             log.debug(DebugMarkers.REGISTER, "Registering {} known objects of type {}", registrationsForType.size(), type.getName());
             for (Entry<String, Registration<?, ?>> e : registrationsForType.entrySet()) {
-                e.getValue().register((IForgeRegistry) event.getRegistry());
-                log.debug(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistry().getRegistryName());
+                try {
+                    e.getValue().register((IForgeRegistry) event.getRegistry());
+                    log.debug(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistry().getRegistryName());
+                } catch (Exception ex) {
+                    String err = "Unexpected error while registering entry " + e.getValue().getName() + " to registry " + event.getRegistry().getRegistryName();
+                    if (skipErrors) {
+                        log.error(DebugMarkers.REGISTER, err);
+                    } else {
+                        throw new RuntimeException(err, ex);
+                    }
+                }
             }
         }
     }
@@ -323,7 +337,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param cons
      *            A callback to be invoked during data generation
      */
-    public <T extends RegistrateProvider> S addDataGenerator(ProviderType<T> type, Consumer<? extends T> cons) {
+    public <T extends RegistrateProvider> S addDataGenerator(ProviderType<T> type, NonNullConsumer<? extends T> cons) {
         datagens.put(type, cons);
         return self();
     }
@@ -396,6 +410,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return new TranslationTextComponent(key);
     }
     
+    @SuppressWarnings("null")
+    private Optional<Pair<String, Class<?>>> getEntryForGenerator(ProviderType<?> type, NonNullConsumer<? extends RegistrateProvider> generator) {
+        for (Map.Entry<Pair<String, Class<?>>, Consumer<? extends RegistrateProvider>> e : datagensByEntry.column(type).entrySet()) {
+            if (e.getValue() == generator) {
+                return Optional.of(e.getKey());
+            }
+        }
+        return Optional.empty();
+    }
+    
     /**
      * For internal use, calls upon registered data generators to actually create their data.
      * 
@@ -409,22 +433,52 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @SuppressWarnings("unchecked")
     public <T extends RegistrateProvider> void genData(ProviderType<T> type, T gen) {
         datagens.get(type).forEach(cons -> {
+            Optional<Pair<String, Class<?>>> entry = null;
             if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
-                Pair<String, Class<?>> entry = null;
-                for (Map.Entry<Pair<String, Class<?>>, Consumer<? extends RegistrateProvider>> e : datagensByEntry.column(type).entrySet()) {
-                    if (e.getValue() == cons) {
-                        entry = e.getKey();
-                        break;
-                    }
-                }
-                if (entry != null) {
-                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.getLeft(), entry.getRight().getSimpleName());
+                entry = getEntryForGenerator(type, cons);
+                if (entry.isPresent()) {
+                    log.debug(DebugMarkers.DATA, "Generating data of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().getSimpleName());
                 } else {
                     log.debug(DebugMarkers.DATA, "Generating unassociated data of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
                 }
             }
-            ((Consumer<T>)cons).accept(gen);
+            try {
+                ((Consumer<T>) cons).accept(gen);
+            } catch (Exception e) {
+                if (entry == null) {
+                    entry = getEntryForGenerator(type, cons);
+                }
+                Message err;
+                if (entry.isPresent()) {
+                    err = log.getMessageFactory().newMessage("Unexpected error while running data generator of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().getSimpleName());
+                } else {
+                    err = log.getMessageFactory().newMessage("Unexpected error while running unassociated data generator of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
+                }
+                if (skipErrors) {
+                    log.error(err);
+                } else {
+                    throw new RuntimeException(err.getFormattedMessage(), e);
+                }
+            }
         });
+    }
+
+    /**
+     * Enable skipping of registry entries and data generators that error during registration/generation.
+     * <p>
+     * <strong>Should only be used for debugging!</strong> {@code skipErrors(true)} will do nothing outside of a dev environment.
+     * 
+     * @param skipErrors
+     *            {@code true} to skip errors during registration/generation
+     * @return this {@link AbstractRegistrate}
+     */
+    public S skipErrors(boolean skipErrors) {
+        if (skipErrors && !FMLEnvironment.naming.equals("mcp")) {
+            log.error("Ignoring skipErrors(true) as this is not a development environment!");
+        } else {
+            this.skipErrors = skipErrors;
+        }
+        return self();
     }
     
     /**
