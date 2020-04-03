@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.message.Message;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
@@ -447,10 +448,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
                 if (entry == null) {
                     entry = getEntryForGenerator(type, cons);
                 }
+                Message err;
                 if (entry.isPresent()) {
-                    log.error(DebugMarkers.DATA, "Unexpected error while running data generator of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().getSimpleName());
+                    err = log.getMessageFactory().newMessage("Unexpected error while running data generator of type {} for entry {} [{}]", RegistrateDataProvider.getTypeName(type), entry.get().getLeft(), entry.get().getRight().getSimpleName());
                 } else {
-                    log.debug(DebugMarkers.DATA, "Unexpected error while running unassociated data generator of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
+                    err = log.getMessageFactory().newMessage("Unexpected error while running unassociated data generator of type {} ({})", RegistrateDataProvider.getTypeName(type), type);
+                }
+                if (skipErrors) {
+                    log.error(err);
+                } else {
+                    throw new RuntimeException(err.getFormattedMessage(), e);
                 }
             }
         });
