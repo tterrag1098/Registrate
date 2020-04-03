@@ -37,6 +37,8 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         T get();
 
         RegistryObject<T> filter(Predicate<? super T> predicate);
+        
+        public void updateReference(IForgeRegistry<? extends T> registry);
     }
 
     private final AbstractRegistrate<?> owner;
@@ -49,6 +51,18 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
             throw new NullPointerException("Delegate must not be null");
         this.owner = owner;
         this.delegate = delegate;
+    }
+
+    /**
+     * Update the underlying entry manually from the given registry.
+     * 
+     * @param registry
+     *            The registry to pull the entry from.
+     */
+    @SuppressWarnings("unchecked")
+    public void updateReference(IForgeRegistry<? super T> registry) {
+        RegistryObject<T> delegate = this.delegate;
+        Objects.requireNonNull(delegate, "Registry entry is empty").updateReference((IForgeRegistry<? extends T>) registry);
     }
 
     /**

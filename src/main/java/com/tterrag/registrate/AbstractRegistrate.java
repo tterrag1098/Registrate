@@ -112,6 +112,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         void register(IForgeRegistry<R> registry) {
             T entry = creator.get();
             registry.register(entry.setRegistryName(name));
+            delegate.updateReference(registry);
             builder.postRegister(entry);
         }
     }
