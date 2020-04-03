@@ -69,7 +69,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
      */
     public @Nullable T getUnchecked() {
         RegistryObject<T> delegate = this.delegate;
-        return delegate == null ? null : delegate.get();
+        return delegate == null ? null : delegate.orElse(null);
     }
     
     @SuppressWarnings("unchecked")
