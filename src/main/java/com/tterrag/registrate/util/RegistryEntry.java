@@ -37,6 +37,8 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         T get();
 
         RegistryObject<T> filter(Predicate<? super T> predicate);
+        
+        public void updateReference(IForgeRegistry<? extends T> registry);
     }
 
     private final AbstractRegistrate<?> owner;
@@ -52,6 +54,18 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     }
 
     /**
+     * Update the underlying entry manually from the given registry.
+     * 
+     * @param registry
+     *            The registry to pull the entry from.
+     */
+    @SuppressWarnings("unchecked")
+    public void updateReference(IForgeRegistry<? super T> registry) {
+        RegistryObject<T> delegate = this.delegate;
+        Objects.requireNonNull(delegate, "Registry entry is empty").updateReference((IForgeRegistry<? extends T>) registry);
+    }
+
+    /**
      * Get the entry, throwing an exception if it is not present for any reason.
      * 
      * @return The (non-null) entry
@@ -59,7 +73,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     @Override
     public @NonnullType T get() {
         RegistryObject<T> delegate = this.delegate;
-        return NonNullSupplier.of(this::getUnchecked, () -> delegate == null ? "Registry entry is empty" : "Registry entry not present: " + delegate.getId()).get();
+        return Objects.requireNonNull(getUnchecked(), () -> delegate == null ? "Registry entry is empty" : "Registry entry not present: " + delegate.getId());
     }
 
     /**
