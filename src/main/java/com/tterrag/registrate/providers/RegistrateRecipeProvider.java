@@ -14,6 +14,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraft.advancements.criterion.EnterBlockTrigger;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.block.Block;
 import net.minecraft.data.CookingRecipeBuilder;
 import net.minecraft.data.DataGenerator;
@@ -216,7 +217,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
         ShapedRecipeBuilder.shapedRecipe(output.get())
             .patternLine("XXX").patternLine("XXX").patternLine("XXX")
             .key('X', input.get())
-            .addCriterion("has_at_least_9_" + safeName(input.get()), this.hasItem(MinMaxBounds.IntBound.atLeast(9), input.get()))
+            .addCriterion("has_" + safeName(input.get()), this.hasItem(input.get()))
             .build(consumer, safeId(output.get()));
         
         singleItemUnfinished(input, output, 1, 9)
