@@ -59,7 +59,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     @Override
     public @NonnullType T get() {
         RegistryObject<T> delegate = this.delegate;
-        return NonNullSupplier.of(this::getUnchecked, () -> delegate == null ? "Registry entry is empty" : "Registry entry not present: " + delegate.getId()).get();
+        return Objects.requireNonNull(getUnchecked(), () -> delegate == null ? "Registry entry is empty" : "Registry entry not present: " + delegate.getId());
     }
 
     /**
