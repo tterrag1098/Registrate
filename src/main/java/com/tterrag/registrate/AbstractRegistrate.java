@@ -162,7 +162,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     protected void onRegister(RegistryEvent.Register<?> event) {
         Class<?> type = event.getRegistry().getRegistrySuperType();
         if (type == null) {
-            log.debug("Skipping unknown builder class " + event.getRegistry().getRegistrySuperType());
+            log.debug(DebugMarkers.REGISTER, "Skipping invalid registry with no supertype: " + event.getRegistry().getRegistryName());
             return;
         }
         Map<String, Registration<?, ?>> registrationsForType = registrations.column(type);
