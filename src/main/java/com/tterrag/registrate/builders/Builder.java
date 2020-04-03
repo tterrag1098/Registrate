@@ -1,7 +1,6 @@
 package com.tterrag.registrate.builders;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -12,6 +11,7 @@ import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -114,7 +114,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S addMiscData(ProviderType<D> type, Consumer<? extends D> cons) {
+    default <D extends RegistrateProvider> S addMiscData(ProviderType<D> type, NonNullConsumer<? extends D> cons) {
         getOwner().addDataGenerator(type, cons);
         return (S) this;
     }
