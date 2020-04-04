@@ -74,7 +74,7 @@ public final class DataIngredient extends Ingredient {
 
     @Override
     public IIngredientSerializer<DataIngredient> getSerializer() {
-        throw new UnsupportedOperationException("NamedIngredient should only be used for data generation!");
+        throw new UnsupportedOperationException("DataIngredient should only be used for data generation!");
     }
     
     public InventoryChangeTrigger.Instance getCritereon(RegistrateRecipeProvider prov) {
