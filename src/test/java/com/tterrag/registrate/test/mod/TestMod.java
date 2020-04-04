@@ -3,6 +3,7 @@ package com.tterrag.registrate.test.mod;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
@@ -89,6 +90,8 @@ public class TestMod {
                                 .key('E', Items.EGG)
                                 .addCriterion("has_egg", prov.hasItem(Items.EGG))
                                 .build(prov);
+                        
+                        prov.smelting(DataIngredient.items(ctx.getEntry()), Blocks.DIAMOND_BLOCK.delegate, 1f);
                         
                         CookingRecipeBuilder.smeltingRecipe(Ingredient.fromItems(ctx.getEntry()), Blocks.DIAMOND_BLOCK, 1f, 200)
                                 .addCriterion("has_testitem", prov.hasItem(ctx.getEntry()))
