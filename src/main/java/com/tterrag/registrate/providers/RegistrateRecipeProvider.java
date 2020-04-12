@@ -67,27 +67,27 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
         this.callback = null;
     }
     
-    private ResourceLocation safeId(ResourceLocation id) {
+    public ResourceLocation safeId(ResourceLocation id) {
         return new ResourceLocation(owner.getModid(), safeName(id));
     }
 
-    private ResourceLocation safeId(DataIngredient source) {
+    public ResourceLocation safeId(DataIngredient source) {
         return safeId(source.getId());
     }
 
-    private ResourceLocation safeId(IForgeRegistryEntry<?> registryEntry) {
+    public ResourceLocation safeId(IForgeRegistryEntry<?> registryEntry) {
         return safeId(registryEntry.getRegistryName());
     }
 
-    private String safeName(ResourceLocation id) {
+    public String safeName(ResourceLocation id) {
         return id.getPath().replace('/', '_');
     }
 
-    private String safeName(DataIngredient source) {
+    public String safeName(DataIngredient source) {
         return safeName(source.getId());
     }
 
-    private String safeName(IForgeRegistryEntry<?> registryEntry) {
+    public String safeName(IForgeRegistryEntry<?> registryEntry) {
         return safeName(registryEntry.getRegistryName());
     }
 
@@ -167,14 +167,22 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
         smoking(source, result, xp);
         campfire(source, result, xp);
     }
-        
-    private <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(DataIngredient source, Supplier<? extends T> output) {
-        ShapedRecipeBuilder.shapedRecipe(output.get())
-        .patternLine("XXX").patternLine("XXX").patternLine("XXX")
-        .key('X', source)
-        .addCriterion("has_at_least_9_" + safeName(source), source.getCritereon(this, MinMaxBounds.IntBound.atLeast(9)))
-        .build(this, safeId(output.get()));
     
+    public <T extends IItemProvider & IForgeRegistryEntry<?>> void square(DataIngredient source, Supplier<? extends T> output, boolean small) {
+        ShapedRecipeBuilder builder = ShapedRecipeBuilder.shapedRecipe(output.get())
+                .key('X', source);
+        if (small) {
+            builder.patternLine("XX").patternLine("XX");
+        } else {
+            builder.patternLine("XXX").patternLine("XXX").patternLine("XXX");
+        }
+        int size = small ? 4 : 9;
+        builder.addCriterion("has_at_least_" + size + "_" + safeName(source), source.getCritereon(this, MinMaxBounds.IntBound.atLeast(size)))
+            .build(this, safeId(output.get()));
+    }
+    
+    public <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(DataIngredient source, Supplier<? extends T> output) {
+        square(source, output, false);
         singleItemUnfinished(source, output, 1, 9)
             .build(this, safeId(source) + "_from_" + safeName(output.get()));;
     }
