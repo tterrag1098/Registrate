@@ -1,5 +1,6 @@
 package com.tterrag.registrate.builders;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -62,6 +63,19 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
      */
     public TileEntityBuilder<T, P> validBlock(NonNullSupplier<? extends Block> block) {
         validBlocks.add(block);
+        return this;
+    }
+    
+    /**
+     * Add valid blocks for this tile entity.
+     * 
+     * @param blocks
+     *            An array of suppliers for the block to add at registration time
+     * @return this {@link TileEntityBuilder}
+     */
+    @SafeVarargs
+    public final TileEntityBuilder<T, P> validBlocks(NonNullSupplier<? extends Block>... blocks) {
+        Arrays.stream(blocks).forEach(this::validBlock);
         return this;
     }
 
