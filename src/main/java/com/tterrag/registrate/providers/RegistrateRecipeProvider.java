@@ -112,7 +112,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void cooking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime, String typeName, CookingRecipeSerializer<?> serializer) {
         CookingRecipeBuilder.cookingRecipe(source, result.get(), experience, cookingTime, serializer)
             .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()) + "_from" + (SMELTING_NAME.equals(typeName) ? "_" + safeName(source) + "_" + typeName : ""));
+            .build(this, safeId(result.get()) + "_from" + (!SMELTING_NAME.equals(typeName) ? "_" + safeName(source) + "_" + typeName : ""));
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void smelting(DataIngredient source, Supplier<? extends T> result, float experience) {
