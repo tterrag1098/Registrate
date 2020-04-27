@@ -1,9 +1,12 @@
 package com.tterrag.registrate.util;
 
+import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
+
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -30,14 +33,28 @@ import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraft.world.spawner.AbstractSpawner;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 
-    private final Supplier<EntityType<T>> typeIn;
+    private final NonNullSupplier<EntityType<T>> typeIn;
 
-    public LazySpawnEggItem(final Supplier<EntityType<T>> type, int primaryColor, int secondaryColor, Properties properties) {
-        super(EntityType.PIG, primaryColor, secondaryColor, properties);
+    public LazySpawnEggItem(final NonNullSupplier<EntityType<T>> type, int primaryColor, int secondaryColor, Properties properties) {
+        super(null, primaryColor, secondaryColor, properties);
         this.typeIn = type;
+    }
+    
+    private static final Field _EGGS = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "field_195987_b");
+    
+    @SuppressWarnings("unchecked")
+    public void injectType() {
+        try {
+            Map<EntityType<?>, SpawnEggItem> EGGS = (Map<EntityType<?>, SpawnEggItem>) _EGGS.get(this);
+            EGGS.put(typeIn.get(), this);
+            EGGS.remove(null);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     public EntityType<?> getType(@Nullable CompoundNBT p_208076_1_) {

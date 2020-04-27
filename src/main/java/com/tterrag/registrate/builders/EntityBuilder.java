@@ -1,5 +1,7 @@
 package com.tterrag.registrate.builders;
 
+import javax.annotation.Nullable;
+
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -64,6 +66,8 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     private final NonNullSupplier<EntityType.Builder<T>> builder;
     
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
+    
+    private @Nullable ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder;
 
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
         super(owner, parent, name, callback, EntityType.class);
@@ -116,8 +120,10 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      */
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
-        return getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(this, primaryColor, secondaryColor, p)).properties(p -> p.group(ItemGroup.MISC))
+        ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> ret = getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(this, primaryColor, secondaryColor, p)).properties(p -> p.group(ItemGroup.MISC))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
+        this.spawnEggBuilder = ret;
+        return ret;
     }
 
     /**
@@ -169,5 +175,14 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         EntityType.Builder<T> builder = this.builder.get();
         builderCallback.accept(builder);
         return builder.build(getName());
+    }
+    
+    @Override
+    public void postRegister(EntityType<T> entry) {
+        super.postRegister(entry);
+        ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder = this.spawnEggBuilder;
+        if (spawnEggBuilder != null) {
+            spawnEggBuilder.get().injectType();
+        }
     }
 }
