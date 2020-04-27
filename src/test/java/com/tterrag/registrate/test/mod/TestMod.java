@@ -1,5 +1,7 @@
 package com.tterrag.registrate.test.mod;
 
+import javax.annotation.Nullable;
+
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
@@ -11,12 +13,21 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.gui.screen.inventory.ChestScreen;
 import net.minecraft.data.CookingRecipeBuilder;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.container.ChestContainer;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Food;
 import net.minecraft.item.Item;
@@ -29,7 +40,12 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.loot.ConstantRange;
 import net.minecraft.world.storage.loot.ItemLootEntry;
@@ -57,78 +73,111 @@ public class TestMod {
         }
     }
     
+    private class TestBlock extends Block {
+
+        public TestBlock(Properties properties) {
+            super(properties);
+        }
+
+        @Override
+        public boolean onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+            if (!worldIn.isRemote) {
+                player.openContainer(new INamedContainerProvider() {
+                    
+                    @Override
+                    @Nullable
+                    public Container createMenu(int windowId, PlayerInventory inv, PlayerEntity player) {
+                        return new ChestContainer(GENERIC_9x9.get(), windowId, inv, new Inventory(9 * 9), 9);
+                    }
+                    
+                    @Override
+                    public ITextComponent getDisplayName() {
+                        return new StringTextComponent("Test");
+                    }
+                });
+            }
+            return true;
+        }
+    }
+    
     private static class TestEntity extends PigEntity {
 
         public TestEntity(EntityType<? extends PigEntity> p_i50250_1_, World p_i50250_2_) {
             super(p_i50250_1_, p_i50250_2_);
         }
     }
-
-    public TestMod() {
-        Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
-        RegistryEntry<Item> testitem = registrate.object("testitem")
-                .item(Item::new)
-                    .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
-                    .tag(ItemTags.BEDS)
-                    .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
-                    .register();
-        
-        RegistryEntry<EntityType<TestEntity>> testduplicatename = registrate.object("testitem")
-                .entity(TestEntity::new, EntityClassification.CREATURE)
-                .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
+    
+    private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
+    
+    private final RegistryEntry<Item> testitem = registrate.object("testitem")
+            .item(Item::new)
+                .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
+                .tag(ItemTags.BEDS)
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                 .register();
-        
-        RegistryEntry<Block> testblock = registrate.object("testblock")
-                .block(Block::new)
-                    .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                                    prov.withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
-                    .transform(this::applyDiamondDrop)
-                    .recipe((ctx, prov) -> {
-                        ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())
-                                .patternLine("DDD").patternLine("DED").patternLine("DDD")
-                                .key('D', Items.DIAMOND)
-                                .key('E', Items.EGG)
-                                .addCriterion("has_egg", prov.hasItem(Items.EGG))
-                                .build(prov);
-                        
-                        prov.smelting(DataIngredient.items(ctx.getEntry()), Blocks.DIAMOND_BLOCK.delegate, 1f);
-                        
-                        CookingRecipeBuilder.smeltingRecipe(Ingredient.fromItems(ctx.getEntry()), Blocks.DIAMOND_BLOCK, 1f, 200)
-                                .addCriterion("has_testitem", prov.hasItem(ctx.getEntry()))
-                                .build(prov, new ResourceLocation("testmod", "diamond_block_from_" + ctx.getName()));
-                    })
-                    .tag(BlockTags.BAMBOO_PLANTABLE_ON)
-                    .item()
-                        .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
-                        .build()
-                    .tileEntity(ChestTileEntity::new)
-                    .register();
-        
-        RegistryEntry<BlockItem> testblockitem = testblock.getSibling(Item.class);
-        RegistryEntry<TileEntityType<ChestTileEntity>> testblockte = testblock.getSibling(ForgeRegistries.TILE_ENTITIES);
-        
-        @SuppressWarnings("deprecation")
-        RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
-                .entity(TestEntity::new, EntityClassification.CREATURE)
-                .defaultSpawnEgg(0xFF0000, 0x00FF00)
-                .loot((prov, type) -> prov.registerLootTable(type, LootTable.builder()
-                        .addLootPool(LootPool.builder()
-                                .rolls(ConstantRange.of(1))
-                                .addEntry(ItemLootEntry.builder(Items.DIAMOND)
-                                        .acceptFunction(SetCount.builder(RandomValueRange.of(1, 3)))
-                                        .acceptFunction(LootingEnchantBonus.builder(RandomValueRange.of(0, 2)))))))
-                .tag(EntityTypeTags.RAIDERS)
-                .register();
-        
-        RegistryEntry<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")
+    
+    private final RegistryEntry<EntityType<TestEntity>> testduplicatename = registrate.object("testitem")
+            .entity(TestEntity::new, EntityClassification.CREATURE)
+            .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
+            .register();
+    
+    private final RegistryEntry<TestBlock> testblock = registrate.object("testblock")
+            .block(TestBlock::new)
+                .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                                prov.withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
+                .transform(this::applyDiamondDrop)
+                .recipe((ctx, prov) -> {
+                    ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())
+                            .patternLine("DDD").patternLine("DED").patternLine("DDD")
+                            .key('D', Items.DIAMOND)
+                            .key('E', Items.EGG)
+                            .addCriterion("has_egg", prov.hasItem(Items.EGG))
+                            .build(prov);
+                    
+                    prov.smelting(DataIngredient.items(ctx.getEntry()), Blocks.DIAMOND_BLOCK.delegate, 1f);
+                    
+                    CookingRecipeBuilder.smeltingRecipe(Ingredient.fromItems(ctx.getEntry()), Blocks.DIAMOND_BLOCK, 1f, 200)
+                            .addCriterion("has_testitem", prov.hasItem(ctx.getEntry()))
+                            .build(prov, new ResourceLocation("testmod", "diamond_block_from_" + ctx.getName()));
+                })
+                .tag(BlockTags.BAMBOO_PLANTABLE_ON)
+                .item()
+                    .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
+                    .build()
                 .tileEntity(ChestTileEntity::new)
                 .register();
-        
-        RegistryEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
-                .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
-                .attributes(a -> a.luminosity(15))
-                .properties(p -> p.canMultiply())
-                .register();
+    
+    private final RegistryEntry<BlockItem> testblockitem = testblock.getSibling(Item.class);
+    private final RegistryEntry<TileEntityType<ChestTileEntity>> testblockte = testblock.getSibling(ForgeRegistries.TILE_ENTITIES);
+    
+    @SuppressWarnings("deprecation")
+    private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
+            .entity(TestEntity::new, EntityClassification.CREATURE)
+            .defaultSpawnEgg(0xFF0000, 0x00FF00)
+            .loot((prov, type) -> prov.registerLootTable(type, LootTable.builder()
+                    .addLootPool(LootPool.builder()
+                            .rolls(ConstantRange.of(1))
+                            .addEntry(ItemLootEntry.builder(Items.DIAMOND)
+                                    .acceptFunction(SetCount.builder(RandomValueRange.of(1, 3)))
+                                    .acceptFunction(LootingEnchantBonus.builder(RandomValueRange.of(0, 2)))))))
+            .tag(EntityTypeTags.RAIDERS)
+            .register();
+    
+    private final RegistryEntry<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")
+            .tileEntity(ChestTileEntity::new)
+            .register();
+    
+    private final RegistryEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
+            .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
+            .attributes(a -> a.luminosity(15))
+            .properties(p -> p.canMultiply())
+            .register();
+    
+    private final RegistryEntry<ContainerType<ChestContainer>> GENERIC_9x9 = registrate.object("testcontainer")
+            .container((type, windowId, inv) -> new ChestContainer(type, windowId, inv, new Inventory(9 * 9), 9), () -> ChestScreen::new)
+            .register();
+
+    public TestMod() {
         
         registrate.addRawLang("testmod.custom.lang", "Test");
         registrate.addLang("tooltip", testblock.getId(), "Egg.");
