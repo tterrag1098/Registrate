@@ -7,6 +7,7 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
+import lombok.experimental.Delegate;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -19,10 +20,10 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  *            Type of the object for which data is being generated
  */
 @Value
-public class DataGenContext<R extends IForgeRegistryEntry<R>, E extends R> {
+public class DataGenContext<R extends IForgeRegistryEntry<R>, E extends R> implements NonNullSupplier<E> {
 
-    @SuppressWarnings("null")
     @Getter(AccessLevel.NONE)
+    @Delegate
     NonNullSupplier<E> entry;
     String name;
     ResourceLocation id;
