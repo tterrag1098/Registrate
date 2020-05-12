@@ -136,11 +136,7 @@ public class TestMod {
                             .addCriterion("has_egg", prov.hasItem(Items.EGG))
                             .build(prov);
                     
-                    prov.smelting(DataIngredient.items(ctx.getEntry()), Blocks.DIAMOND_BLOCK.delegate, 1f);
-                    
-                    CookingRecipeBuilder.smeltingRecipe(Ingredient.fromItems(ctx.getEntry()), Blocks.DIAMOND_BLOCK, 1f, 200)
-                            .addCriterion("has_testitem", prov.hasItem(ctx.getEntry()))
-                            .build(prov, new ResourceLocation("testmod", "diamond_block_from_" + ctx.getName()));
+                    prov.food(DataIngredient.items(ctx.getEntry()), Blocks.DIAMOND_BLOCK.delegate, 1f);
                 })
                 .tag(BlockTags.BAMBOO_PLANTABLE_ON)
                 .item()
