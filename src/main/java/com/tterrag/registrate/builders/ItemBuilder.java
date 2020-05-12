@@ -8,7 +8,10 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
@@ -16,6 +19,7 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tags.Tag;
+import net.minecraftforge.fml.RegistryObject;
 
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
@@ -189,5 +193,15 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         Item.Properties properties = this.properties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
+    }
+    
+    @Override
+    public NonNullBiFunction<AbstractRegistrate<?>, RegistryObject<T>, RegistryEntry<T>> getEntryFactory() {
+        return ItemEntry::new;
+    }
+    
+    @Override
+    public ItemEntry<T> register() {
+        return (ItemEntry<T>) super.register();
     }
 }

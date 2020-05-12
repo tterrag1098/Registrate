@@ -3,7 +3,7 @@ package com.tterrag.registrate.builders;
 import java.util.function.Supplier;
 
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.util.RegistryEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraftforge.registries.IForgeRegistryEntry;

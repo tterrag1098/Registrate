@@ -26,16 +26,20 @@ import com.google.common.collect.Table;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.BuilderCallback;
+import com.tterrag.registrate.builders.ContainerBuilder;
+import com.tterrag.registrate.builders.ContainerBuilder.ContainerFactory;
+import com.tterrag.registrate.builders.ContainerBuilder.ScreenFactory;
 import com.tterrag.registrate.builders.EntityBuilder;
 import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.builders.ItemBuilder;
+import com.tterrag.registrate.builders.NoConfigBuilder;
 import com.tterrag.registrate.builders.TileEntityBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.NonNullLazyValue;
-import com.tterrag.registrate.util.RegistryEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -48,10 +52,13 @@ import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.gui.IHasContainer;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.fluid.Fluid;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntity;
@@ -109,7 +116,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             this.type = type;
             this.builder = builder;
             this.creator =  creator;
-            this.delegate = new RegistryEntry<>(AbstractRegistrate.this, RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
+            this.delegate = builder.getEntryFactory().apply(AbstractRegistrate.this, RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
         }
         
         void register(IForgeRegistry<R> registry) {
@@ -623,6 +630,24 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     /* === Builder helpers === */
     
+    // Generic
+    
+    public <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> simple(Class<? super R> registryType, NonNullSupplier<T> factory) {
+        return simple(currentName(), registryType, factory);
+    }
+
+    public <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> simple(String name, Class<? super R> registryType, NonNullSupplier<T> factory) {
+        return simple(this, name, registryType, factory);
+    }
+
+    public <R extends IForgeRegistryEntry<R>, T extends R, P> RegistryEntry<T> simple(P parent, Class<? super R> registryType, NonNullSupplier<T> factory) {
+        return simple(parent, currentName(), registryType, factory);
+    }
+
+    public <R extends IForgeRegistryEntry<R>, T extends R, P> RegistryEntry<T> simple(P parent, String name, Class<? super R> registryType, NonNullSupplier<T> factory) {
+        return entry(name, callback -> new NoConfigBuilder<R, T, P>(this, parent, name, callback, registryType, factory)).register();
+    }
+    
     // Items
     
     public <T extends Item> ItemBuilder<T, S> item(NonNullFunction<Item.Properties, T> factory) {
@@ -803,5 +828,23 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory));
+    }
+    
+    // Container
+    
+    public <T extends Container, SC extends Screen & IHasContainer<T>> ContainerBuilder<T, SC, S> container(ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return container(currentName(), factory, screenFactory);
+    }
+
+    public <T extends Container, SC extends Screen & IHasContainer<T>> ContainerBuilder<T, SC, S> container(String name, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return container(self(), name, factory, screenFactory);
+    }
+
+    public <T extends Container, SC extends Screen & IHasContainer<T>, P> ContainerBuilder<T, SC, P> container(P parent, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return container(parent, currentName(), factory, screenFactory);
+    }
+
+    public <T extends Container, SC extends Screen & IHasContainer<T>, P> ContainerBuilder<T, SC, P> container(P parent, String name, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return entry(name, callback -> new ContainerBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
     }
 }
