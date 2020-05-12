@@ -9,8 +9,9 @@ import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
-import com.tterrag.registrate.util.RegistryEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -173,4 +174,8 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     }
 
     default void postRegister(T entry) {}
+    
+    default NonNullBiFunction<AbstractRegistrate<?>, RegistryObject<T>, RegistryEntry<T>> getEntryFactory() {
+        return RegistryEntry::new;
+    }
 }

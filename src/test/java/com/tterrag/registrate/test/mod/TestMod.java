@@ -6,7 +6,9 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
-import com.tterrag.registrate.util.RegistryEntry;
+import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
@@ -109,7 +111,7 @@ public class TestMod {
     
     private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
     
-    private final RegistryEntry<Item> testitem = registrate.object("testitem")
+    private final ItemEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
                 .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
                 .tag(ItemTags.BEDS)
@@ -121,7 +123,7 @@ public class TestMod {
             .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
             .register();
     
-    private final RegistryEntry<TestBlock> testblock = registrate.object("testblock")
+    private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                                 prov.withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
@@ -147,7 +149,7 @@ public class TestMod {
                 .tileEntity(ChestTileEntity::new)
                 .register();
     
-    private final RegistryEntry<BlockItem> testblockitem = testblock.getSibling(Item.class);
+    private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Item.class);
     private final RegistryEntry<TileEntityType<ChestTileEntity>> testblockte = testblock.getSibling(ForgeRegistries.TILE_ENTITIES);
     
     @SuppressWarnings("deprecation")

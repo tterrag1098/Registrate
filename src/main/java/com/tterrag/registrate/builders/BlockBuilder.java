@@ -11,6 +11,8 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
+import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -26,6 +28,7 @@ import net.minecraft.item.Item;
 import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.storage.loot.LootTables;
+import net.minecraftforge.fml.RegistryObject;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -289,5 +292,15 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         @Nonnull Block.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
+    }
+    
+    @Override
+    public NonNullBiFunction<AbstractRegistrate<?>, RegistryObject<T>, RegistryEntry<T>> getEntryFactory() {
+        return BlockEntry::new;
+    }
+    
+    @Override
+    public BlockEntry<T> register() {
+        return (BlockEntry<T>) super.register();
     }
 }

@@ -39,7 +39,7 @@ import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.LazyValue;
-import com.tterrag.registrate.util.RegistryEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -116,7 +116,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             this.type = type;
             this.builder = builder;
             this.creator =  creator;
-            this.delegate = new RegistryEntry<>(AbstractRegistrate.this, RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
+            this.delegate = builder.getEntryFactory().apply(AbstractRegistrate.this, RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
         }
         
         void register(IForgeRegistry<R> registry) {

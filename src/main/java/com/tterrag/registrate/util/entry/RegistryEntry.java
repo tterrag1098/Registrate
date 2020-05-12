@@ -1,4 +1,4 @@
-package com.tterrag.registrate.util;
+package com.tterrag.registrate.util.entry;
 
 import java.util.Objects;
 import java.util.function.Predicate;
