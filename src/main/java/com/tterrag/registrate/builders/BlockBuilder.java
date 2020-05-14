@@ -156,8 +156,25 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             Preconditions.checkArgument(RenderType.getBlockRenderTypes().contains(layer.get().get()), "Invalid block layer: " + layer);
         });
+        if (this.renderLayers.isEmpty()) {
+            onRegister(this::registerLayers);
+        }
         this.renderLayers.add(layer);
         return this;
+    }
+
+    protected void registerLayers(T entry) {
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            if (renderLayers.size() == 1) {
+                final RenderType layer = renderLayers.get(0).get().get();
+                RenderTypeLookup.setRenderLayer(entry, layer);
+            } else if (renderLayers.size() > 1) {
+                final Set<RenderType> layers = renderLayers.stream()
+                        .map(s -> s.get().get())
+                        .collect(Collectors.toSet());
+                RenderTypeLookup.setRenderLayer(entry, layers::contains);
+            }
+        });
     }
 
     /**
@@ -312,22 +329,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         @Nonnull Block.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
-    }
-
-    @Override
-    public void postRegister(T entry) {
-        super.postRegister(entry);
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            if (renderLayers.size() == 1) {
-                final RenderType layer = renderLayers.get(0).get().get();
-                RenderTypeLookup.setRenderLayer(entry, layer);
-            } else if (renderLayers.size() > 1) {
-                final Set<RenderType> layers = renderLayers.stream()
-                        .map(s -> s.get().get())
-                        .collect(Collectors.toSet());
-                RenderTypeLookup.setRenderLayer(entry, layers::contains);
-            }
-        });
     }
     
     @Override
