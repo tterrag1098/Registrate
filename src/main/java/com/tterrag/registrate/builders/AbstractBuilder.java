@@ -8,9 +8,11 @@ import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraftforge.common.util.NonNullFunction;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
@@ -37,6 +39,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     private final P parent;
     @Getter(onMethod = @__({ @Override }))
     private final String name;
+    @Getter(AccessLevel.PROTECTED)
     private final BuilderCallback callback;
     @Getter(onMethod = @__({ @Override }))
     private final Class<? super R> registryType;
@@ -51,11 +54,11 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
 
     @Override
     public RegistryEntry<T> register() {
-        return callback.accept(name, registryType, this, this::createEntry);
+        return callback.accept(name, registryType, this, this::createEntry, this::createEntryWrapper);
     }
     
-    protected BuilderCallback getCallback() {
-        return callback;
+    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
+        return new RegistryEntry<>(getOwner(), delegate);
     }
 
     /**

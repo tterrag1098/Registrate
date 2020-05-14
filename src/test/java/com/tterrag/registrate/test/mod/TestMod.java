@@ -1,5 +1,7 @@
 package com.tterrag.registrate.test.mod;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.Registrate;
@@ -58,6 +60,7 @@ import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
 import net.minecraft.world.storage.loot.functions.SetCount;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 @Mod("testmod")
@@ -111,8 +114,11 @@ public class TestMod {
     
     private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
     
-    private final ItemEntry<Item> testitem = registrate.object("testitem")
+    private final AtomicBoolean sawCallback = new AtomicBoolean();
+    
+    private final RegistryEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
+                .onRegister(item -> sawCallback.set(true))
                 .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
                 .tag(ItemTags.BEDS)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
@@ -127,7 +133,7 @@ public class TestMod {
             .block(TestBlock::new)
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                                 prov.withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
-                .transform(this::applyDiamondDrop)
+                .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
                     ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())
                             .patternLine("DDD").patternLine("DED").patternLine("DDD")
@@ -174,6 +180,14 @@ public class TestMod {
     private final RegistryEntry<ContainerType<ChestContainer>> GENERIC_9x9 = registrate.object("testcontainer")
             .container((type, windowId, inv) -> new ChestContainer(type, windowId, inv, new Inventory(9 * 9), 9), () -> ChestScreen::new)
             .register();
+    
+//    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
+//            .block(Block::new)
+//            .addLayer(() -> RenderType::getTranslucent);
+    
+    private static <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
+        return builder.loot((prov, block) -> prov.registerDropping(block, Items.DIAMOND));
+    }
 
     public TestMod() {
         
@@ -190,7 +204,9 @@ public class TestMod {
         });
     }
     
-    private <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
-        return builder.loot((prov, block) -> prov.registerDropping(block, Items.DIAMOND));
+    private void onCommonSetup(FMLCommonSetupEvent event) {
+        if (!sawCallback.get()) {
+            throw new IllegalStateException("Register callback not fired!");
+        }
     }
 }

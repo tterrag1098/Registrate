@@ -123,6 +123,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> ret = getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(this, primaryColor, secondaryColor, p)).properties(p -> p.group(ItemGroup.MISC))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
         this.spawnEggBuilder = ret;
+        this.onRegister(this::injectSpawnEggType);
         return ret;
     }
 
@@ -176,10 +177,8 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         builderCallback.accept(builder);
         return builder.build(getName());
     }
-    
-    @Override
-    public void postRegister(EntityType<T> entry) {
-        super.postRegister(entry);
+   
+    protected void injectSpawnEggType(EntityType<T> entry) {
         ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder = this.spawnEggBuilder;
         if (spawnEggBuilder != null) {
             spawnEggBuilder.get().injectType();
