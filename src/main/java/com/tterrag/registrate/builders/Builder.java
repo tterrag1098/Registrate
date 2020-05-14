@@ -135,7 +135,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     /**
      * Add a callback to be invoked when this entry is registered. Can be called multiple times to add multiple callbacks.
      * <p>
-     * Builders which have had this method used on them (or another method which calls this one, such as {@link BlockBuilder#addLayer(Supplier)}) <strong>must</strong> be registered, via
+     * Builders which have had this method used on them (or another method which calls this one, such as {@link EntityBuilder#spawnEgg(int, int)}), <strong>must</strong> be registered, via
      * {@link #register()}, or errors will be thrown when these "dangling" register callbacks are discovered at register time.
      * 
      * @param callback
