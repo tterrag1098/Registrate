@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smoking",
+  "ingredient": {
+    "item": "testmod:testblock"
+  },
+  "result": "minecraft:diamond_block",
+  "experience": 1.0,
+  "cookingtime": 100
+}

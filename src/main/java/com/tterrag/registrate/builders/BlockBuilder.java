@@ -331,8 +331,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     @Override
-    public NonNullBiFunction<AbstractRegistrate<?>, RegistryObject<T>, RegistryEntry<T>> getEntryFactory() {
-        return BlockEntry::new;
+    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
+        return new BlockEntry<>(getOwner(), delegate);
     }
     
     @Override

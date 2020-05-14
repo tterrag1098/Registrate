@@ -2,11 +2,11 @@
   "parent": "minecraft:recipes/root",
   "rewards": {
     "recipes": [
-      "testmod:diamond_block_from_testblock"
+      "testmod:diamond_block_from_testblock_smoking"
     ]
   },
   "criteria": {
-    "has_testitem": {
+    "has_testblock": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
@@ -19,13 +19,13 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "testmod:diamond_block_from_testblock"
+        "recipe": "testmod:diamond_block_from_testblock_smoking"
       }
     }
   },
   "requirements": [
     [
-      "has_testitem",
+      "has_testblock",
       "has_the_recipe"
     ]
   ]

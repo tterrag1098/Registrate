@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "testmod:diamond_block"
+    ]
+  },
+  "criteria": {
+    "has_testblock": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "testmod:testblock"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "testmod:diamond_block"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_testblock",
+      "has_the_recipe"
+    ]
+  ]
+}

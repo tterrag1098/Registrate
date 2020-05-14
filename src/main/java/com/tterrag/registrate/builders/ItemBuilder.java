@@ -11,7 +11,6 @@ import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
@@ -196,8 +195,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     @Override
-    public NonNullBiFunction<AbstractRegistrate<?>, RegistryObject<T>, RegistryEntry<T>> getEntryFactory() {
-        return ItemEntry::new;
+    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
+        return new ItemEntry<>(getOwner(), delegate);
     }
     
     @Override

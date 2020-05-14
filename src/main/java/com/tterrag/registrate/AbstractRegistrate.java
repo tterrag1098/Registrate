@@ -13,15 +13,19 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
@@ -47,6 +51,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
@@ -111,23 +116,37 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         Supplier<? extends T> creator;        
         RegistryEntry<T> delegate;
         
-        Registration(ResourceLocation name, Class<? super R> type, Builder<R, T, ?, ?> builder, Supplier<? extends T> creator) {
+        @Getter(value = AccessLevel.NONE)
+        List<NonNullConsumer<? super T>> callbacks = new ArrayList<>();
+        
+        Registration(ResourceLocation name, Class<? super R> type, Builder<R, T, ?, ?> builder, Supplier<? extends T> creator, NonNullFunction<RegistryObject<T>, RegistryEntry<T>> entryFactory) {
             this.name = name;
             this.type = type;
             this.builder = builder;
             this.creator =  creator;
-            this.delegate = builder.getEntryFactory().apply(AbstractRegistrate.this, RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
+            this.delegate = entryFactory.apply(RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
         }
         
         void register(IForgeRegistry<R> registry) {
             T entry = creator.get();
             registry.register(entry.setRegistryName(name));
             delegate.updateReference(registry);
-            builder.postRegister(entry);
+            callbacks.forEach(c -> c.accept(entry));
+        }
+        
+        void addRegisterCallback(NonNullConsumer<? super T> callback) {
+            Preconditions.checkNotNull(callback, "Callback must not be null");
+            callbacks.add(callback);
         }
     }
     
+    public static boolean isDevEnvironment() {
+        return FMLEnvironment.naming.equals("mcp");
+    }
+    
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
+    /** Expected to be emptied by the time registration occurs, is emptied by {@link #accept(String, Class, Builder, NonNullSupplier, NonNullFunction)} */
+    private final Multimap<Pair<String, Class<?>>, NonNullConsumer<? extends IForgeRegistryEntry<?>>> registerCallbacks = HashMultimap.create();
     private final Table<Pair<String, Class<?>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
 
@@ -171,6 +190,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         if (type == null) {
             log.debug(DebugMarkers.REGISTER, "Skipping invalid registry with no supertype: " + event.getRegistry().getRegistryName());
             return;
+        }
+        if (!registerCallbacks.isEmpty()) {
+            registerCallbacks.asMap().forEach((k, v) -> log.warn("Found {} unused register callback(s) for entry {} [{}]. Was the entry ever registered?", v.size(), k.getLeft(), k.getRight().getSimpleName()));
+            if (isDevEnvironment()) {
+                throw new IllegalStateException("Found unused register callbacks, see logs");
+            }
         }
         Map<String, Registration<?, ?>> registrationsForType = registrations.column(type);
         if (registrationsForType.size() > 0) {
@@ -267,11 +292,20 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @throws IllegalArgumentException
      *             if no such registration has been done
      */
-    @SuppressWarnings("unchecked")
     public <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> get(String name, Class<? super R> type) {
-        Registration<R, T> reg = (Registration<R, T>) registrations.get(name, type);
+        return this.<R, T>getRegistration(name, type).getDelegate();
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private <R extends IForgeRegistryEntry<R>, T extends R> Registration<R, T> getRegistrationUnchecked(String name, Class<? super R> type) {    
+        return (Registration<R, T>) registrations.get(name, type);
+    }
+    
+    private <R extends IForgeRegistryEntry<R>, T extends R> Registration<R, T> getRegistration(String name, Class<? super R> type) {
+        Registration<R, T> reg = this.<R, T>getRegistrationUnchecked(name, type);
         if (reg != null) {
-            return reg.getDelegate();
+            return reg;
         }
         throw new IllegalArgumentException("Unknown registration " + name + " for type " + type);
     }
@@ -288,6 +322,17 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @SuppressWarnings("unchecked")
     public <R extends IForgeRegistryEntry<R>> Collection<RegistryEntry<R>> getAll(Class<? super R> type) {
         return registrations.column(type).values().stream().map(r -> (RegistryEntry<R>) r.getDelegate()).collect(Collectors.toList());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <R extends IForgeRegistryEntry<R>, T extends R> S addRegisterCallback(String name, Class<? super R> registryType, NonNullConsumer<? super T> callback) {
+        Registration<R, T> reg = this.<R, T>getRegistrationUnchecked(name, registryType);
+        if (reg == null) {
+            registerCallbacks.put(Pair.of(name, registryType), (NonNullConsumer<? extends IForgeRegistryEntry<?>>) callback);
+        } else {
+            reg.addRegisterCallback(callback);
+        }
+        return self();
     }
 
     /**
@@ -480,7 +525,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return this {@link AbstractRegistrate}
      */
     public S skipErrors(boolean skipErrors) {
-        if (skipErrors && !FMLEnvironment.naming.equals("mcp")) {
+        if (skipErrors && !isDevEnvironment()) {
             log.error("Ignoring skipErrors(true) as this is not a development environment!");
         } else {
             this.skipErrors = skipErrors;
@@ -621,9 +666,14 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return factory.apply(this::accept);
     }
     
-    protected <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator) {
-        Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, builder, creator);
+    protected <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, RegistryEntry<T>> entryFactory) {
+        Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, builder, creator, entryFactory);
         log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.getName());
+        registerCallbacks.removeAll(Pair.of(name, type)).forEach(callback -> {
+            @SuppressWarnings({ "unchecked", "null" })
+            @Nonnull NonNullConsumer<? super T> unsafeCallback = (NonNullConsumer<? super T>) callback; 
+            reg.addRegisterCallback(unsafeCallback);
+        });
         registrations.put(name, type, reg);
         return reg.getDelegate();
     }
