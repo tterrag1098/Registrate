@@ -119,7 +119,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         @Getter(value = AccessLevel.NONE)
         List<NonNullConsumer<? super T>> callbacks = new ArrayList<>();
         
-        Registration(ResourceLocation name, Class<? super R> type, Builder<R, T, ?, ?> builder, Supplier<? extends T> creator, NonNullFunction<RegistryObject<T>, RegistryEntry<T>> entryFactory) {
+        Registration(ResourceLocation name, Class<? super R> type, Builder<R, T, ?, ?> builder, Supplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
             this.name = name;
             this.type = type;
             this.builder = builder;
@@ -348,6 +348,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The {@link ProviderType} to generate data for
      * @param cons
      *            A callback to be invoked during data generation
+     * @return this {@link AbstractRegistrate}
      */
     public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
         return this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryType(), type, cons);
@@ -368,6 +369,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The {@link ProviderType} to generate data for
      * @param cons
      *            A callback to be invoked during data generation
+     * @return this {@link AbstractRegistrate}
      */
     public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
         Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
@@ -388,6 +390,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The {@link ProviderType} to generate data for
      * @param cons
      *            A callback to be invoked during data generation
+     * @return this {@link AbstractRegistrate}
      */
     public <T extends RegistrateProvider> S addDataGenerator(ProviderType<T> type, NonNullConsumer<? extends T> cons) {
         datagens.put(type, cons);
@@ -666,7 +669,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return factory.apply(this::accept);
     }
     
-    protected <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, RegistryEntry<T>> entryFactory) {
+    protected <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
         Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, builder, creator, entryFactory);
         log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.getName());
         registerCallbacks.removeAll(Pair.of(name, type)).forEach(callback -> {
