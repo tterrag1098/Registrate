@@ -734,22 +734,22 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<Block.Properties, T> factory) {
-        return block(parent, name, factory, Material.ROCK);
+        return block(parent, name, Material.ROCK, factory);
     }
     
     public <T extends Block> BlockBuilder<T, S> block(Material material, NonNullFunction<Block.Properties, T> factory) {
-        return block(self(), factory);
+        return block(self(), material, factory);
     }
     
     public <T extends Block> BlockBuilder<T, S> block(String name, Material material, NonNullFunction<Block.Properties, T> factory) {
-        return block(self(), name, factory);
+        return block(self(), name, material, factory);
     }
     
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, Material material, NonNullFunction<Block.Properties, T> factory) {
-        return block(parent, currentName(), factory);
+        return block(parent, currentName(), material, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<Block.Properties, T> factory, Material material) {
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Material material, NonNullFunction<Block.Properties, T> factory) {
         return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory, material));
     }
     
