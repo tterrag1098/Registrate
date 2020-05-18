@@ -146,7 +146,7 @@ public class TestMod {
                             .addCriterion("has_egg", prov.hasItem(Items.EGG))
                             .build(prov);
                     
-                    prov.food(DataIngredient.items(ctx.getEntry()), Blocks.DIAMOND_BLOCK.delegate, 1f);
+                    prov.food(DataIngredient.items(ctx), Blocks.DIAMOND_BLOCK.delegate, 1f);
                 })
                 .tag(BlockTags.BAMBOO_PLANTABLE_ON)
                 .item()
