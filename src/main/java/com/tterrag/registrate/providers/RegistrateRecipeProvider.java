@@ -110,10 +110,9 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void cooking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime, String typeName, CookingRecipeSerializer<?> serializer) {
-        // TODO reevaluate this naming scheme, looks odd for smelting to have no suffix at all
         CookingRecipeBuilder.cookingRecipe(source, result.get(), experience, cookingTime, serializer)
             .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()) + (!SMELTING_NAME.equals(typeName) ? "_from_" + safeName(source) + "_" + typeName : ""));
+            .build(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void smelting(DataIngredient source, Supplier<? extends T> result, float experience) {
