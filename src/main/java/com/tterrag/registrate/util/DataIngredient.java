@@ -1,11 +1,14 @@
 package com.tterrag.registrate.util;
 
+import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import com.google.common.collect.ObjectArrays;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import lombok.Getter;
 import lombok.experimental.Delegate;
@@ -83,6 +86,12 @@ public final class DataIngredient extends Ingredient {
     
     public InventoryChangeTrigger.Instance getCritereon(RegistrateRecipeProvider prov, MinMaxBounds.IntBound bounds) {
         return boundedCriteriaFactory.apply(prov, bounds);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public static <T extends IItemProvider & IForgeRegistryEntry<?>> DataIngredient items(NonNullSupplier<? extends T> first, NonNullSupplier<? extends T>... others) {
+        return items(first.get(), (T[]) Arrays.stream(others).map(Supplier::get).toArray(IItemProvider[]::new));
     }
 
     @SafeVarargs
