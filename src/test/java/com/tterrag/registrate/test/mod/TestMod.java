@@ -151,6 +151,13 @@ public class TestMod {
                 .tileEntity(ChestTileEntity::new)
                 .register();
     
+    private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
+            .block(Block::new)
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                    prov.withExistingParent("block/subfolder/" + ctx.getName(), prov.mcLoc("block/gold_block"))))
+            .simpleItem()
+            .register();
+    
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Item.class);
     private final RegistryEntry<TileEntityType<ChestTileEntity>> testblockte = testblock.getSibling(ForgeRegistries.TILE_ENTITIES);
     
@@ -175,6 +182,9 @@ public class TestMod {
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())
+            .bucket()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
+                .build()
             .register();
     
     private final RegistryEntry<ContainerType<ChestContainer>> GENERIC_9x9 = registrate.object("testcontainer")

@@ -1,5 +1,7 @@
 package com.tterrag.registrate.providers;
 
+import java.util.Optional;
+
 import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.block.Block;
@@ -51,6 +53,20 @@ public class RegistrateBlockstateProvider extends BlockStateProvider implements 
     
     ExistingFileHelper getExistingFileHelper() {
         return this.existingFileHelper;
+    }
+    
+    @SuppressWarnings("null")
+    public Optional<VariantBlockStateBuilder> getExistingVariantBuilder(Block block) {
+        return Optional.ofNullable(registeredBlocks.get(block))
+                .filter(b -> b instanceof VariantBlockStateBuilder)
+                .map(b -> (VariantBlockStateBuilder) b);
+    }
+    
+    @SuppressWarnings("null")
+    public Optional<MultiPartBlockStateBuilder> getExistingMultipartBuilder(Block block) {
+        return Optional.ofNullable(registeredBlocks.get(block))
+                .filter(b -> b instanceof MultiPartBlockStateBuilder)
+                .map(b -> (MultiPartBlockStateBuilder) b);
     }
 
     // @formatter:off
