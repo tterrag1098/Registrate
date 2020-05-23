@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -19,6 +20,7 @@ import lombok.extern.log4j.Log4j2;
 import net.minecraft.data.DirectoryCache;
 import net.minecraft.data.IDataProvider;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 
 @Log4j2
@@ -68,5 +70,10 @@ public class RegistrateDataProvider implements IDataProvider {
     @Override
     public String getName() {
         return "Registrate Provider for " + mod + " [" + subProviders.values().stream().map(IDataProvider::getName).collect(Collectors.joining(", ")) + "]";
+    }
+
+    @SuppressWarnings("unchecked")
+    public <P extends RegistrateProvider> Optional<P> getSubProvider(ProviderType<P> type) {
+        return Optional.ofNullable((P) subProviders.get(type));
     }
 }

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -38,6 +39,8 @@ import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.storage.loot.LootTables;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
+import net.minecraftforge.client.model.generators.VariantBlockStateBuilder;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
 
@@ -214,7 +217,20 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
-                .model((ctx, prov) -> prov.blockItem(this));
+                .model((ctx, prov) -> {
+                    VariantBlockStateBuilder builder = getOwner().getDataProvider(ProviderType.BLOCKSTATE).flatMap(p -> p.getExistingVariantBuilder(get())).orElse(null);
+                    if (builder != null) {
+                        ConfiguredModelList models = builder.getModels().get(builder.partialState());
+                        if (models != null) {
+                            JsonElement json = models.toJSON();
+                            if (json.isJsonObject()) {
+                                prov.withExistingParent(ctx.getName(), json.getAsJsonObject().getAsJsonPrimitive("model").getAsString());
+                                return;
+                            }
+                        }
+                    }
+                    prov.blockItem(this); 
+                });
     }
 
     /**

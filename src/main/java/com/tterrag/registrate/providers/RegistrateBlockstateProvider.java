@@ -1,10 +1,15 @@
 package com.tterrag.registrate.providers;
 
+import java.util.Optional;
+
 import com.tterrag.registrate.AbstractRegistrate;
 
+import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ExistingFileHelper;
+import net.minecraftforge.client.model.generators.MultiPartBlockStateBuilder;
+import net.minecraftforge.client.model.generators.VariantBlockStateBuilder;
 import net.minecraftforge.fml.LogicalSide;
 
 public class RegistrateBlockstateProvider extends BlockStateProvider implements RegistrateProvider {
@@ -33,5 +38,19 @@ public class RegistrateBlockstateProvider extends BlockStateProvider implements 
     
     ExistingFileHelper getExistingFileHelper() {
         return this.models().existingFileHelper;
+    }
+
+    @SuppressWarnings("null")
+    public Optional<VariantBlockStateBuilder> getExistingVariantBuilder(Block block) {
+        return Optional.ofNullable(registeredBlocks.get(block))
+                .filter(b -> b instanceof VariantBlockStateBuilder)
+                .map(b -> (VariantBlockStateBuilder) b);
+    }
+    
+    @SuppressWarnings("null")
+    public Optional<MultiPartBlockStateBuilder> getExistingMultipartBuilder(Block block) {
+        return Optional.ofNullable(registeredBlocks.get(block))
+                .filter(b -> b instanceof MultiPartBlockStateBuilder)
+                .map(b -> (MultiPartBlockStateBuilder) b);
     }
 }
