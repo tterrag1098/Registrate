@@ -216,8 +216,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
     }
     
+    @Nullable
+    private RegistrateDataProvider provider;
+    
     protected void onData(GatherDataEvent event) {
-        event.getGenerator().addProvider(new RegistrateDataProvider(this, modid, event));
+        event.getGenerator().addProvider(provider = new RegistrateDataProvider(this, modid, event));
     }
 
     /**
@@ -333,6 +336,25 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             reg.addRegisterCallback(callback);
         }
         return self();
+    }
+
+    /**
+     * Get the data provider instance for a given {@link ProviderType}. Only works within datagen context, not during registration or init.
+     * 
+     * @param <P>
+     *            The type of the provider
+     * @param type
+     *            A {@link ProviderType} representing the desired provider
+     * @return An {@link Optional} holding the provider, or empty if this provider was not registered. This can happen if datagen is run only for client or server providers.
+     * @throws IllegalStateException
+     *             if datagen has not started yet
+     */
+    public <P extends RegistrateProvider> Optional<P> getDataProvider(ProviderType<P> type) {
+        RegistrateDataProvider provider = this.provider;
+        if (provider != null) {
+            return provider.getSubProvider(type);
+        }
+        throw new IllegalStateException("Cannot get data provider before datagen is started");
     }
 
     /**
