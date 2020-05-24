@@ -2,7 +2,7 @@
   "parent": "minecraft:recipes/root",
   "rewards": {
     "recipes": [
-      "testmod:diamond_block"
+      "testmod:diamond_block_from_testblock_smelting"
     ]
   },
   "criteria": {
@@ -19,7 +19,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipe": "testmod:diamond_block"
+        "recipe": "testmod:diamond_block_from_testblock_smelting"
       }
     }
   },

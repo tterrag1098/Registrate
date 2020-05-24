@@ -1,8 +1,11 @@
 {
   "advancements.testmod.root.description": "Get an egg.",
   "advancements.testmod.root.title": "Test Advancement",
+  "biome.testmod.testbiome": "Testbiome",
+  "block.testmod.magic_item_model": "Magic Item Model",
   "block.testmod.testblock": "Testblock",
   "block.testmod.testfluid": "Testfluid",
+  "enchantment.testmod.testenchantment": "Testenchantment",
   "entity.testmod.testentity": "Testentity",
   "entity.testmod.testitem": "Testitem",
   "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",

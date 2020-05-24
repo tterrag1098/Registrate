@@ -21,13 +21,16 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.screen.inventory.ChestScreen;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.data.CookingRecipeBuilder;
 import net.minecraft.data.ShapedRecipeBuilder;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantment.Rarity;
+import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.container.ChestContainer;
 import net.minecraft.inventory.container.Container;
@@ -39,7 +42,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
@@ -53,6 +55,13 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biome.Category;
+import net.minecraft.world.biome.Biome.RainType;
+import net.minecraft.world.biome.Biome.SpawnListEntry;
+import net.minecraft.world.biome.DefaultBiomeFeatures;
+import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
 import net.minecraft.world.storage.loot.ConstantRange;
 import net.minecraft.world.storage.loot.ItemLootEntry;
 import net.minecraft.world.storage.loot.LootPool;
@@ -60,6 +69,8 @@ import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.RandomValueRange;
 import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
 import net.minecraft.world.storage.loot.functions.SetCount;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -114,6 +125,25 @@ public class TestMod {
         }
     }
     
+    private static class TestEnchantment extends Enchantment {
+
+        public TestEnchantment(Rarity rarityIn, EnchantmentType typeIn, EquipmentSlotType... slots) {
+            super(rarityIn, typeIn, slots);
+        }
+        
+        @Override
+        public int getMaxLevel() {
+            return 5;
+        }
+    }
+    
+    private static class TestBiome extends Biome {
+
+        public TestBiome(Biome.Builder biomeBuilder) {
+            super(biomeBuilder);
+        }
+    }
+    
     private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
     
     private final AtomicBoolean sawCallback = new AtomicBoolean();
@@ -136,7 +166,7 @@ public class TestMod {
                 .properties(p -> p.notSolid())
                 .addLayer(() -> RenderType::getCutout)
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                                prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/diamond_block"))))
+                                prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass_block"))))
                 .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
                     ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())
@@ -154,6 +184,13 @@ public class TestMod {
                     .build()
                 .tileEntity(ChestTileEntity::new)
                 .register();
+    
+    private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
+            .block(Block::new)
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
+                    prov.models().withExistingParent("block/subfolder/" + ctx.getName(), prov.mcLoc("block/gold_block"))))
+            .simpleItem()
+            .register();
     
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Item.class);
     private final RegistryEntry<TileEntityType<ChestTileEntity>> testblockte = testblock.getSibling(ForgeRegistries.TILE_ENTITIES);
@@ -179,10 +216,38 @@ public class TestMod {
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())
+            .bucket()
+                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
+                .build()
             .register();
     
     private final RegistryEntry<ContainerType<ChestContainer>> GENERIC_9x9 = registrate.object("testcontainer")
             .container((type, windowId, inv) -> new ChestContainer(type, windowId, inv, new Inventory(9 * 9), 9), () -> ChestScreen::new)
+            .register();
+    
+    private final RegistryEntry<TestEnchantment> testenchantment = registrate.object("testenchantment")
+            .enchantment(EnchantmentType.ARMOR, TestEnchantment::new)
+            .rarity(Rarity.UNCOMMON)
+            .addArmorSlots()
+            .register();
+    
+    private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
+            .biome(TestBiome::new)
+            .properties(b -> b.category(Category.PLAINS)
+                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.COARSE_DIRT.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
+                    .precipitation(RainType.RAIN)
+                    .depth(1)
+                    .scale(1)
+                    .temperature(1)
+                    .downfall(1)
+                    .waterColor(0x3f76e4)
+                    .waterFogColor(0x050533))
+            .typeWeight(BiomeType.WARM, 1000)
+            .addDictionaryTypes(BiomeDictionary.Type.DRY)
+            .forceAutomaticDictionaryTypes()
+            .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
+            .addSpawns(b -> b.getSpawns(EntityClassification.CREATURE)
+                    .add(new SpawnListEntry(EntityType.CAT, 1, 5, 10)))
             .register();
     
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")

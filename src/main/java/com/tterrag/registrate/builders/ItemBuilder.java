@@ -33,10 +33,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     /**
      * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
-     * The block will be assigned the following data:
+     * The item will be assigned the following data:
      * <ul>
      * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
-     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * </ul>
      * 
      * @param <T>
@@ -62,10 +62,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     /**
      * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
-     * The block will be assigned the following data:
+     * The item will be assigned the following data:
      * <ul>
      * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
-     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * <li>An {@link ItemGroup} set in the properties from the group supplier parameter, if non-null</li>
      * </ul>
      * 
@@ -94,8 +94,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     private final NonNullFunction<Item.Properties, T> factory;
-    private final NonNullSupplier<Item.Properties> properties = Item.Properties::new;
     
+    private NonNullSupplier<Item.Properties> initialProperties = Item.Properties::new;
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
@@ -117,7 +117,19 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
-    
+
+    /**
+     * Replace the initial state of the item properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
+     * 
+     * @param properties
+     *            A supplier to to create the initial properties
+     * @return this {@link ItemBuilder}
+     */
+    public ItemBuilder<T, P> initialProperties(NonNullSupplier<Item.Properties> properties) {
+        initialProperties = properties;
+        return this;
+    }
+
     public ItemBuilder<T, P> group(NonNullSupplier<? extends ItemGroup> group) {
         return properties(p -> p.group(group.get()));
     }
@@ -189,7 +201,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     
     @Override
     protected T createEntry() {
-        Item.Properties properties = this.properties.get();
+        Item.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }

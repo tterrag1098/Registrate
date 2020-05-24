@@ -2,6 +2,7 @@ package com.tterrag.registrate.builders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -38,6 +40,7 @@ import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.storage.loot.LootTables;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
 
@@ -59,7 +62,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * <li>A default blockstate file mapping all states to one model (via {@link #defaultBlockstate()})</li>
      * <li>A simple cube_all model (used in the blockstate) with one texture (via {@link #defaultBlockstate()})</li>
      * <li>A self-dropping loot table (via {@link #defaultLoot()})</li>
-     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * </ul>
      * 
      * @param <T>
@@ -113,7 +116,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
      * 
      * @param material
      *            The material of the initial properties
@@ -127,7 +130,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
      * 
      * @param material
      *            The material of the initial properties
@@ -141,7 +144,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
      * 
      * @param block
      *            The block to create the initial properties from (via {@link Block.Properties#from(Block)})
@@ -214,7 +217,20 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
-                .model((ctx, prov) -> prov.blockItem(this));
+                .model((ctx, prov) -> {
+                    Optional<String> model = getOwner().getDataProvider(ProviderType.BLOCKSTATE)
+                            .flatMap(p -> p.getExistingVariantBuilder(get()))
+                            .map(b -> b.getModels().get(b.partialState()))
+                            .map(ConfiguredModelList::toJSON)
+                            .filter(JsonElement::isJsonObject)
+                            .map(j -> j.getAsJsonObject().get("model"))
+                            .map(JsonElement::getAsString);
+                    if (model.isPresent()) {
+                        prov.withExistingParent(ctx.getName(), model.get());
+                    } else {
+                        prov.blockItem(this);
+                    }
+                });
     }
 
     /**

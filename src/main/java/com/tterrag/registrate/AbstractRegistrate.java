@@ -2,11 +2,13 @@ package com.tterrag.registrate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,12 +29,15 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
+import com.tterrag.registrate.builders.BiomeBuilder;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.ContainerBuilder;
 import com.tterrag.registrate.builders.ContainerBuilder.ContainerFactory;
 import com.tterrag.registrate.builders.ContainerBuilder.ScreenFactory;
+import com.tterrag.registrate.builders.EnchantmentBuilder;
+import com.tterrag.registrate.builders.EnchantmentBuilder.EnchantmentFactory;
 import com.tterrag.registrate.builders.EntityBuilder;
 import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.builders.ItemBuilder;
@@ -59,6 +64,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.gui.IHasContainer;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -70,9 +77,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
@@ -118,7 +126,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         
         @Getter(value = AccessLevel.NONE)
         List<NonNullConsumer<? super T>> callbacks = new ArrayList<>();
-        
+
         Registration(ResourceLocation name, Class<? super R> type, Builder<R, T, ?, ?> builder, Supplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
             this.name = name;
             this.type = type;
@@ -147,6 +155,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
     /** Expected to be emptied by the time registration occurs, is emptied by {@link #accept(String, Class, Builder, NonNullSupplier, NonNullFunction)} */
     private final Multimap<Pair<String, Class<?>>, NonNullConsumer<? extends IForgeRegistryEntry<?>>> registerCallbacks = HashMultimap.create();
+    /** Entry-less callbacks that are invoked after the registry type has completely finished */
+    private final Multimap<Class<?>, Runnable> afterRegisterCallbacks = HashMultimap.create();
+    private final Set<Class<?>> completedRegistrations = new HashSet<>();
+
     private final Table<Pair<String, Class<?>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
 
@@ -179,12 +191,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     protected S registerEventListeners(IEventBus bus) {
         bus.addListener(this::onRegister);
+        bus.addListener(EventPriority.LOWEST, this::onRegisterLate);
         bus.addListener(this::onData);
         return self();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @SubscribeEvent
     protected void onRegister(RegistryEvent.Register<?> event) {
         Class<?> type = event.getRegistry().getRegistrySuperType();
         if (type == null) {
@@ -215,9 +227,18 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             }
         }
     }
+
+    protected void onRegisterLate(RegistryEvent.Register<?> event) {
+        Class<?> type = event.getRegistry().getRegistrySuperType();
+        afterRegisterCallbacks.get(type).forEach(Runnable::run);
+        completedRegistrations.add(type);
+    }
+
+    @Nullable
+    private RegistrateDataProvider provider;
     
     protected void onData(GatherDataEvent event) {
-        event.getGenerator().addProvider(new RegistrateDataProvider(this, modid, event));
+        event.getGenerator().addProvider(provider = new RegistrateDataProvider(this, modid, event));
     }
 
     /**
@@ -333,6 +354,34 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             reg.addRegisterCallback(callback);
         }
         return self();
+    }
+    
+    public <R extends IForgeRegistryEntry<R>> S addRegisterCallback(Class<? super R> registryType, Runnable callback) {
+        afterRegisterCallbacks.put(registryType, callback);
+        return self();
+    }
+
+    public <R extends IForgeRegistryEntry<R>> boolean isRegistered(Class<? super R> registryType) {
+        return completedRegistrations.contains(registryType);
+    }
+
+    /**
+     * Get the data provider instance for a given {@link ProviderType}. Only works within datagen context, not during registration or init.
+     * 
+     * @param <P>
+     *            The type of the provider
+     * @param type
+     *            A {@link ProviderType} representing the desired provider
+     * @return An {@link Optional} holding the provider, or empty if this provider was not registered. This can happen if datagen is run only for client or server providers.
+     * @throws IllegalStateException
+     *             if datagen has not started yet
+     */
+    public <P extends RegistrateProvider> Optional<P> getDataProvider(ProviderType<P> type) {
+        RegistrateDataProvider provider = this.provider;
+        if (provider != null) {
+            return provider.getSubProvider(type);
+        }
+        throw new IllegalStateException("Cannot get data provider before datagen is started");
     }
 
     /**
@@ -899,5 +948,41 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     public <T extends Container, SC extends Screen & IHasContainer<T>, P> ContainerBuilder<T, SC, P> container(P parent, String name, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return entry(name, callback -> new ContainerBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
+    }
+    
+    // Enchantment
+    
+    public <T extends Enchantment> EnchantmentBuilder<T, S> enchantment(EnchantmentType type, EnchantmentFactory<T> factory) {
+        return enchantment(self(), type, factory);
+    }
+    
+    public <T extends Enchantment> EnchantmentBuilder<T, S> enchantment(String name, EnchantmentType type, EnchantmentFactory<T> factory) {
+        return enchantment(self(), name, type, factory);
+    }
+    
+    public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, EnchantmentType type, EnchantmentFactory<T> factory) {
+        return enchantment(parent, currentName(), type, factory);
+    }
+    
+    public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, String name, EnchantmentType type, EnchantmentFactory<T> factory) {
+        return entry(name, callback -> EnchantmentBuilder.create(this, parent, name, callback, type, factory));
+    }
+    
+    // Biome
+
+    public <T extends Biome> BiomeBuilder<T, S> biome(NonNullFunction<Biome.Builder, T> factory) {
+        return biome(self(), factory);
+    }
+
+    public <T extends Biome> BiomeBuilder<T, S> biome(String name, NonNullFunction<Biome.Builder, T> factory) {
+        return biome(self(), name, factory);
+    }
+
+    public <T extends Biome, P> BiomeBuilder<T, P> biome(P parent, NonNullFunction<Biome.Builder, T> factory) {
+        return biome(parent, currentName(), factory);
+    }
+
+    public <T extends Biome, P> BiomeBuilder<T, P> biome(P parent, String name, NonNullFunction<Biome.Builder, T> factory) {
+        return entry(name, callback -> BiomeBuilder.create(this, parent, name, callback, factory));
     }
 }

@@ -147,6 +147,16 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
         getOwner().<R, T>addRegisterCallback(getName(), getRegistryType(), callback);
         return (S) this;
     }
+    
+    default <OR extends IForgeRegistryEntry<OR>> S onRegisterAfter(Class<? super OR> dependencyType, NonNullConsumer<? super T> callback) {
+        return onRegister(e -> {
+            if (getOwner().<OR>isRegistered(dependencyType)) {
+                callback.accept(e);
+            } else {
+                getOwner().<OR>addRegisterCallback(dependencyType, () -> callback.accept(e));
+            }
+        });
+    }
 
     /**
      * Apply a transformation to this {@link Builder}. Useful to apply helper methods within a fluent chain, e.g.
