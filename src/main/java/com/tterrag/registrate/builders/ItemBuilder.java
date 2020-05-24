@@ -119,7 +119,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Replace the initial state of the item properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
+     * Replace the initial state of the item properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
      * 
      * @param properties
      *            A supplier to to create the initial properties
