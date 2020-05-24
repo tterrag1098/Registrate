@@ -105,7 +105,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
      * 
      * @param material
      *            The material of the initial properties
@@ -119,7 +119,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
      * 
      * @param material
      *            The material of the initial properties
@@ -133,7 +133,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #initialProperties(NonNullSupplier)}.
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
      * 
      * @param block
      *            The block to create the initial properties from (via {@link Block.Properties#from(Block)})

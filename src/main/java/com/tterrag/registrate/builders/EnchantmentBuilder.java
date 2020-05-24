@@ -13,7 +13,7 @@ import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.inventory.EquipmentSlotType;
 
 /**
- * A builder for items, allows for customization of the {@link Enchantment.Rarity enchantment rarity} and {@link EquipmentSlotType equipment slots}, and configuration of data associated with
+ * A builder for enchantments, allows for customization of the {@link Enchantment.Rarity enchantment rarity} and {@link EquipmentSlotType equipment slots}, and configuration of data associated with
  * enchantments (lang).
  * 
  * @param <T>

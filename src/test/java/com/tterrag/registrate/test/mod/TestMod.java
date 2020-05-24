@@ -22,8 +22,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.screen.inventory.ChestScreen;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.enchantment.Enchantment.Rarity;
+import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.PigEntity;
@@ -53,6 +53,13 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biome.Category;
+import net.minecraft.world.biome.Biome.RainType;
+import net.minecraft.world.biome.Biome.SpawnListEntry;
+import net.minecraft.world.biome.DefaultBiomeFeatures;
+import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
 import net.minecraft.world.storage.loot.ConstantRange;
 import net.minecraft.world.storage.loot.ItemLootEntry;
 import net.minecraft.world.storage.loot.LootPool;
@@ -60,6 +67,8 @@ import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.RandomValueRange;
 import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
 import net.minecraft.world.storage.loot.functions.SetCount;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -123,6 +132,13 @@ public class TestMod {
         @Override
         public int getMaxLevel() {
             return 5;
+        }
+    }
+    
+    private static class TestBiome extends Biome {
+
+        public TestBiome(Biome.Builder biomeBuilder) {
+            super(biomeBuilder);
         }
     }
     
@@ -209,6 +225,25 @@ public class TestMod {
             .enchantment(EnchantmentType.ARMOR, TestEnchantment::new)
             .rarity(Rarity.UNCOMMON)
             .addArmorSlots()
+            .register();
+    
+    private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
+            .biome(TestBiome::new)
+            .properties(b -> b.category(Category.PLAINS)
+                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.COARSE_DIRT.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
+                    .precipitation(RainType.RAIN)
+                    .depth(1)
+                    .scale(1)
+                    .temperature(1)
+                    .downfall(1)
+                    .waterColor(0x3f76e4)
+                    .waterFogColor(0x050533))
+            .typeWeight(BiomeType.WARM, 1000)
+            .addDictionaryTypes(BiomeDictionary.Type.DRY)
+            .forceAutomaticDictionaryTypes()
+            .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
+            .addSpawns(b -> b.getSpawns(EntityClassification.CREATURE)
+                    .add(new SpawnListEntry(EntityType.CAT, 1, 5, 10)))
             .register();
     
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")

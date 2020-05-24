@@ -2,11 +2,13 @@ package com.tterrag.registrate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,6 +29,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
+import com.tterrag.registrate.builders.BiomeBuilder;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.BuilderCallback;
@@ -74,9 +77,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
@@ -122,7 +126,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         
         @Getter(value = AccessLevel.NONE)
         List<NonNullConsumer<? super T>> callbacks = new ArrayList<>();
-        
+
         Registration(ResourceLocation name, Class<? super R> type, Builder<R, T, ?, ?> builder, Supplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
             this.name = name;
             this.type = type;
@@ -151,6 +155,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final Table<String, Class<?>, Registration<?, ?>> registrations = HashBasedTable.create();
     /** Expected to be emptied by the time registration occurs, is emptied by {@link #accept(String, Class, Builder, NonNullSupplier, NonNullFunction)} */
     private final Multimap<Pair<String, Class<?>>, NonNullConsumer<? extends IForgeRegistryEntry<?>>> registerCallbacks = HashMultimap.create();
+    /** Entry-less callbacks that are invoked after the registry type has completely finished */
+    private final Multimap<Class<?>, Runnable> afterRegisterCallbacks = HashMultimap.create();
+    private final Set<Class<?>> completedRegistrations = new HashSet<>();
+
     private final Table<Pair<String, Class<?>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
 
@@ -183,12 +191,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     protected S registerEventListeners(IEventBus bus) {
         bus.addListener(this::onRegister);
+        bus.addListener(EventPriority.LOWEST, this::onRegisterLate);
         bus.addListener(this::onData);
         return self();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @SubscribeEvent
     protected void onRegister(RegistryEvent.Register<?> event) {
         Class<?> type = event.getRegistry().getRegistrySuperType();
         if (type == null) {
@@ -219,7 +227,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             }
         }
     }
-    
+
+    protected void onRegisterLate(RegistryEvent.Register<?> event) {
+        Class<?> type = event.getRegistry().getRegistrySuperType();
+        afterRegisterCallbacks.get(type).forEach(Runnable::run);
+        completedRegistrations.add(type);
+    }
+
     @Nullable
     private RegistrateDataProvider provider;
     
@@ -340,6 +354,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             reg.addRegisterCallback(callback);
         }
         return self();
+    }
+    
+    public <R extends IForgeRegistryEntry<R>> S addRegisterCallback(Class<? super R> registryType, Runnable callback) {
+        afterRegisterCallbacks.put(registryType, callback);
+        return self();
+    }
+
+    public <R extends IForgeRegistryEntry<R>> boolean isRegistered(Class<? super R> registryType) {
+        return completedRegistrations.contains(registryType);
     }
 
     /**
@@ -943,5 +966,23 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, String name, EnchantmentType type, EnchantmentFactory<T> factory) {
         return entry(name, callback -> EnchantmentBuilder.create(this, parent, name, callback, type, factory));
+    }
+    
+    // Biome
+
+    public <T extends Biome> BiomeBuilder<T, S> biome(NonNullFunction<Biome.Builder, T> factory) {
+        return biome(self(), factory);
+    }
+
+    public <T extends Biome> BiomeBuilder<T, S> biome(String name, NonNullFunction<Biome.Builder, T> factory) {
+        return biome(self(), name, factory);
+    }
+
+    public <T extends Biome, P> BiomeBuilder<T, P> biome(P parent, NonNullFunction<Biome.Builder, T> factory) {
+        return biome(parent, currentName(), factory);
+    }
+
+    public <T extends Biome, P> BiomeBuilder<T, P> biome(P parent, String name, NonNullFunction<Biome.Builder, T> factory) {
+        return entry(name, callback -> BiomeBuilder.create(this, parent, name, callback, factory));
     }
 }
