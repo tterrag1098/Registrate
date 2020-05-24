@@ -20,13 +20,16 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.screen.inventory.ChestScreen;
-import net.minecraft.data.CookingRecipeBuilder;
 import net.minecraft.data.ShapedRecipeBuilder;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentType;
+import net.minecraft.enchantment.Enchantment.Rarity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.container.ChestContainer;
 import net.minecraft.inventory.container.Container;
@@ -38,7 +41,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
@@ -109,6 +111,18 @@ public class TestMod {
 
         public TestEntity(EntityType<? extends PigEntity> p_i50250_1_, World p_i50250_2_) {
             super(p_i50250_1_, p_i50250_2_);
+        }
+    }
+    
+    private static class TestEnchantment extends Enchantment {
+
+        public TestEnchantment(Rarity rarityIn, EnchantmentType typeIn, EquipmentSlotType... slots) {
+            super(rarityIn, typeIn, slots);
+        }
+        
+        @Override
+        public int getMaxLevel() {
+            return 5;
         }
     }
     
@@ -189,6 +203,12 @@ public class TestMod {
     
     private final RegistryEntry<ContainerType<ChestContainer>> GENERIC_9x9 = registrate.object("testcontainer")
             .container((type, windowId, inv) -> new ChestContainer(type, windowId, inv, new Inventory(9 * 9), 9), () -> ChestScreen::new)
+            .register();
+    
+    private final RegistryEntry<TestEnchantment> testenchantment = registrate.object("testenchantment")
+            .enchantment(EnchantmentType.ARMOR, TestEnchantment::new)
+            .rarity(Rarity.UNCOMMON)
+            .addArmorSlots()
             .register();
     
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")

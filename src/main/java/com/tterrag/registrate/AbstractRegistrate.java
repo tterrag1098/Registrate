@@ -33,6 +33,8 @@ import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.ContainerBuilder;
 import com.tterrag.registrate.builders.ContainerBuilder.ContainerFactory;
 import com.tterrag.registrate.builders.ContainerBuilder.ScreenFactory;
+import com.tterrag.registrate.builders.EnchantmentBuilder;
+import com.tterrag.registrate.builders.EnchantmentBuilder.EnchantmentFactory;
 import com.tterrag.registrate.builders.EntityBuilder;
 import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.builders.ItemBuilder;
@@ -59,6 +61,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.gui.IHasContainer;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
@@ -921,5 +925,23 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     public <T extends Container, SC extends Screen & IHasContainer<T>, P> ContainerBuilder<T, SC, P> container(P parent, String name, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return entry(name, callback -> new ContainerBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
+    }
+    
+    // Enchantment
+    
+    public <T extends Enchantment> EnchantmentBuilder<T, S> enchantment(EnchantmentType type, EnchantmentFactory<T> factory) {
+        return enchantment(self(), type, factory);
+    }
+    
+    public <T extends Enchantment> EnchantmentBuilder<T, S> enchantment(String name, EnchantmentType type, EnchantmentFactory<T> factory) {
+        return enchantment(self(), name, type, factory);
+    }
+    
+    public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, EnchantmentType type, EnchantmentFactory<T> factory) {
+        return enchantment(parent, currentName(), type, factory);
+    }
+    
+    public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, String name, EnchantmentType type, EnchantmentFactory<T> factory) {
+        return entry(name, callback -> EnchantmentBuilder.create(this, parent, name, callback, type, factory));
     }
 }

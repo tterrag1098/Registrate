@@ -52,7 +52,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * <li>A default blockstate file mapping all states to one model (via {@link #defaultBlockstate()})</li>
      * <li>A simple cube_all model (used in the blockstate) with one texture (via {@link #defaultBlockstate()})</li>
      * <li>A self-dropping loot table (via {@link #defaultLoot()})</li>
-     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * </ul>
      * 
      * @param <T>

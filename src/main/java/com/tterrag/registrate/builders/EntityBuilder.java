@@ -32,11 +32,11 @@ import net.minecraft.util.ResourceLocation;
 public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, EntityBuilder<T, P>> {
 
     /**
-     * Create a new {@link BlockBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * Create a new {@link EntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
-     * The block will be assigned the following data:
+     * The entity will be assigned the following data:
      * <ul>
-     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * </ul>
      * 
      * @param <T>

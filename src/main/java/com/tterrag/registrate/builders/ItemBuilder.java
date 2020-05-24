@@ -33,10 +33,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     /**
      * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
-     * The block will be assigned the following data:
+     * The item will be assigned the following data:
      * <ul>
      * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
-     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * </ul>
      * 
      * @param <T>
@@ -62,10 +62,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     /**
      * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
-     * The block will be assigned the following data:
+     * The item will be assigned the following data:
      * <ul>
      * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
-     * <li>The default translation (via {@link #defaultLang()}</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * <li>An {@link ItemGroup} set in the properties from the group supplier parameter, if non-null</li>
      * </ul>
      * 

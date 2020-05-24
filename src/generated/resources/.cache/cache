@@ -1,8 +1,8 @@
 a28b0f687e669d4994b7667c92dde8394e3e6208 assets\testmod\blockstates\magic_item_model.json
 539ba580bd22c7822c059998a2479aefa78dde61 assets\testmod\blockstates\testblock.json
 209c1eedcb8fbc05ed7146cb3ed3077cb0e2172f assets\testmod\blockstates\testfluid.json
-dd4fae12e4cd2c16f7c0f7f328393f9920cdd37b assets\testmod\lang\en_ud.json
-f97f83f2f07b8c00a4240b5d2021f4ca0ef65870 assets\testmod\lang\en_us.json
+2f94ce46a72dac1daede637b8a326f91df4154df assets\testmod\lang\en_ud.json
+0258d5485d993b470c77c71e332c2fde7b8b9e6e assets\testmod\lang\en_us.json
 7e6e85794e525a4d3c06ed6a569dba9b8caf3d12 assets\testmod\models\block\subfolder\magic_item_model.json
 1d0720fe6815c846066afd8d3e0b9f5238b1d4a1 assets\testmod\models\block\testblock.json
 af7c5f088daaecd9f562a9b4e35d7fe18603d659 assets\testmod\models\block\testfluid.json
