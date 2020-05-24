@@ -87,7 +87,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
     }
 
     /**
-     * Replace the initial state of the biome properties, without replacing or removing any modifications done via {@link #properties(NonNullSupplier)}.
+     * Replace the initial state of the biome properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
      * 
      * @param properties
      *            A supplier to to create the initial properties
@@ -151,7 +151,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
      * {@link Biome#addFeature(net.minecraft.world.gen.GenerationStage.Decoration, net.minecraft.world.gen.feature.ConfiguredFeature)}
      * 
      * @param action
-     *            A {@link Consumer} which will be called to add featuers to this biome.
+     *            A {@link NonNullConsumer} which will be called to add featuers to this biome.
      * @return this {@link BiomeBuilder}
      */
     public BiomeBuilder<T, P> addFeatures(NonNullConsumer<? super T> action) {
@@ -166,7 +166,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
      * {@link Biome#addCarver(net.minecraft.world.gen.GenerationStage.Carving, net.minecraft.world.gen.carver.ConfiguredCarver)}
      * 
      * @param action
-     *            A {@link Consumer} which will be called to add carvers to this biome.
+     *            A {@link NonNullConsumer} which will be called to add carvers to this biome.
      * @return this {@link BiomeBuilder}
      */
     public BiomeBuilder<T, P> addCarvers(NonNullConsumer<? super T> action) {
@@ -180,7 +180,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
      * Any {@link EntityType} object can be safely referenced here and added to the biome via {@link Biome#getSpawns(net.minecraft.entity.EntityClassification)}.
      * 
      * @param action
-     *            A {@link Consumer} which will be called to add spawns to this biome.
+     *            A {@link NonNullConsumer} which will be called to add spawns to this biome.
      * @return this {@link BiomeBuilder}
      */
     public BiomeBuilder<T, P> addSpawns(NonNullConsumer<? super T> action) {
