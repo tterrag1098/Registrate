@@ -2,6 +2,7 @@ package com.tterrag.registrate.util.entry;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.IItemProvider;
 import net.minecraftforge.fml.RegistryObject;
@@ -19,5 +20,13 @@ public class ItemProviderEntry<T extends IForgeRegistryEntry<? super T> & IItemP
 
     public ItemStack asStack(int count) {
         return new ItemStack(get(), count);
+    }
+
+    public boolean isIn(ItemStack stack) {
+        return is(stack.getItem());
+    }
+
+    public boolean is(Item item) {
+        return get().asItem() == item;
     }
 }

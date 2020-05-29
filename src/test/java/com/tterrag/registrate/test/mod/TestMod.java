@@ -58,6 +58,7 @@ import net.minecraft.world.biome.Biome.Category;
 import net.minecraft.world.biome.Biome.RainType;
 import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.biome.DefaultBiomeFeatures;
+import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
 import net.minecraft.world.storage.loot.ConstantRange;
@@ -273,5 +274,11 @@ public class TestMod {
         if (!sawCallback.get()) {
             throw new IllegalStateException("Register callback not fired!");
         }
+        
+        testblock.asStack();
+        testitem.is(Items.SNOWBALL);
+        testblockitem.is(Items.STONE);
+        testblockte.is(TileEntityType.CHEST);
+        // testbiome.is(Feature.BAMBOO); // should not compile
     }
 }

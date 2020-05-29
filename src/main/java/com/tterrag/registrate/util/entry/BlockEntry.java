@@ -19,8 +19,4 @@ public class BlockEntry<T extends Block> extends ItemProviderEntry<T> {
     public boolean has(BlockState state) {
         return is(state.getBlock());
     }
-
-    public boolean is(Block block) {
-        return get() == block;
-    }
 }
