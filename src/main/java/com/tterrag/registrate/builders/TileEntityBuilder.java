@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
@@ -42,14 +43,14 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
      *            Factory to create the tile entity
      * @return A new {@link TileEntityBuilder} with reasonable default data generators.
      */
-    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
+    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
         return new TileEntityBuilder<>(owner, parent, name, callback, factory);
     }
 
-    private final NonNullSupplier<? extends T> factory;
+    private final NonNullFunction<TileEntityType<T>, ? extends T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
 
-    protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
+    protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
         super(owner, parent, name, callback, TileEntityType.class);
         this.factory = factory;
     }
@@ -81,7 +82,7 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
 
     @Override
     protected TileEntityType<T> createEntry() {
-        return TileEntityType.Builder.<T>create(factory, validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
+        return TileEntityType.Builder.<T>create(() -> factory.apply(get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
                 .build(null);
     }
 }

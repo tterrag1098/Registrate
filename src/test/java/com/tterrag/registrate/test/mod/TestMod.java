@@ -45,6 +45,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.ChestTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
@@ -52,13 +53,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biome.Category;
 import net.minecraft.world.biome.Biome.RainType;
 import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraft.world.biome.DefaultBiomeFeatures;
-import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
 import net.minecraft.world.storage.loot.ConstantRange;
@@ -115,8 +116,26 @@ public class TestMod {
             }
             return true;
         }
+
+        @Override
+        public boolean hasTileEntity(BlockState state) {
+            return true;
+        }
+
+        @Override
+        @Nullable
+        public TileEntity createTileEntity(BlockState state, IBlockReader world) {
+            return testblockte.get().create();
+        }
     }
-    
+
+    private static class TestTileEntity extends ChestTileEntity {
+
+        public TestTileEntity(TileEntityType<? extends TestTileEntity> type) {
+            super(type);
+        }
+    }
+
     private static class TestEntity extends PigEntity {
 
         public TestEntity(EntityType<? extends PigEntity> p_i50250_1_, World p_i50250_2_) {
@@ -179,7 +198,7 @@ public class TestMod {
                 .item()
                     .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                     .build()
-                .tileEntity(ChestTileEntity::new)
+                .tileEntity(TestTileEntity::new)
                 .register();
     
     private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")

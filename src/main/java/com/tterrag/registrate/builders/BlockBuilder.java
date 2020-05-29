@@ -30,6 +30,7 @@ import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.world.storage.loot.LootTables;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.fml.RegistryObject;
@@ -206,7 +207,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            A factory for the tile entity
      * @return this {@link BlockBuilder}
      */
-    public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(NonNullSupplier<? extends TE> factory) {
+    public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
         return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this).build();
     }
 
