@@ -20,6 +20,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.gui.screen.inventory.ChestScreen;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantment.Rarity;
@@ -41,6 +42,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.state.StateContainer.Builder;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
@@ -96,6 +99,12 @@ public class TestMod {
         public TestBlock(Properties properties) {
             super(properties);
         }
+        
+        @Override
+        protected void fillStateContainer(Builder<Block, BlockState> builder) {
+            super.fillStateContainer(builder);
+            builder.add(BlockStateProperties.CHEST_TYPE);
+        }
 
         @Override
         public boolean onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
@@ -105,7 +114,7 @@ public class TestMod {
                     @Override
                     @Nullable
                     public Container createMenu(int windowId, PlayerInventory inv, PlayerEntity player) {
-                        return new ChestContainer(GENERIC_9x9.get(), windowId, inv, new Inventory(9 * 9), 9);
+                        return new ChestContainer(ContainerType.GENERIC_9X3, windowId, inv, (TestTileEntity) worldIn.getTileEntity(pos), 3);
                     }
                     
                     @Override
@@ -133,6 +142,16 @@ public class TestMod {
 
         public TestTileEntity(TileEntityType<? extends TestTileEntity> type) {
             super(type);
+        }
+    }
+    
+    private static class TestTileEntityRenderer extends TileEntityRenderer<TestTileEntity> {
+    }
+    
+    private class TestDummyTileEntity extends TileEntity {
+
+        public TestDummyTileEntity() {
+            super(testtile.get());
         }
     }
 
@@ -199,6 +218,8 @@ public class TestMod {
                     .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                     .build()
                 .tileEntity(TestTileEntity::new)
+                    .renderer(() -> TestTileEntityRenderer::new)
+                    .build()
                 .register();
     
     private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
@@ -224,8 +245,8 @@ public class TestMod {
             .tag(EntityTypeTags.RAIDERS)
             .register();
     
-    private final RegistryEntry<TileEntityType<ChestTileEntity>> testtile = registrate.object("testtile")
-            .tileEntity(ChestTileEntity::new)
+    private final RegistryEntry<TileEntityType<TestDummyTileEntity>> testtile = registrate.object("testtile")
+            .tileEntity(TestDummyTileEntity::new)
             .register();
     
     private final RegistryEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")

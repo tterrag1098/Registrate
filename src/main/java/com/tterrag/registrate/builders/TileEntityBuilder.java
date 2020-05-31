@@ -3,14 +3,21 @@ package com.tterrag.registrate.builders;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 /**
  * A builder for tile entities, allows for customization of the valid blocks.
@@ -49,6 +56,8 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
 
     private final NonNullFunction<TileEntityType<T>, ? extends T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
+    @Nullable
+    private NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer;
 
     protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
         super(owner, parent, name, callback, TileEntityType.class);
@@ -78,6 +87,21 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
     public final TileEntityBuilder<T, P> validBlocks(NonNullSupplier<? extends Block>... blocks) {
         Arrays.stream(blocks).forEach(this::validBlock);
         return this;
+    }
+    
+    public TileEntityBuilder<T, P> renderer(NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer) {
+        if (this.renderer == null) { // First call only
+            this.onRegister(type -> DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer));
+        }
+        this.renderer = renderer;
+        return this;
+    }
+    
+    protected void registerRenderer() {
+        NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer = this.renderer;
+        if (renderer != null) {
+            ClientRegistry.bindTileEntitySpecialRenderer((Class<T>) get().create().getClass(), renderer.get().get());
+        }
     }
 
     @Override

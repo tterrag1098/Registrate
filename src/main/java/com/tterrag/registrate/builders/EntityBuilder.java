@@ -122,8 +122,10 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
         ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> ret = getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(this, primaryColor, secondaryColor, p)).properties(p -> p.group(ItemGroup.MISC))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
+        if (this.spawnEggBuilder == null) { // First call only
+            this.onRegister(this::injectSpawnEggType);
+        }
         this.spawnEggBuilder = ret;
-        this.onRegister(this::injectSpawnEggType);
         return ret;
     }
 

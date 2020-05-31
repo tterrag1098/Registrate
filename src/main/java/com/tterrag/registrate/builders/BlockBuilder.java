@@ -197,6 +197,21 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                     }
                 });
     }
+    
+    /**
+     * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
+     * 
+     * @param <TE>
+     *            The type of the tile entity
+     * @param factory
+     *            A factory for the tile entity
+     * @return this {@link BlockBuilder}
+     * @deprecated Use {@link #simpleTileEntity(NonNullFunction)}
+     */
+    @Deprecated
+    public <TE extends TileEntity> BlockBuilder<T, P> simpleTileEntity(NonNullSupplier<? extends TE> factory) {
+        return tileEntity(factory).build();
+    }
 
     /**
      * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
@@ -207,8 +222,40 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            A factory for the tile entity
      * @return this {@link BlockBuilder}
      */
-    public <TE extends TileEntity> BlockBuilder<T, P> tileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this).build();
+    public <TE extends TileEntity> BlockBuilder<T, P> simpleTileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
+        return tileEntity(factory).build();
+    }
+
+    /**
+     * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
+     * <p>
+     * The created {@link TileEntityBuilder} is returned for further configuration.
+     * 
+     * @param <TE>
+     *            The type of the tile entity
+     * @param factory
+     *            A factory for the tile entity
+     * @return the {@link TileEntityBuilder}
+     * @deprecated Use {@link #tileEntity(NonNullFunction)}
+     */
+    @Deprecated
+    public <TE extends TileEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullSupplier<? extends TE> factory) {
+        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this);
+    }
+
+    /**
+     * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
+     * <p>
+     * The created {@link TileEntityBuilder} is returned for further configuration.
+     * 
+     * @param <TE>
+     *            The type of the tile entity
+     * @param factory
+     *            A factory for the tile entity
+     * @return the {@link TileEntityBuilder}
+     */
+    public <TE extends TileEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
+        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this);
     }
 
     /**
