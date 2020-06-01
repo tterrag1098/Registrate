@@ -117,4 +117,12 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
         return get() == entry;
     }
+    
+    @SuppressWarnings("unchecked")
+    protected static <R extends IForgeRegistryEntry<R>, T extends R, E extends RegistryEntry<T>> E cast(Class<? super E> clazz, RegistryEntry<?> entry) {
+        if (clazz.isInstance(entry)) {
+            return (E) entry;
+        }
+        throw new IllegalArgumentException("Could not convert RegistryEntry: expecting " + clazz + ", found " + entry.getClass());
+    }
 }

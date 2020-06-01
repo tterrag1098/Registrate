@@ -12,6 +12,7 @@ import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.entry.TileEntityEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
@@ -141,7 +142,7 @@ public class TestMod {
         @Override
         @Nullable
         public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-            return testblockte.get().create();
+            return testblockte.create();
         }
     }
 
@@ -169,8 +170,8 @@ public class TestMod {
     
     private class TestDummyTileEntity extends TileEntity {
 
-        public TestDummyTileEntity() {
-            super(testtile.get());
+        public TestDummyTileEntity(TileEntityType<? extends TestDummyTileEntity> type) {
+            super(type);
         }
     }
 
@@ -251,7 +252,7 @@ public class TestMod {
             .register();
     
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Item.class);
-    private final RegistryEntry<TileEntityType<ChestTileEntity>> testblockte = testblock.getSibling(ForgeRegistries.TILE_ENTITIES);
+    private final TileEntityEntry<ChestTileEntity> testblockte = TileEntityEntry.cast(testblock.getSibling(ForgeRegistries.TILE_ENTITIES));
     
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
@@ -266,7 +267,7 @@ public class TestMod {
             .tag(EntityTypeTags.RAIDERS)
             .register();
     
-    private final RegistryEntry<TileEntityType<TestDummyTileEntity>> testtile = registrate.object("testtile")
+    private final TileEntityEntry<TestDummyTileEntity> testtile = registrate.object("testtile")
             .tileEntity(TestDummyTileEntity::new)
             .register();
     
