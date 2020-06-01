@@ -10,6 +10,7 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -21,6 +22,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * @param <T>
  *            The type of the entry
  */
+@EqualsAndHashCode(of = "delegate")
 public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements NonNullSupplier<T> {
 
     @SuppressWarnings("null") // Safe to call with null here and only here
@@ -110,5 +112,9 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
             return this;
         }
         return empty();
+    }
+
+    public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
+        return get() == entry;
     }
 }

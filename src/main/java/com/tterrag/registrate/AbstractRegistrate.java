@@ -74,6 +74,7 @@ import net.minecraft.inventory.container.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -822,19 +823,39 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     // Tile Entities
     
+    @Deprecated
     public <T extends TileEntity> TileEntityBuilder<T, S> tileEntity(NonNullSupplier<? extends T> factory) {
         return tileEntity(self(), factory);
     }
     
+    @Deprecated
     public <T extends TileEntity> TileEntityBuilder<T, S> tileEntity(String name, NonNullSupplier<? extends T> factory) {
         return tileEntity(self(), name, factory);
     }
     
+    @Deprecated
     public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, NonNullSupplier<? extends T> factory) {
         return tileEntity(parent, currentName(), factory);
     }
     
+    @Deprecated
     public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, NonNullSupplier<? extends T> factory) {
+        return tileEntity(parent, name, $ -> factory.get());
+    }
+    
+    public <T extends TileEntity> TileEntityBuilder<T, S> tileEntity(NonNullFunction<TileEntityType<T>, ? extends T> factory) {
+        return tileEntity(self(), factory);
+    }
+    
+    public <T extends TileEntity> TileEntityBuilder<T, S> tileEntity(String name, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
+        return tileEntity(self(), name, factory);
+    }
+    
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
+        return tileEntity(parent, currentName(), factory);
+    }
+    
+    public <T extends TileEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
         return entry(name, callback -> TileEntityBuilder.create(this, parent, name, callback, factory));
     }
     

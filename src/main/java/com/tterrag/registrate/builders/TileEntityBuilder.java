@@ -3,13 +3,21 @@ package com.tterrag.registrate.builders;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 /**
  * A builder for tile entities, allows for customization of the valid blocks.
@@ -42,14 +50,16 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
      *            Factory to create the tile entity
      * @return A new {@link TileEntityBuilder} with reasonable default data generators.
      */
-    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
+    public static <T extends TileEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
         return new TileEntityBuilder<>(owner, parent, name, callback, factory);
     }
 
-    private final NonNullSupplier<? extends T> factory;
+    private final NonNullFunction<TileEntityType<T>, ? extends T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
+    @Nullable
+    private NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer;
 
-    protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<? extends T> factory) {
+    protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
         super(owner, parent, name, callback, TileEntityType.class);
         this.factory = factory;
     }
@@ -78,10 +88,25 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
         Arrays.stream(blocks).forEach(this::validBlock);
         return this;
     }
+    
+    public TileEntityBuilder<T, P> renderer(NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer) {
+        if (this.renderer == null) { // First call only
+            this.onRegister(type -> DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer));
+        }
+        this.renderer = renderer;
+        return this;
+    }
+    
+    protected void registerRenderer() {
+        NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer = this.renderer;
+        if (renderer != null) {
+            ClientRegistry.bindTileEntitySpecialRenderer((Class<T>) get().create().getClass(), renderer.get().get());
+        }
+    }
 
     @Override
     protected TileEntityType<T> createEntry() {
-        return TileEntityType.Builder.<T>create(factory, validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
+        return TileEntityType.Builder.<T>create(() -> factory.apply(get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
                 .build(null);
     }
 }
