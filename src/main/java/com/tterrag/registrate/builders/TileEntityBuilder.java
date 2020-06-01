@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.entry.TileEntityEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
@@ -17,6 +19,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 /**
@@ -108,5 +111,15 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
     protected TileEntityType<T> createEntry() {
         return TileEntityType.Builder.<T>create(() -> factory.apply(get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
                 .build(null);
+    }
+    
+    @Override
+    protected RegistryEntry<TileEntityType<T>> createEntryWrapper(RegistryObject<TileEntityType<T>> delegate) {
+        return new TileEntityEntry<>(getOwner(), delegate);
+    }
+    
+    @Override
+    public TileEntityEntry<T> register() {
+        return (TileEntityEntry<T>) super.register();
     }
 }
