@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
@@ -19,9 +20,13 @@ import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.ChestScreen;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantment.Rarity;
@@ -148,6 +153,18 @@ public class TestMod {
     }
     
     private static class TestTileEntityRenderer extends TileEntityRenderer<TestTileEntity> {
+
+        public TestTileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
+            super(rendererDispatcherIn);
+        }
+
+        @Override
+        public void render(TestTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+            matrixStackIn.push();
+            matrixStackIn.translate(0.5, 0.5, 0.5);
+            Minecraft.getInstance().getItemRenderer().renderItem(new ItemStack(Items.DIAMOND), TransformType.GROUND, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn);
+            matrixStackIn.pop();
+        }
     }
     
     private class TestDummyTileEntity extends TileEntity {
@@ -205,7 +222,7 @@ public class TestMod {
                 .properties(p -> p.notSolid())
                 .addLayer(() -> RenderType::getCutout)
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                                prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass_block"))))
+                                prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass"))))
                 .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
                     ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())

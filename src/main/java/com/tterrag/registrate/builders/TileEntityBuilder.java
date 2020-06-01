@@ -3,6 +3,7 @@ package com.tterrag.registrate.builders;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -13,11 +14,14 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * A builder for tile entities, allows for customization of the valid blocks.
@@ -57,7 +61,7 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
     private final NonNullFunction<TileEntityType<T>, ? extends T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
     @Nullable
-    private NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer;
+    private NonNullSupplier<Function<TileEntityRendererDispatcher, TileEntityRenderer<? super T>>> renderer;
 
     protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<TileEntityType<T>, ? extends T> factory) {
         super(owner, parent, name, callback, TileEntityType.class);
@@ -89,18 +93,18 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
         return this;
     }
     
-    public TileEntityBuilder<T, P> renderer(NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer) {
+    public TileEntityBuilder<T, P> renderer(NonNullSupplier<Function<TileEntityRendererDispatcher, TileEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
-            this.onRegister(type -> DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer));
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerRenderer));
         }
         this.renderer = renderer;
         return this;
     }
     
-    protected void registerRenderer() {
-        NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer = this.renderer;
+    protected void registerRenderer(FMLClientSetupEvent event) {
+        NonNullSupplier<Function<TileEntityRendererDispatcher, TileEntityRenderer<? super T>>> renderer = this.renderer;
         if (renderer != null) {
-            ClientRegistry.bindTileEntitySpecialRenderer((Class<T>) get().create().getClass(), renderer.get().get());
+            ClientRegistry.bindTileEntityRenderer(get(), renderer.get());
         }
     }
 
