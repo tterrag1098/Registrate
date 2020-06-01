@@ -119,7 +119,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     }
     
     @SuppressWarnings("unchecked")
-    protected static <R extends IForgeRegistryEntry<R>, T extends R, E extends RegistryEntry<T>> E cast(Class<? super E> clazz, RegistryEntry<?> entry) {
+    protected static <E extends RegistryEntry<?>> E cast(Class<? super E> clazz, RegistryEntry<?> entry) {
         if (clazz.isInstance(entry)) {
             return (E) entry;
         }
