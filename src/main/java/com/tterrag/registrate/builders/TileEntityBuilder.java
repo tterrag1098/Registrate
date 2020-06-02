@@ -21,6 +21,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * A builder for tile entities, allows for customization of the valid blocks.
@@ -94,13 +96,13 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
     
     public TileEntityBuilder<T, P> renderer(NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
-            this.onRegister(type -> DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer));
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerRenderer));
         }
         this.renderer = renderer;
         return this;
     }
     
-    protected void registerRenderer() {
+    protected void registerRenderer(FMLClientSetupEvent event) {
         NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer = this.renderer;
         if (renderer != null) {
             ClientRegistry.bindTileEntitySpecialRenderer((Class<T>) get().create().getClass(), renderer.get().get());
