@@ -47,6 +47,7 @@ import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.ChestTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -214,7 +215,8 @@ public class TestMod {
                     
                     prov.food(DataIngredient.items(ctx), Blocks.DIAMOND_BLOCK.delegate, 1f);
                 })
-                .tag(BlockTags.BAMBOO_PLANTABLE_ON)
+                .tag(BlockTags.BAMBOO_PLANTABLE_ON, BlockTags.DIRT_LIKE)
+                .tag(BlockTags.WITHER_IMMUNE)
                 .item()
                     .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                     .build()
@@ -254,6 +256,7 @@ public class TestMod {
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())
+            .tag(FluidTags.WATER)
             .bucket()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
                 .build()

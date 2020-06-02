@@ -189,14 +189,15 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     /**
-     * Assign a {@link Tag} to this item.
+     * Assign {@link Tag}{@code s} to this item. Multiple calls will add additional tags.
      * 
-     * @param tag
+     * @param tags
      *            The tag to assign
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> tag(Tag<Item> tag) {
-        return tag(ProviderType.ITEM_TAGS, tag);
+    @SafeVarargs
+    public final ItemBuilder<T, P> tag(Tag<Item>... tags) {
+        return tag(ProviderType.ITEM_TAGS, tags);
     }
     
     @Override

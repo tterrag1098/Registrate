@@ -1,6 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -8,15 +7,12 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
-import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonnullType;
 
-import net.minecraft.tags.Tag;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -117,19 +113,6 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     default <D extends RegistrateProvider> S addMiscData(ProviderType<D> type, NonNullConsumer<? extends D> cons) {
         getOwner().addDataGenerator(type, cons);
         return (S) this;
-    }
-
-    /**
-     * Tag this entry with a tag of the correct type.
-     * 
-     * @param type
-     *            The provider type (which must be a tag provider)
-     * @param tag
-     *            The tag to use
-     * @return this {@link Builder}
-     */
-    default S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R> tag) {
-        return setData(type, (ctx, prov) -> prov.getBuilder(tag).add(Objects.<@NonnullType T>requireNonNull(get(), "Object not registered")));
     }
 
     /**

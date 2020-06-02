@@ -1,8 +1,13 @@
 package com.tterrag.registrate.builders;
 
+import java.util.Arrays;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
+import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -11,6 +16,7 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -43,6 +49,8 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     private final BuilderCallback callback;
     @Getter(onMethod = @__({ @Override }))
     private final Class<? super R> registryType;
+    
+    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Tag<?>> tagsByType = HashMultimap.create();
 
     /**
      * Create the built entry. This method will be lazily resolved at registration time, so it is safe to bake in values from the builder.
@@ -59,6 +67,28 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     
     protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
         return new RegistryEntry<>(getOwner(), delegate);
+    }
+
+    /**
+     * Tag this entry with a tag (or tags) of the correct type. Multiple calls will add additional tags.
+     * 
+     * @param type
+     *            The provider type (which must be a tag provider)
+     * @param tags
+     *            The tags to add
+     * @return this {@link Builder}
+     */
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public final S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R>... tags) {
+        if (!tagsByType.containsKey(type)) {
+            setData(type, (ctx, prov) -> tagsByType.get(type).stream()
+                    .map(t -> (Tag<R>) t)
+                    .map(prov::getBuilder)
+                    .forEach(b -> b.add(get())));
+        }
+        tagsByType.putAll(type, Arrays.asList(tags));
+        return (S) this;
     }
 
     /**

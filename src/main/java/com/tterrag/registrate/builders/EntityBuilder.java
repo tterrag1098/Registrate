@@ -163,14 +163,15 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
-     * Assign a {@link Tag} to this entity.
+     * Assign {@link Tag}{@code s} to this entity. Multiple calls will add additional tags.
      * 
-     * @param tag
-     *            The tag to assign
+     * @param tags
+     *            The tags to assign
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> tag(Tag<EntityType<?>> tag) {
-        return tag(ProviderType.ENTITY_TAGS, tag);
+    @SafeVarargs
+    public final EntityBuilder<T, P> tag(Tag<EntityType<?>>... tags) {
+        return tag(ProviderType.ENTITY_TAGS, tags);
     }
 
     @Override

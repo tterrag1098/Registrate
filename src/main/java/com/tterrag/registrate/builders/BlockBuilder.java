@@ -342,14 +342,15 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign a {@link Tag} to this block.
+     * Assign {@link Tag}{@code s} to this block. Multiple calls will add additional tags.
      * 
-     * @param tag
-     *            The tag to assign
+     * @param tags
+     *            The tags to assign
      * @return this {@link BlockBuilder}
      */
-    public BlockBuilder<T, P> tag(Tag<Block> tag) {
-        return tag(ProviderType.BLOCK_TAGS, tag);
+    @SafeVarargs
+    public final BlockBuilder<T, P> tag(Tag<Block>... tags) {
+        return tag(ProviderType.BLOCK_TAGS, tags);
     }
 
     @Override

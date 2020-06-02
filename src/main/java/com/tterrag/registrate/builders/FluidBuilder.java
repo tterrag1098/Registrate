@@ -1,5 +1,8 @@
 package com.tterrag.registrate.builders;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -178,6 +181,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
     private NonNullSupplier<? extends ForgeFlowingFluid> source;
+    private List<Tag<Fluid>> tags = new ArrayList<>();
     
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
@@ -313,15 +317,20 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
     
     /**
-     * Assign a {@link Tag} to this fluid and its source fluid.
+     * Assign {@link Tag}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      * 
-     * @param tag
-     *            The tag to assign
+     * @param tags
+     *            The tags to assign
      * @return this {@link FluidBuilder}
      */
-    public FluidBuilder<T, P> tag(Tag<Fluid> tag) {
-        FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tag);
-        ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS, prov -> prov.getBuilder(FluidTags.WATER).add(ret.getSource().get()));
+    @SafeVarargs
+    public final FluidBuilder<T, P> tag(Tag<Fluid>... tags) {
+        FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
+        if (this.tags.isEmpty()) {
+            ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid> setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS,
+                    prov -> this.tags.stream().map(prov::getBuilder).forEach(p -> p.add(ret.getSource().get())));
+        }
+        this.tags.addAll(Arrays.asList(tags));
         return ret;
     }
     
