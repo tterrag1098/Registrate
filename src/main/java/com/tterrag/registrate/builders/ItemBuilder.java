@@ -1,5 +1,7 @@
 package com.tterrag.registrate.builders;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -15,10 +17,15 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
+import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tags.Tag;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
@@ -98,6 +105,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     private NonNullSupplier<Item.Properties> initialProperties = Item.Properties::new;
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     
+    @Nullable
+    private NonNullSupplier<Supplier<IItemColor>> colorHandler;
+    
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
         this.factory = factory;
@@ -132,6 +142,28 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     public ItemBuilder<T, P> group(NonNullSupplier<? extends ItemGroup> group) {
         return properties(p -> p.group(group.get()));
+    }
+    
+    /**
+     * Register a block color handler for this item. The {@link IItemColor} instance can be shared across many items.
+     * 
+     * @param colorHandler
+     *            The color handler to register for this item
+     * @return this {@link ItemBuilder}
+     */
+    public ItemBuilder<T, P> color(NonNullSupplier<Supplier<IItemColor>> colorHandler) {
+        if (this.colorHandler == null) {
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerItemColor));
+        }
+        this.colorHandler = colorHandler;
+        return this;
+    }
+    
+    protected void registerItemColor(ColorHandlerEvent.Item event) {
+        NonNullSupplier<Supplier<IItemColor>> colorHandler = this.colorHandler;
+        if (colorHandler != null) {
+            event.getItemColors().register(colorHandler.get().get(), get());
+        }
     }
     
     /**

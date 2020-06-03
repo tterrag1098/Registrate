@@ -1,8 +1,10 @@
 package com.tterrag.registrate.builders;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -25,6 +27,7 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
+import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
@@ -32,8 +35,12 @@ import net.minecraft.tags.Tag;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.world.storage.loot.LootTables;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -83,6 +90,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullSupplier<Block.Properties> initialProperties;
     private NonNullFunction<Block.Properties, Block.Properties> propertiesCallback = NonNullUnaryOperator.identity();
+    
+    @Nullable
+    private NonNullSupplier<Supplier<IBlockColor>> colorHandler;
 
     protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory, NonNullSupplier<Block.Properties> initialProperties) {
         super(owner, parent, name, callback, Block.class);
@@ -256,6 +266,29 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public <TE extends TileEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
         return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this);
+    }
+    
+    /**
+     * Register a block color handler for this block. The {@link IBlockColor} instance can be shared across many blocks.
+     * 
+     * @param colorHandler
+     *            The color handler to register for this block
+     * @return this {@link BlockBuilder}
+     */
+    // TODO it might be worthwhile to abstract this more and add the capability to automatically copy to the item
+    public BlockBuilder<T, P> color(NonNullSupplier<Supplier<IBlockColor>> colorHandler) {
+        if (this.colorHandler == null) {
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerBlockColor));
+        }
+        this.colorHandler = colorHandler;
+        return this;
+    }
+    
+    protected void registerBlockColor(ColorHandlerEvent.Block event) {
+        NonNullSupplier<Supplier<IBlockColor>> colorHandler = this.colorHandler;
+        if (colorHandler != null) {
+            event.getBlockColors().register(colorHandler.get().get(), get());
+        }
     }
 
     /**

@@ -202,6 +202,7 @@ public class TestMod {
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
                 .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
+                .color(() -> () -> (stack, index) -> 0xFF0000FF)
                 .tag(ItemTags.BEDS)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                 .register();
@@ -228,7 +229,9 @@ public class TestMod {
                 })
                 .tag(BlockTags.BAMBOO_PLANTABLE_ON, BlockTags.DIRT_LIKE)
                 .tag(BlockTags.WITHER_IMMUNE)
+                .color(() -> () -> (state, world, pos, index) -> 0xFFFF0000)
                 .item()
+                    .color(() -> () -> (stack, index) -> 0xFFFF0000)
                     .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                     .build()
                 .tileEntity(TestTileEntity::new)
