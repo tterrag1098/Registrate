@@ -63,8 +63,15 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biome.Category;
 import net.minecraft.world.biome.Biome.RainType;
-import net.minecraft.world.biome.Biome.SpawnListEntry;
+import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.DefaultBiomeFeatures;
+import net.minecraft.world.gen.GenerationStage.Carving;
+import net.minecraft.world.gen.GenerationStage.Decoration;
+import net.minecraft.world.gen.carver.WorldCarver;
+import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.world.gen.feature.ProbabilityConfig;
+import net.minecraft.world.gen.placement.FrequencyConfig;
+import net.minecraft.world.gen.placement.Placement;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
 import net.minecraft.world.storage.loot.ConstantRange;
@@ -284,11 +291,32 @@ public class TestMod {
                     .waterColor(0x3f76e4)
                     .waterFogColor(0x050533))
             .typeWeight(BiomeType.WARM, 1000)
+            .addDictionaryTypes(BiomeDictionary.Type.LUSH)
+            .forceAutomaticDictionaryTypes()
+            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(10))
+            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.MELON, () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(100))
+            .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
+            .addCarver(Carving.AIR, () -> WorldCarver.CAVE, new ProbabilityConfig(0.1F))
+            .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
+            .register();
+    
+    private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
+            .biome(TestBiome::new)
+            .properties(b -> b.category(Category.DESERT)
+                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.SAND.getDefaultState(), Blocks.RED_SANDSTONE.getDefaultState(), Blocks.GRAVEL.getDefaultState()))
+                    .precipitation(RainType.NONE)
+                    .depth(1)
+                    .scale(1)
+                    .temperature(1)
+                    .downfall(1)
+                    .waterColor(0x3f76e4)
+                    .waterFogColor(0x050533))
+            .typeWeight(BiomeType.DESERT, 1000)
             .addDictionaryTypes(BiomeDictionary.Type.DRY)
             .forceAutomaticDictionaryTypes()
-            .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
-            .addSpawns(b -> b.getSpawns(EntityClassification.CREATURE)
-                    .add(new SpawnListEntry(EntityType.CAT, 1, 5, 10)))
+            .copyFeatures(() -> Biomes.DESERT)
+            .copyCarvers(() -> Biomes.DESERT)
+            .copySpawns(() -> Biomes.DESERT)
             .register();
     
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
