@@ -28,6 +28,9 @@ import net.minecraft.enchantment.Enchantment.Rarity;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
+import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -65,6 +68,7 @@ import net.minecraft.world.biome.Biome.Category;
 import net.minecraft.world.biome.Biome.RainType;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.DefaultBiomeFeatures;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.GenerationStage.Carving;
 import net.minecraft.world.gen.GenerationStage.Decoration;
 import net.minecraft.world.gen.carver.WorldCarver;
@@ -245,6 +249,7 @@ public class TestMod {
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
             .entity(TestEntity::new, EntityClassification.CREATURE)
+            .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::func_223316_b)
             .defaultSpawnEgg(0xFF0000, 0x00FF00)
             .loot((prov, type) -> prov.registerLootTable(type, LootTable.builder()
                     .addLootPool(LootPool.builder()
@@ -282,7 +287,7 @@ public class TestMod {
     private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
             .biome(TestBiome::new)
             .properties(b -> b.category(Category.PLAINS)
-                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.COARSE_DIRT.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
+                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.GRASS_BLOCK.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
                     .precipitation(RainType.RAIN)
                     .depth(1)
                     .scale(1)
@@ -293,11 +298,12 @@ public class TestMod {
             .typeWeight(BiomeType.WARM, 1000)
             .addDictionaryTypes(BiomeDictionary.Type.LUSH)
             .forceAutomaticDictionaryTypes()
-            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(10))
+            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(20))
             .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.MELON, () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(100))
             .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
             .addCarver(Carving.AIR, () -> WorldCarver.CAVE, new ProbabilityConfig(0.1F))
             .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
+            .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
             .register();
     
     private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")

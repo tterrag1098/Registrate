@@ -15,11 +15,16 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntitySpawnPlacementRegistry.IPlacementPredicate;
+import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.gen.Heightmap;
 
 /**
  * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
@@ -67,6 +72,8 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
     
+    private boolean spawnConfigured;
+    
     private @Nullable ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder;
 
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
@@ -84,6 +91,21 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      */
     public EntityBuilder<T, P> properties(NonNullConsumer<EntityType.Builder<T>> cons) {
         builderCallback = builderCallback.andThen(cons);
+        return this;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public EntityBuilder<T, P> spawnPlacement(PlacementType type, Heightmap.Type heightmap, IPlacementPredicate<T> predicate) {
+        if (spawnConfigured) {
+            throw new IllegalStateException("Cannot configure spawn placement more than once");
+        }
+        spawnConfigured = true;
+        this.onRegister(t -> {
+            if (!(t.create(null) instanceof MobEntity)) {
+                throw new IllegalArgumentException("Cannot register spawn placement for a mob that does not extend MobEntity");
+            }
+            EntitySpawnPlacementRegistry.register((EntityType<MobEntity>) t, type, heightmap, (IPlacementPredicate<MobEntity>) predicate);
+        });
         return this;
     }
 

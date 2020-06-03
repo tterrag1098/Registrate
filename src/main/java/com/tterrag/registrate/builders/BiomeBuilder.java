@@ -377,7 +377,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
      *            A maximum size of entities to spawn at once
      * @return this {@link BiomeBuilder}
      */
-    public BiomeBuilder<T, P> addSpawn(EntityClassification type, NonNullSupplier<EntityType<?>> entity, int weight, int minGroupSize, int maxGroupSize) {
+    public BiomeBuilder<T, P> addSpawn(EntityClassification type, NonNullSupplier<? extends EntityType<?>> entity, int weight, int minGroupSize, int maxGroupSize) {
         return addSpawn(type, () -> new SpawnListEntry(entity.get(), weight, minGroupSize, maxGroupSize));
     }
     
