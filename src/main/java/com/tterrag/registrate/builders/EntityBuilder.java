@@ -93,7 +93,22 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         builderCallback = builderCallback.andThen(cons);
         return this;
     }
-    
+
+    /**
+     * Register a spawn placement for this entity. The entity must extend {@link MobEntity} and allow construction with a {@code null} {@link World}.
+     * <p>
+     * Cannot be called more than once per builder.
+     * 
+     * @param type
+     *            The type of placement to use
+     * @param heightmap
+     *            Which heightmap to use to choose placement locations
+     * @param predicate
+     *            A predicate to check spawn locations for validity
+     * @return this {@link EntityBuilder}
+     * @throws IllegalStateException
+     *             When called more than once
+     */
     @SuppressWarnings("unchecked")
     public EntityBuilder<T, P> spawnPlacement(PlacementType type, Heightmap.Type heightmap, IPlacementPredicate<T> predicate) {
         if (spawnConfigured) {
@@ -101,8 +116,12 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         }
         spawnConfigured = true;
         this.onRegister(t -> {
-            if (!(t.create(null) instanceof MobEntity)) {
-                throw new IllegalArgumentException("Cannot register spawn placement for a mob that does not extend MobEntity");
+            try {
+                if (!(t.create(null) instanceof MobEntity)) {
+                    throw new IllegalArgumentException("Cannot register spawn placement for entity " + t.getRegistryName() + " as it does not extend MobEntity");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to type check entity " + t.getRegistryName() + " when registering spawn placement", e);
             }
             EntitySpawnPlacementRegistry.register((EntityType<MobEntity>) t, type, heightmap, (IPlacementPredicate<MobEntity>) predicate);
         });
