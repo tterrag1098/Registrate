@@ -1,7 +1,6 @@
 package com.tterrag.registrate.builders;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -31,7 +30,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * @param <S>
  *            Self type
  */
-public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<T> {
+public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<RegistryEntry<T>> {
 
     /**
      * Complete the current entry, and return the {@link RegistryEntry} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
@@ -65,15 +64,35 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     Class<? super R> getRegistryType();
 
     /**
-     * Allows retrieval of the built entry. Mostly used internally by builder classes.
-     *
-     * @return a {@link Supplier} to the created object, which will return null if not registered yet, and throw an exception if no such entry exists.
-     * @see AbstractRegistrate#get(Class)
+     * Get the {@link RegistryEntry} representing the entry built by this builder. Cannot be called before the builder is built.
+     * 
+     * @return An {@link RegistryEntry} for this builder's entry
+     * @throws IllegalArgumentException
+     *             If this builder has not been built yet
      */
     @Override
-    default T get() {
-        return getOwner().<R, T>get(getName(), getRegistryType()).get();
+    default RegistryEntry<T> get() {
+        return getOwner().<R, T> get(getName(), getRegistryType());
     }
+
+    /**
+     * Get the actual entry built by this builder. Cannot be called before registration.
+     * 
+     * @return This builder's entry
+     * @throws IllegalArgumentException
+     *             If this builder has not been built yet
+     * @throws NullPointerException
+     *             If the entry from this builder has not been registered yet
+     */
+    default T getEntry() {
+        return get().get();
+    }
+    
+    /**
+     * Get a supplier for the entry created by this builder, which will not reference the builder after it has been resolved
+     * @return
+     */
+    NonNullSupplier<T> asSupplier();
 
     /**
      * Set the data provider callback for this entry for the given provider type, which will be invoked when the provider of the given type executes.

@@ -277,7 +277,7 @@ public class TestMod {
                 .build()
             .register();
     
-    private final RegistryEntry<ContainerType<ChestContainer>> GENERIC_9x9 = registrate.object("testcontainer")
+    private final RegistryEntry<ContainerType<ChestContainer>> testcontainer = registrate.object("testcontainer")
             .container((type, windowId, inv) -> new ChestContainer(type, windowId, inv, new Inventory(9 * 9), 9), () -> ChestScreen::new)
             .register();
     

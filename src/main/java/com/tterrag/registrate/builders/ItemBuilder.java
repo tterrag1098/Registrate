@@ -10,6 +10,7 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
@@ -25,7 +26,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
@@ -153,17 +153,19 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      */
     public ItemBuilder<T, P> color(NonNullSupplier<Supplier<IItemColor>> colorHandler) {
         if (this.colorHandler == null) {
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerItemColor));
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerItemColor);
         }
         this.colorHandler = colorHandler;
         return this;
     }
     
-    protected void registerItemColor(ColorHandlerEvent.Item event) {
-        NonNullSupplier<Supplier<IItemColor>> colorHandler = this.colorHandler;
-        if (colorHandler != null) {
-            event.getItemColors().register(colorHandler.get().get(), get());
-        }
+    protected void registerItemColor() {
+        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Item.class, e -> {
+            NonNullSupplier<Supplier<IItemColor>> colorHandler = this.colorHandler;
+            if (colorHandler != null) {
+                e.getItemColors().register(colorHandler.get().get(), getEntry());
+            }
+        });
     }
     
     /**

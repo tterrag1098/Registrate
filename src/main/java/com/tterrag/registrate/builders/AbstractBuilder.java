@@ -8,6 +8,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.entry.LazyRegistryEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -51,6 +52,9 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     private final Class<? super R> registryType;
     
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Tag<?>> tagsByType = HashMultimap.create();
+    
+    /** A supplier for the entry that will discard the reference to this builder after it is resolved */
+    private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
 
     /**
      * Create the built entry. This method will be lazily resolved at registration time, so it is safe to bake in values from the builder.
@@ -67,6 +71,11 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     
     protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
         return new RegistryEntry<>(getOwner(), delegate);
+    }
+    
+    @Override
+    public NonNullSupplier<T> asSupplier() {
+        return safeSupplier;
     }
 
     /**
@@ -85,7 +94,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
                     .map(t -> (Tag<R>) t)
                     .map(prov::getBuilder)
-                    .forEach(b -> b.add(get())));
+                    .forEach(b -> b.add(asSupplier().get())));
         }
         tagsByType.putAll(type, Arrays.asList(tags));
         return (S) this;

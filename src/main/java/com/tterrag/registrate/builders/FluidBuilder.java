@@ -8,9 +8,11 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.LazyValue;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -180,7 +182,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<FluidAttributes.Builder> attributesCallback = $ -> {};
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
-    private NonNullSupplier<? extends ForgeFlowingFluid> source;
+    private LazyValue<? extends ForgeFlowingFluid> source;
     private List<Tag<Fluid>> tags = new ArrayList<>();
     
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
@@ -191,8 +193,10 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         this.bucketName = name + "_bucket";
         this.attributes = () -> attributesFactory == null ? FluidAttributes.builder(stillTexture, flowingTexture) : new Builder(stillTexture, flowingTexture, attributesFactory);
         this.factory = factory;
-        this.properties = p -> p.bucket(() -> getOwner().get(bucketName, Item.class).get())
-                .block(() -> getOwner().<Block, FlowingFluidBlock>get(name, Block.class).get());
+        
+        String bucketName = this.bucketName;
+        this.properties = p -> p.bucket(() -> owner.get(bucketName, Item.class).get())
+                .block(() -> owner.<Block, FlowingFluidBlock>get(name, Block.class).get());
     }
     
     /**
@@ -239,7 +243,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return this {@link FluidBuilder}
      */
     public FluidBuilder<T, P> source(NonNullFunction<ForgeFlowingFluid.Properties, ? extends ForgeFlowingFluid> factory) {
-        this.source = () -> factory.apply(makeProperties());
+        this.source = new LazyValue<>(() -> factory.apply(makeProperties()));
         return this;
     }
     
@@ -272,7 +276,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
     public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, Block.Properties, ? extends B> factory) {
-        return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(this, p))
+        NonNullSupplier<T> supplier = asSupplier();
+        return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
                 .properties(p -> Block.Properties.from(Blocks.WATER).noDrops())
                 .properties(p -> {
                     // TODO is this ok?
@@ -312,7 +317,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
     public <I extends BucketItem> ItemBuilder<I, FluidBuilder<T, P>> bucket(NonNullBiFunction<Supplier<? extends ForgeFlowingFluid>, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(getSource(), p))
+        Supplier<? extends ForgeFlowingFluid> source = this.source;
+        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source, p))
                 .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
     
@@ -328,20 +334,22 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid> setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS,
-                    prov -> this.tags.stream().map(prov::getBuilder).forEach(p -> p.add(ret.getSource().get())));
+                    prov -> this.tags.stream().map(prov::getBuilder).forEach(p -> p.add(getSource())));
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;
     }
     
-    private Supplier<ForgeFlowingFluid.Source> getSource() {
-        return new LazyLoadBase<>(() -> getOwner().<Fluid, ForgeFlowingFluid.Source>get(sourceName, Fluid.class).get())::getValue;
+    private ForgeFlowingFluid getSource() {
+        LazyValue<? extends ForgeFlowingFluid> source = this.source;
+        Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
+        return source.get();
     }
     
     private ForgeFlowingFluid.Properties makeProperties() {
         FluidAttributes.Builder attributes = this.attributes.get();
         attributesCallback.accept(attributes);
-        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(getSource(), this, attributes);
+        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source, asSupplier(), attributes);
         properties.accept(ret);
         return ret;
     }

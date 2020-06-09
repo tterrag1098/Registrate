@@ -16,6 +16,7 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
+import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
@@ -40,7 +41,6 @@ import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -190,11 +190,11 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(get(), p))
+        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
                 .model((ctx, prov) -> {
                     Optional<String> model = getOwner().getDataProvider(ProviderType.BLOCKSTATE)
-                            .flatMap(p -> p.getExistingVariantBuilder(get()))
+                            .flatMap(p -> p.getExistingVariantBuilder(getEntry()))
                             .map(b -> b.getModels().get(b.partialState()))
                             .map(ConfiguredModelList::toJSON)
                             .filter(JsonElement::isJsonObject)
@@ -203,7 +203,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                     if (model.isPresent()) {
                         prov.withExistingParent(ctx.getName(), model.get());
                     } else {
-                        prov.blockItem(this);
+                        prov.blockItem(asSupplier());
                     }
                 });
     }
@@ -250,7 +250,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     @Deprecated
     public <TE extends TileEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullSupplier<? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this);
+        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(asSupplier());
     }
 
     /**
@@ -265,7 +265,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link TileEntityBuilder}
      */
     public <TE extends TileEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(this);
+        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(asSupplier());
     }
     
     /**
@@ -278,17 +278,19 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     // TODO it might be worthwhile to abstract this more and add the capability to automatically copy to the item
     public BlockBuilder<T, P> color(NonNullSupplier<Supplier<IBlockColor>> colorHandler) {
         if (this.colorHandler == null) {
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerBlockColor));
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerBlockColor);
         }
         this.colorHandler = colorHandler;
         return this;
     }
     
-    protected void registerBlockColor(ColorHandlerEvent.Block event) {
-        NonNullSupplier<Supplier<IBlockColor>> colorHandler = this.colorHandler;
-        if (colorHandler != null) {
-            event.getBlockColors().register(colorHandler.get().get(), get());
-        }
+    protected void registerBlockColor() {
+        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Block.class, e -> {
+            NonNullSupplier<Supplier<IBlockColor>> colorHandler = this.colorHandler;
+            if (colorHandler != null) {
+                e.getBlockColors().register(colorHandler.get().get(), getEntry());
+            }
+        });
     }
 
     /**

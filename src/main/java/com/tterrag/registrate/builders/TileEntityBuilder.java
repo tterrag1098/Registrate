@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.entry.TileEntityEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -22,7 +23,6 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * A builder for tile entities, allows for customization of the valid blocks.
@@ -96,22 +96,26 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
     
     public TileEntityBuilder<T, P> renderer(NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerRenderer));
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
         this.renderer = renderer;
         return this;
     }
     
-    protected void registerRenderer(FMLClientSetupEvent event) {
-        NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer = this.renderer;
-        if (renderer != null) {
-            ClientRegistry.bindTileEntitySpecialRenderer((Class<T>) get().create().getClass(), renderer.get().get());
-        }
+    protected void registerRenderer() {
+        OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+            NonNullSupplier<Supplier<TileEntityRenderer<? super T>>> renderer = this.renderer;
+            if (renderer != null) {
+                ClientRegistry.bindTileEntitySpecialRenderer((Class<T>) getEntry().create().getClass(), renderer.get().get());
+            }
+        });
     }
 
     @Override
     protected TileEntityType<T> createEntry() {
-        return TileEntityType.Builder.<T>create(() -> factory.apply(get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
+        NonNullFunction<TileEntityType<T>, ? extends T> factory = this.factory;
+        Supplier<TileEntityType<T>> supplier = asSupplier();
+        return TileEntityType.Builder.<T>create(() -> factory.apply(supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
                 .build(null);
     }
     
