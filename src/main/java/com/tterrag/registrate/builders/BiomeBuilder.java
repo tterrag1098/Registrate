@@ -79,7 +79,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
     private NonNullSupplier<Biome.Builder> initialProperties = Biome.Builder::new;
     private NonNullFunction<Biome.Builder, Biome.Builder> propertiesCallback = NonNullUnaryOperator.identity();
     
-    private final Multimap<Decoration, NonNullSupplier<ConfiguredFeature<?>>> features = HashMultimap.create();
+    private final Multimap<Decoration, NonNullSupplier<ConfiguredFeature<?, ?>>> features = HashMultimap.create();
     private final Multimap<Carving, NonNullSupplier<ConfiguredCarver<?>>> carvers = HashMultimap.create();
     private final Multimap<EntityClassification, NonNullSupplier<SpawnListEntry>> spawns = HashMultimap.create();
 
@@ -248,7 +248,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
      * @return this {@link BiomeBuilder}
      */
     public <FC extends IFeatureConfig, PC extends IPlacementConfig> BiomeBuilder<T, P> addFeature(Decoration stage, NonNullSupplier<Feature<FC>> feature, FC featureConfig, NonNullSupplier<Placement<PC>> placement, PC placementConfig) {
-        return addConfiguredFeature(stage, () -> Biome.createDecoratedFeature(feature.get(), featureConfig, placement.get(), placementConfig));
+        return addConfiguredFeature(stage, () -> feature.get().withConfiguration(featureConfig).withPlacement(placement.get().configure(placementConfig)));
     }
 
     /**
@@ -260,7 +260,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
      *            The feature to add
      * @return this {@link BiomeBuilder}
      */
-    public BiomeBuilder<T, P> addConfiguredFeature(Decoration stage, NonNullSupplier<ConfiguredFeature<?>> feature) {
+    public BiomeBuilder<T, P> addConfiguredFeature(Decoration stage, NonNullSupplier<ConfiguredFeature<?, ?>> feature) {
         if (this.features.isEmpty()) {
             addFeatures(b -> this.features.forEach((d, f) -> b.addFeature(d, f.get())));
         }
