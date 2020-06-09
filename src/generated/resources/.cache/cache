@@ -12,6 +12,8 @@ bd8b54414abb50543de09ce62bd38f6a2ca882fd assets\testmod\models\item\testblock.js
 834bbd5f2b4f3a173cabd7005c8d4814131d013c assets\testmod\models\item\testfluid_bucket.json
 fc8a78f262d1997642ba00e57abb413cb271345f assets\testmod\models\item\testitem.json
 a6cdf498951379d190dc11c82b13398f792e5fb3 data\minecraft\tags\blocks\bamboo_plantable_on.json
+a6cdf498951379d190dc11c82b13398f792e5fb3 data\minecraft\tags\blocks\dirt_like.json
+a6cdf498951379d190dc11c82b13398f792e5fb3 data\minecraft\tags\blocks\wither_immune.json
 b27f8565b143ba660c58d74121b2358a5a53c5c7 data\minecraft\tags\entity_types\raiders.json
 c9e95e928aae7b806f272f029519f7da88217864 data\minecraft\tags\fluids\water.json
 f388aaa8e3ca0f0ae20c8df06d1f2a2295cf1f51 data\minecraft\tags\items\beds.json

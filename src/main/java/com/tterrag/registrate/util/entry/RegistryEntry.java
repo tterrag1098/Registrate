@@ -26,7 +26,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements NonNullSupplier<T> {
 
     @SuppressWarnings("null") // Safe to call with null here and only here
-    private static RegistryEntry<?> EMPTY = new RegistryEntry<>(new Registrate("dummy") {}, null);
+    private static RegistryEntry<?> EMPTY = new RegistryEntry<>(null, null);
 
     private static <T extends IForgeRegistryEntry<? super T>> RegistryEntry<T> empty() {
         @SuppressWarnings("unchecked")
@@ -49,6 +49,8 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
 
     @SuppressWarnings("unused")
     public RegistryEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
+        if (EMPTY != null && owner == null)
+            throw new NullPointerException("Owner must not be null");
         if (EMPTY != null && delegate == null)
             throw new NullPointerException("Delegate must not be null");
         this.owner = owner;
@@ -90,7 +92,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     
     @SuppressWarnings("unchecked")
     public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(Class<? super R> registryType) {
-        return owner.get(getId().getPath(), (Class<R>) registryType);
+        return this == EMPTY ? empty() : owner.get(getId().getPath(), (Class<R>) registryType);
     }
     
     public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(IForgeRegistry<R> registry) {

@@ -1,5 +1,7 @@
 package com.tterrag.registrate.builders;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -8,6 +10,7 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateItemModelProvider;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
@@ -15,9 +18,13 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
+import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.tags.Tag;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
 
 /**
@@ -98,6 +105,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     private NonNullSupplier<Item.Properties> initialProperties = Item.Properties::new;
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     
+    @Nullable
+    private NonNullSupplier<Supplier<IItemColor>> colorHandler;
+    
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
         this.factory = factory;
@@ -132,6 +142,30 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     public ItemBuilder<T, P> group(NonNullSupplier<? extends ItemGroup> group) {
         return properties(p -> p.group(group.get()));
+    }
+    
+    /**
+     * Register a block color handler for this item. The {@link IItemColor} instance can be shared across many items.
+     * 
+     * @param colorHandler
+     *            The color handler to register for this item
+     * @return this {@link ItemBuilder}
+     */
+    public ItemBuilder<T, P> color(NonNullSupplier<Supplier<IItemColor>> colorHandler) {
+        if (this.colorHandler == null) {
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerItemColor);
+        }
+        this.colorHandler = colorHandler;
+        return this;
+    }
+    
+    protected void registerItemColor() {
+        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Item.class, e -> {
+            NonNullSupplier<Supplier<IItemColor>> colorHandler = this.colorHandler;
+            if (colorHandler != null) {
+                e.getItemColors().register(colorHandler.get().get(), getEntry());
+            }
+        });
     }
     
     /**
@@ -189,14 +223,15 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     /**
-     * Assign a {@link Tag} to this item.
+     * Assign {@link Tag}{@code s} to this item. Multiple calls will add additional tags.
      * 
-     * @param tag
+     * @param tags
      *            The tag to assign
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> tag(Tag<Item> tag) {
-        return tag(ProviderType.ITEM_TAGS, tag);
+    @SafeVarargs
+    public final ItemBuilder<T, P> tag(Tag<Item>... tags) {
+        return tag(ProviderType.ITEM_TAGS, tags);
     }
     
     @Override
