@@ -194,6 +194,8 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
     /**
      * Add a feature to this biome, where the placement does not have a config.
      * 
+     * @param <FC>
+     *            The type of config the feature requires
      * @param stage
      *            The stage which the feature will generate in
      * @param feature
@@ -210,7 +212,8 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
     
     /**
      * Add a feature to this biome, where the feature does not have a config.
-     * 
+     * @param <PC>
+     *            The type of config the placement requires
      * @param stage
      *            The stage which the feature will generate in
      * @param feature
@@ -228,6 +231,10 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
     /**
      * Add a feature to this biome.
      * 
+     * @param <FC>
+     *            The type of config the feature requires
+     * @param <PC>
+     *            The type of config the placement requires
      * @param stage
      *            The stage which the feature will generate in
      * @param feature
@@ -305,6 +312,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
     /**
      * Add a carver to this biome.
      * 
+     * @param <CC> The type of config the carver requires
      * @param type
      *            The type of carving to be done
      * @param carver
@@ -320,7 +328,7 @@ public class BiomeBuilder<T extends Biome, P> extends AbstractBuilder<Biome, T, 
     /**
      * Add a pre-configured carver to this biome.
      * 
-     * @param stage
+     * @param type
      *            The type of carving to be done
      * @param carver
      *            The carver to add

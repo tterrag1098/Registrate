@@ -24,6 +24,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 
 /**

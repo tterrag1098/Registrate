@@ -89,8 +89,9 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
     }
     
     /**
-     * Get a supplier for the entry created by this builder, which will not reference the builder after it has been resolved
-     * @return
+     * Get a supplier for the entry created by this builder, which will not reference the builder after it has been resolved.
+     * 
+     * @return A supplier for the entry
      */
     NonNullSupplier<T> asSupplier();
 
