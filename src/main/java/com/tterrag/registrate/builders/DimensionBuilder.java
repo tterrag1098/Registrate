@@ -38,12 +38,9 @@ public class DimensionBuilder<T extends ModDimension, P> extends AbstractBuilder
      * Create a new {@link DimensionBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
      * The dimension will be assigned the following data:
-     * <ul>
-     * </ul>
+     * <p>
      * The factory for the {@link ModDimension} will default to {@link ModDimension#withFactory(BiFunction)}.
      * 
-     * @param <T>
-     *            The type of the builder
      * @param <P>
      *            Parent object type
      * @param owner
@@ -67,8 +64,7 @@ public class DimensionBuilder<T extends ModDimension, P> extends AbstractBuilder
      * Create a new {@link DimensionBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
      * The dimension will be assigned the following data:
-     * <ul>
-     * </ul>
+     * <p>
      * 
      * @param <T>
      *            The type of the builder
