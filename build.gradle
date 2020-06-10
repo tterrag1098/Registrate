@@ -29,19 +29,16 @@ import org.ajoberstar.grgit.Grgit
 boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false');
 def getVersion = {
     def raw = grgit.describe(longDescr: true, tags:true)
-    println raw
     def desc = (raw == null ? '0.0-0-unknown' : grgit.describe(longDescr: true, tags:true)).split('-') as List
     def hash = desc.remove(desc.size() - 1).substring(1)
     def offset = desc.remove(desc.size() - 1)
     return project.mod_version.replace('x', offset) + (System.getenv("BUILD_NUMBER") == null ? "+${hash}" : '')
 }
-println dev
-println getVersion()
 
 version = "MC${minecraft_version}-${getVersion()}"
 group = "com.tterrag.registrate"
 archivesBaseName = "Registrate"
-1
+
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
@@ -140,6 +137,7 @@ task sourceJar(type: Jar, dependsOn: classes) {
 
 javadoc {
     source = delombok
+    options.addStringOption('tag', 'apiNote:a:API Note:')
 }
 
 publishing {
