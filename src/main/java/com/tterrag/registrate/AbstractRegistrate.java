@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -35,6 +36,7 @@ import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.ContainerBuilder;
 import com.tterrag.registrate.builders.ContainerBuilder.ContainerFactory;
 import com.tterrag.registrate.builders.ContainerBuilder.ScreenFactory;
+import com.tterrag.registrate.builders.DimensionBuilder;
 import com.tterrag.registrate.builders.EnchantmentBuilder;
 import com.tterrag.registrate.builders.EnchantmentBuilder.EnchantmentFactory;
 import com.tterrag.registrate.builders.EntityBuilder;
@@ -78,9 +80,12 @@ import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.dimension.Dimension;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraftforge.common.ModDimension;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -1036,5 +1041,43 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     public <T extends Biome, P> BiomeBuilder<T, P> biome(P parent, String name, NonNullFunction<Biome.Builder, T> factory) {
         return entry(name, callback -> BiomeBuilder.create(this, parent, name, callback, factory));
+    }
+    
+    // Dimension
+
+    public DimensionBuilder<ModDimension, S> dimension(BiFunction<World, DimensionType, ? extends Dimension> dimFactory) {
+        return dimension(self(), dimFactory);
+    }
+
+    public DimensionBuilder<ModDimension, S> dimension(String name, BiFunction<World, DimensionType, ? extends Dimension> dimFactory) {
+        return dimension(self(), name, dimFactory);
+    }
+
+    public <P> DimensionBuilder<ModDimension, P> dimension(P parent, BiFunction<World, DimensionType, ? extends Dimension> dimFactory) {
+        return dimension(parent, currentName(), dimFactory);
+    }
+
+    public <P> DimensionBuilder<ModDimension, P> dimension(P parent, String name, BiFunction<World, DimensionType, ? extends Dimension> dimFactory) {
+        return entry(name, callback -> DimensionBuilder.create(this, parent, name, callback, dimFactory));
+    }
+
+    public <T extends ModDimension> DimensionBuilder<T, S> dimension(BiFunction<World, DimensionType, ? extends Dimension> dimFactory,
+            NonNullFunction<BiFunction<World, DimensionType, ? extends Dimension>, T> factory) {
+        return dimension(self(), dimFactory, factory);
+    }
+
+    public <T extends ModDimension> DimensionBuilder<T, S> dimension(String name, BiFunction<World, DimensionType, ? extends Dimension> dimFactory,
+            NonNullFunction<BiFunction<World, DimensionType, ? extends Dimension>, T> factory) {
+        return dimension(self(), name, dimFactory, factory);
+    }
+
+    public <T extends ModDimension, P> DimensionBuilder<T, P> dimension(P parent, BiFunction<World, DimensionType, ? extends Dimension> dimFactory,
+            NonNullFunction<BiFunction<World, DimensionType, ? extends Dimension>, T> factory) {
+        return dimension(parent, currentName(), dimFactory, factory);
+    }
+
+    public <T extends ModDimension, P> DimensionBuilder<T, P> dimension(P parent, String name, BiFunction<World, DimensionType, ? extends Dimension> dimFactory,
+            NonNullFunction<BiFunction<World, DimensionType, ? extends Dimension>, T> factory) {
+        return entry(name, callback -> DimensionBuilder.create(this, parent, name, callback, dimFactory, factory));
     }
 }

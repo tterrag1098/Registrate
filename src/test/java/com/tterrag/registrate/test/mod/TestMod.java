@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
@@ -75,6 +76,8 @@ import net.minecraft.world.biome.Biome.Category;
 import net.minecraft.world.biome.Biome.RainType;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.DefaultBiomeFeatures;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.dimension.OverworldDimension;
 import net.minecraft.world.gen.GenerationStage.Carving;
 import net.minecraft.world.gen.GenerationStage.Decoration;
 import net.minecraft.world.gen.Heightmap;
@@ -94,11 +97,12 @@ import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
 import net.minecraft.world.storage.loot.functions.SetCount;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager.BiomeType;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.ModDimension;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -276,6 +280,7 @@ public class TestMod {
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
             .entity(TestEntity::new, EntityClassification.CREATURE)
+            .renderer(() -> PigRenderer::new)
             .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::canAnimalSpawn)
             .defaultSpawnEgg(0xFF0000, 0x00FF00)
             .loot((prov, type) -> prov.registerLootTable(type, LootTable.builder()
@@ -352,6 +357,14 @@ public class TestMod {
             .copySpawns(() -> Biomes.DESERT)
             .register();
     
+    private @Nullable DimensionType testdimensiontype;
+    private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
+            .dimension(OverworldDimension::new)
+            .hasSkyLight(false)
+            .keepLoaded(false)
+            .dimensionTypeCallback(t -> testdimensiontype = t)
+            .register();
+    
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)
 //            .addLayer(() -> RenderType::getTranslucent);
@@ -375,7 +388,7 @@ public class TestMod {
         });
         
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
+        MinecraftForge.EVENT_BUS.addListener(this::afterServerStart);
     }
     
     private void onCommonSetup(FMLCommonSetupEvent event) {
@@ -390,7 +403,7 @@ public class TestMod {
         // testbiome.is(Feature.BAMBOO); // should not compile
     }
     
-    private void onClientSetup(FMLClientSetupEvent event) {
-        RenderingRegistry.registerEntityRenderingHandler(testentity.get(), PigRenderer::new);
+    private void afterServerStart(FMLServerStartedEvent event) {
+        Preconditions.checkNotNull(testdimensiontype, "DimensionType not registered or callback not fired");
     }
 }

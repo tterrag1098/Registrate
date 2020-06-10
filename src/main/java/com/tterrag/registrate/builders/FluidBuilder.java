@@ -178,6 +178,9 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private final NonNullSupplier<FluidAttributes.Builder> attributes;
     private final NonNullFunction<ForgeFlowingFluid.Properties, T> factory;
     
+    @Nullable
+    private Boolean defaultSource, defaultBlock, defaultBucket;
+    
     private NonNullConsumer<FluidAttributes.Builder> attributesCallback = $ -> {};
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
@@ -229,9 +232,15 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * 
      * @return this {@link FluidBuilder}
      * @see #source(NonNullFunction)
+     * @throws IllegalStateException
+     *             If {@link #source(NonNullFunction)} has been called before this method
      */
     public FluidBuilder<T, P> defaultSource() {
-        return source(ForgeFlowingFluid.Source::new);
+        if (this.defaultSource != null) {
+            throw new IllegalStateException("Cannot set a default source after a custom source has been created");
+        }
+        this.defaultSource = true;
+        return this;
     }
 
     /**
@@ -251,9 +260,15 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * 
      * @return this {@link FluidBuilder}
      * @see #block()
+     * @throws IllegalStateException
+     *             If {@link #block()} or {@link #block(NonNullBiFunction)} has been called before this method
      */
     public FluidBuilder<T, P> defaultBlock() {
-        return block().build();
+        if (this.defaultBlock != null) {
+            throw new IllegalStateException("Cannot set a default block after a custom block has been created");
+        }
+        this.defaultBlock = true;
+        return this;
     }
 
     /**
@@ -286,15 +301,21 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
     }
-    
+
     /**
      * Create a standard {@link BucketItem} for this fluid, building it immediately, and not allowing for further configuration.
      * 
      * @return this {@link FluidBuilder}
      * @see #bucket()
+     * @throws IllegalStateException
+     *             If {@link #bucket()} or {@link #bucket(NonNullBiFunction)} has been called before this method
      */
     public FluidBuilder<T, P> defaultBucket() {
-        return bucket().build();
+        if (this.defaultBucket != null) {
+            throw new IllegalStateException("Cannot set a default bucket after a custom bucket has been created");
+        }
+        defaultBucket = true;
+        return this;
     }
 
     /**
@@ -366,6 +387,15 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public RegistryEntry<T> register() {
+        if (defaultSource == Boolean.TRUE) {
+            source(ForgeFlowingFluid.Source::new);
+        }
+        if (defaultBlock == Boolean.TRUE) {
+            block().register();
+        }
+        if (defaultBucket == Boolean.TRUE) {
+            bucket().register();
+        }
         NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
             getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source);

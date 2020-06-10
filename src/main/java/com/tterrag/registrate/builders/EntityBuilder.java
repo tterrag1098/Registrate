@@ -9,10 +9,12 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.loot.RegistrateEntityLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
 import com.tterrag.registrate.util.LazySpawnEggItem;
+import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
@@ -26,6 +28,11 @@ import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 /**
  * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
@@ -73,6 +80,9 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
     
+    @Nullable
+    private NonNullSupplier<IRenderFactory<? super T>> renderer;
+    
     private boolean spawnConfigured;
     
     private @Nullable ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder;
@@ -95,6 +105,38 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         return this;
     }
 
+    /**
+     * Register an {@link EntityRenderer} for this entity.
+     * <p>
+     * 
+     * @apiNote This requires the {@link Class} of the entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed with a {@code null} {@link World}
+     *          to register the renderer.
+     * 
+     * @param renderer
+     *            A (server safe) supplier to an {@link IRenderFactory} that will provide this entity's renderer
+     * @return this {@link EntityBuilder}
+     */
+    public EntityBuilder<T, P> renderer(NonNullSupplier<IRenderFactory<? super T>> renderer) {
+        if (this.renderer == null) { // First call only
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer);
+        }
+        this.renderer = renderer;
+        return this;
+    }
+    
+    protected void registerRenderer() {
+        OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+            NonNullSupplier<IRenderFactory<? super T>> renderer = this.renderer;
+            if (renderer != null) {
+                try {
+                    RenderingRegistry.registerEntityRenderingHandler(getEntry(), renderer.get());
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to register renderer for Entity " + get().getId(), e);
+                }
+            }
+        });
+    }
+    
     /**
      * Register a spawn placement for this entity. The entity must extend {@link MobEntity} and allow construction with a {@code null} {@link World}.
      * <p>

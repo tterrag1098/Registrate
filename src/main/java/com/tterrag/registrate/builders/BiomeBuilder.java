@@ -36,10 +36,10 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager;
 
 /**
- * A builder for items, allows for customization of the {@link Biome.Builder biome properties}, and configuration of data associated with biomes (lang).
+ * A builder for biomes, allows for customization of the {@link Biome.Builder biome properties}, and configuration of data associated with biomes (lang).
  * 
  * @param <T>
- *            The type of enchantment being built
+ *            The type of biome being built
  * @param <P>
  *            Parent object type
  */

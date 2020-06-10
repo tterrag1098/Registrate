@@ -12,12 +12,12 @@ buildscript {
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-        classpath 'org.ajoberstar:gradle-git:0.10.1'
     }
 }
 plugins {
     id "io.freefair.lombok" version "4.1.5"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
+    id 'org.ajoberstar.grgit' version '3.1.1'
 }
 
 apply plugin: 'net.minecraftforge.gradle'
@@ -26,15 +26,19 @@ apply plugin: 'eclipse'
 
 import org.ajoberstar.grgit.Grgit
 
-def repo = Grgit.open(project.file('.'))
-project.ext.gitHash = repo.log().find().abbreviatedId
-
 boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false');
+def getVersion = {
+    def raw = grgit.describe(longDescr: true, tags:true)
+    println raw
+    def desc = (raw == null ? '0.0-0-unknown' : grgit.describe(longDescr: true, tags:true)).split('-') as List
+    def hash = desc.remove(desc.size() - 1).substring(1)
+    def offset = desc.remove(desc.size() - 1)
+    return project.mod_version.replace('x', offset) + (System.getenv("BUILD_NUMBER") == null ? "+${hash}" : '')
+}
+println dev
+println getVersion()
 
-ext.buildnumber = 0
-project.buildnumber = System.getenv('BUILD_NUMBER') != null ? System.getenv('BUILD_NUMBER') : project.ext.gitHash
-
-version = "MC${minecraft_version}-${mod_version}.${buildnumber}"
+version = "MC${minecraft_version}-${getVersion()}"
 group = "com.tterrag.registrate"
 archivesBaseName = "Registrate"
 1

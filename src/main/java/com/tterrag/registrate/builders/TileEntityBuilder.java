@@ -96,6 +96,16 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
         return this;
     }
     
+    /**
+     * Register an {@link TileEntityRenderer} for this tile entity.
+     * <p>
+     * 
+     * @apiNote This requires the {@link Class} of the tile entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed to register the renderer.
+     * 
+     * @param renderer
+     *            A (server safe) supplier to an {@link Function} that will provide this tile entity's renderer given the renderer dispatcher
+     * @return this {@link TileEntityBuilder}
+     */
     public TileEntityBuilder<T, P> renderer(NonNullSupplier<Function<TileEntityRendererDispatcher, TileEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
             DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer);
