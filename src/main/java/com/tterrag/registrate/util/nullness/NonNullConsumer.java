@@ -13,4 +13,8 @@ public interface NonNullConsumer<@NonnullType T> extends Consumer<T> {
         Objects.requireNonNull(after);
         return (T t) -> { accept(t); after.accept(t); };
     }
+    
+    static <T> NonNullConsumer<T> noop() {
+        return t -> {};
+    }
 }
