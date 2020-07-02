@@ -59,6 +59,8 @@ plugins {
 
 **Note: Shadow 5.1+ requires Gradle 5.x. I recommend 5.6 as I know this version works with both Shadow and FG3.**
 
+**Note: Registrate will not function properly on the classpath unless you use Forge 28.1.104+**
+
 Once you have the plugin, it needs to be configured. First add a shade configuration,
 
 ```gradle
@@ -76,18 +78,17 @@ shadowJar {
 }
 ```
 
-Finally, the dependency itself must be added. First add my maven repository,
+The dependency itself must also be added. First add my maven repository,
 
 ```gradle
 repositories {
     maven { // Registrate
         url "http://maven.tterrag.com/"
     }
-    mavenLocal()
 }
 ```
 
-and then the Registrate dependency to the implementation and shade configurations.
+then the Registrate dependency to the implementation and shade configurations.
 
 ```gradle
 dependencies {
@@ -99,6 +100,19 @@ dependencies {
 }
 ```
 
-**Note: Registrate will not function properly on the classpath unless you use Forge 28.1.104+**
+Finally, the additional artifact must be marked for reobf:
 
-To build the jar containing shaded dependencies, use the `shadowJar` task.
+```gradle
+reobf {
+    shadowJar {}
+}
+```
+
+It may also be helpful to set the shadow tasks to run with the `build` task:
+
+```gradle
+build.dependsOn shadowJar
+build.dependsOn reobfShadowJar
+```
+
+This will create a `-all` jar containing Registrate (and any other shaded dependencies). Without this addition, the `shadowJar` task must be called to build the jar.
