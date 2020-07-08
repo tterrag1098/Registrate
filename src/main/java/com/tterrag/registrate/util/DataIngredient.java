@@ -18,7 +18,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tags.ITag.INamedTag;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
@@ -28,7 +27,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * A helper for data generation when using ingredients as input(s) to recipes.<br>
  * It remembers the name of the primary ingredient for use in creating recipe names/criteria.
  * <p>
- * Create an instance of this class with the various factory methods such as {@link #items(IItemProvider, IItemProvider...)} and {@link #tag(Tag)}.
+ * Create an instance of this class with the various factory methods such as {@link #items(IItemProvider, IItemProvider...)} and {@link #tag(INamedTag)}.
  * <p>
  * <strong>This class should not be used for any purpose other than data generation</strong>, it will throw an exception if it is serialized to a packet buffer.
  */

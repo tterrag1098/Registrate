@@ -30,6 +30,7 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
@@ -155,7 +156,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
      * 
      * @param block
-     *            The block to create the initial properties from (via {@link Block.Properties#from(Block)})
+     *            The block to create the initial properties from (via {@link Block.Properties#from(AbstractBlock)})
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
