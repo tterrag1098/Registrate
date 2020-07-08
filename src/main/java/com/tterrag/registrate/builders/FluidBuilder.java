@@ -27,7 +27,7 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -185,7 +185,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
     private NonNullLazyValue<? extends ForgeFlowingFluid> source;
-    private List<Tag<Fluid>> tags = new ArrayList<>();
+    private List<INamedTag<Fluid>> tags = new ArrayList<>();
     
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
@@ -296,7 +296,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
                 .properties(p -> {
                     // TODO is this ok?
                     FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
-                    return p.lightValue(attrs.getLuminosity());
+                    return p.setLightLevel($ -> attrs.getLuminosity());
                 })
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
@@ -343,18 +343,18 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
     
     /**
-     * Assign {@link Tag}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
+     * Assign {@link INamedTag}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    public final FluidBuilder<T, P> tag(Tag<Fluid>... tags) {
+    public final FluidBuilder<T, P> tag(INamedTag<Fluid>... tags) {
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid> setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS,
-                    prov -> this.tags.stream().map(prov::getBuilder).forEach(p -> p.add(getSource())));
+                    prov -> this.tags.stream().map(prov::func_240522_a_).forEach(p -> p.func_240532_a_(getSource())));
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;

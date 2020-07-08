@@ -17,6 +17,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
@@ -55,10 +56,10 @@ public final class DataIngredient extends Ingredient {
         this.criteriaFactory = prov -> prov.hasItem(item);
     }
     
-    private DataIngredient(Ingredient parent, Tag<Item> tag) {
+    private DataIngredient(Ingredient parent, INamedTag<Item> tag) {
         super(Stream.empty());
         this.parent = parent;
-        this.id = tag.getId();
+        this.id = tag.getName();
         this.criteriaFactory = prov -> prov.hasItem(tag);
     }
     
@@ -93,7 +94,7 @@ public final class DataIngredient extends Ingredient {
         return ingredient(Ingredient.fromStacks(ObjectArrays.concat(first, others)), first.getItem());
     }
 
-    public static DataIngredient tag(Tag<Item> tag) {
+    public static DataIngredient tag(INamedTag<Item> tag) {
         return ingredient(Ingredient.fromTag(tag), tag);
     }
     
@@ -101,7 +102,7 @@ public final class DataIngredient extends Ingredient {
         return new DataIngredient(parent, required);
     }
     
-    public static DataIngredient ingredient(Ingredient parent, Tag<Item> required) {
+    public static DataIngredient ingredient(Ingredient parent, INamedTag<Item> required) {
         return new DataIngredient(parent, required);
     }
     

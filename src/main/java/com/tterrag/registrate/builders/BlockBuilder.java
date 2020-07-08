@@ -39,10 +39,10 @@ import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.DyeColor;
 import net.minecraft.item.Item;
-import net.minecraft.tags.Tag;
+import net.minecraft.loot.LootTables;
+import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.world.storage.loot.LootTables;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
@@ -410,14 +410,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign {@link Tag}{@code s} to this block. Multiple calls will add additional tags.
+     * Assign {@link INamedTag}{@code s} to this block. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link BlockBuilder}
      */
     @SafeVarargs
-    public final BlockBuilder<T, P> tag(Tag<Block>... tags) {
+    public final BlockBuilder<T, P> tag(INamedTag<Block>... tags) {
         return tag(ProviderType.BLOCK_TAGS, tags);
     }
 

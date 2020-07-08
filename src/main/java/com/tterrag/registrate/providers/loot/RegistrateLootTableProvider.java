@@ -22,12 +22,11 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.LootTableProvider;
+import net.minecraft.loot.LootParameterSet;
+import net.minecraft.loot.LootParameterSets;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.ValidationTracker;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.storage.loot.LootParameterSet;
-import net.minecraft.world.storage.loot.LootParameterSets;
-import net.minecraft.world.storage.loot.LootTable;
-import net.minecraft.world.storage.loot.LootTable.Builder;
-import net.minecraft.world.storage.loot.ValidationTracker;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
@@ -64,7 +63,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     private final AbstractRegistrate<?> parent;
     
     private final Multimap<LootType<?>, Consumer<? super RegistrateLootTables>> specialLootActions = HashMultimap.create();
-    private final Multimap<LootParameterSet, Consumer<BiConsumer<ResourceLocation, Builder>>> lootActions = HashMultimap.create();
+    private final Multimap<LootParameterSet, Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>> lootActions = HashMultimap.create();
     private final Set<RegistrateLootTables> currentLootCreators = new HashSet<>();
 
     public RegistrateLootTableProvider(AbstractRegistrate<?> parent, DataGenerator dataGeneratorIn) {
@@ -92,11 +91,11 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         this.specialLootActions.put(type, (Consumer<? super RegistrateLootTables>) action);
     }
     
-    public void addLootAction(LootParameterSet set, Consumer<BiConsumer<ResourceLocation, Builder>> action) {
+    public void addLootAction(LootParameterSet set, Consumer<BiConsumer<ResourceLocation, LootTable.Builder>> action) {
         this.lootActions.put(set, action);
     }
     
-    private Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>> getLootCreator(AbstractRegistrate<?> parent, LootType<?> type) {
+    private Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>> getLootCreator(AbstractRegistrate<?> parent, LootType<?> type) {
         return () -> {
             RegistrateLootTables creator = type.getLootCreator(parent, cons -> specialLootActions.get(type).forEach(c -> c.accept(cons)));
             currentLootCreators.add(creator);
@@ -107,10 +106,10 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     private static final BiMap<ResourceLocation, LootParameterSet> SET_REGISTRY = ObfuscationReflectionHelper.getPrivateValue(LootParameterSets.class, null, "field_216268_i");
     
     @Override
-    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>>, LootParameterSet>> getTables() {
+    protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>> getTables() {
         parent.genData(ProviderType.LOOT, this);
         currentLootCreators.clear();
-        ImmutableList.Builder<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, Builder>>>, LootParameterSet>> builder = ImmutableList.builder();
+        ImmutableList.Builder<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>> builder = ImmutableList.builder();
         for (LootType<?> type : LOOT_TYPES.values()) {
             builder.add(Pair.of(getLootCreator(parent, type), type.getLootSet()));
         }

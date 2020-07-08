@@ -4,7 +4,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
@@ -36,6 +35,7 @@ import net.minecraft.enchantment.Enchantment.Rarity;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
+import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PigEntity;
@@ -53,6 +53,13 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.loot.ConstantRange;
+import net.minecraft.loot.ItemLootEntry;
+import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.RandomValueRange;
+import net.minecraft.loot.functions.LootingEnchantBonus;
+import net.minecraft.loot.functions.SetCount;
 import net.minecraft.state.StateContainer.Builder;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tags.BlockTags;
@@ -74,10 +81,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.Biome.Category;
 import net.minecraft.world.biome.Biome.RainType;
+import net.minecraft.world.biome.BiomeAmbience;
 import net.minecraft.world.biome.Biomes;
 import net.minecraft.world.biome.DefaultBiomeFeatures;
-import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.dimension.OverworldDimension;
 import net.minecraft.world.gen.GenerationStage.Carving;
 import net.minecraft.world.gen.GenerationStage.Decoration;
 import net.minecraft.world.gen.Heightmap;
@@ -88,17 +94,9 @@ import net.minecraft.world.gen.placement.FrequencyConfig;
 import net.minecraft.world.gen.placement.Placement;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
 import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
-import net.minecraft.world.storage.loot.ConstantRange;
-import net.minecraft.world.storage.loot.ItemLootEntry;
-import net.minecraft.world.storage.loot.LootPool;
-import net.minecraft.world.storage.loot.LootTable;
-import net.minecraft.world.storage.loot.RandomValueRange;
-import net.minecraft.world.storage.loot.functions.LootingEnchantBonus;
-import net.minecraft.world.storage.loot.functions.SetCount;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.ModDimension;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -235,6 +233,7 @@ public class TestMod {
     
     private final RegistryEntry<EntityType<TestEntity>> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, EntityClassification.CREATURE)
+            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().func_233813_a_())) // TODO include this in the builder
             .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
             .register();
     
@@ -280,6 +279,7 @@ public class TestMod {
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
             .entity(TestEntity::new, EntityClassification.CREATURE)
+            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().func_233813_a_())) // TODO include this in the builder
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::canAnimalSpawn)
             .defaultSpawnEgg(0xFF0000, 0x00FF00)
@@ -325,8 +325,11 @@ public class TestMod {
                     .scale(1)
                     .temperature(1)
                     .downfall(1)
-                    .waterColor(0x3f76e4)
-                    .waterFogColor(0x050533))
+                    .func_235097_a_(new BiomeAmbience.Builder()
+                            .func_235239_a_(0xFFFFFF) // fog color
+                            .func_235246_b_(0x3f76e4) // water color
+                            .func_235248_c_(0x050533) // water fog color
+                            .func_235238_a_()))
             .typeWeight(BiomeType.WARM, 1000)
             .addDictionaryTypes(BiomeDictionary.Type.LUSH)
             .forceAutomaticDictionaryTypes()
@@ -347,22 +350,17 @@ public class TestMod {
                     .scale(1)
                     .temperature(1)
                     .downfall(1)
-                    .waterColor(0x3f76e4)
-                    .waterFogColor(0x050533))
+                    .func_235097_a_(new BiomeAmbience.Builder()
+                            .func_235239_a_(0xFFFFFF) // fog color
+                            .func_235246_b_(0x3f76e4) // water color
+                            .func_235248_c_(0x050533) // water fog color
+                            .func_235238_a_()))
             .typeWeight(BiomeType.DESERT, 1000)
             .addDictionaryTypes(BiomeDictionary.Type.DRY)
             .forceAutomaticDictionaryTypes()
             .copyFeatures(() -> Biomes.DESERT)
             .copyCarvers(() -> Biomes.DESERT)
             .copySpawns(() -> Biomes.DESERT)
-            .register();
-    
-    private @Nullable DimensionType testdimensiontype;
-    private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
-            .dimension(OverworldDimension::new)
-            .hasSkyLight(false)
-            .keepLoaded(false)
-            .dimensionTypeCallback(t -> testdimensiontype = t)
             .register();
     
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
@@ -404,6 +402,5 @@ public class TestMod {
     }
     
     private void afterServerStart(FMLServerStartedEvent event) {
-        Preconditions.checkNotNull(testdimensiontype, "DimensionType not registered or callback not fired");
     }
 }

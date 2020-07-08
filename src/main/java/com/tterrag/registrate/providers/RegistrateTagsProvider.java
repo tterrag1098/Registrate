@@ -7,8 +7,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.TagsProvider;
-import net.minecraft.tags.Tag;
-import net.minecraft.tags.Tag.Builder;
+import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.tags.TagCollection;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
@@ -22,7 +21,7 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     private final Consumer<TagCollection<T>> callback;
 
     public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateTagsProvider<T>> type, String name, Consumer<TagCollection<T>> callback, DataGenerator generatorIn, Registry<T> registryIn) {
-        super(generatorIn, registryIn);
+        super(generatorIn, registryIn, owner.getModid());
         this.owner = owner;
         this.type = type;
         this.name = name;
@@ -52,5 +51,5 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     }
     
     @Override
-    public Builder<T> getBuilder(Tag<T> tagIn) { return super.getBuilder(tagIn); }
+    public Builder<T> func_240522_a_(INamedTag<T> tagIn) { return super.func_240522_a_(tagIn); }
 }

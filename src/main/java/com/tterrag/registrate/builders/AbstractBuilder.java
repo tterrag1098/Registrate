@@ -17,7 +17,7 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.ITag.INamedTag;
 import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -51,7 +51,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     @Getter(onMethod = @__({ @Override }))
     private final Class<? super R> registryType;
     
-    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Tag<?>> tagsByType = HashMultimap.create();
+    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, INamedTag<?>> tagsByType = HashMultimap.create();
     
     /** A supplier for the entry that will discard the reference to this builder after it is resolved */
     private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
@@ -89,12 +89,12 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S tag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R>... tags) {
+    public final S tag(ProviderType<RegistrateTagsProvider<R>> type, INamedTag<R>... tags) {
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
-                    .map(t -> (Tag<R>) t)
-                    .map(prov::getBuilder)
-                    .forEach(b -> b.add(asSupplier().get())));
+                    .map(t -> (INamedTag<R>) t)
+                    .map(prov::func_240522_a_)
+                    .forEach(b -> b.func_240532_a_(asSupplier().get())));
         }
         tagsByType.putAll(type, Arrays.asList(tags));
         return (S) this;

@@ -24,7 +24,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
@@ -159,6 +159,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         }
         spawnConfigured = true;
         this.onRegister(t -> {
+            /* TODO is there any way to do this now?
             try {
                 if (!(t.create(null) instanceof MobEntity)) {
                     throw new IllegalArgumentException("Cannot register spawn placement for entity " + t.getRegistryName() + " as it does not extend MobEntity");
@@ -166,6 +167,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
             } catch (Exception e) {
                 throw new RuntimeException("Failed to type check entity " + t.getRegistryName() + " when registering spawn placement", e);
             }
+            */
             EntitySpawnPlacementRegistry.register((EntityType<MobEntity>) t, type, heightmap, (IPlacementPredicate<MobEntity>) predicate);
         });
         return this;
@@ -247,14 +249,14 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
-     * Assign {@link Tag}{@code s} to this entity. Multiple calls will add additional tags.
+     * Assign {@link INamedTag}{@code s} to this entity. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link EntityBuilder}
      */
     @SafeVarargs
-    public final EntityBuilder<T, P> tag(Tag<EntityType<?>>... tags) {
+    public final EntityBuilder<T, P> tag(INamedTag<EntityType<?>>... tags) {
         return tag(ProviderType.ENTITY_TAGS, tags);
     }
 

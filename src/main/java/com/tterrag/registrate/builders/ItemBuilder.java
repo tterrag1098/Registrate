@@ -21,7 +21,7 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.client.renderer.color.IItemColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.ITag.INamedTag;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -223,14 +223,14 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     /**
-     * Assign {@link Tag}{@code s} to this item. Multiple calls will add additional tags.
+     * Assign {@link INamedTag}{@code s} to this item. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tag to assign
      * @return this {@link ItemBuilder}
      */
     @SafeVarargs
-    public final ItemBuilder<T, P> tag(Tag<Item>... tags) {
+    public final ItemBuilder<T, P> tag(INamedTag<Item>... tags) {
         return tag(ProviderType.ITEM_TAGS, tags);
     }
     

@@ -15,7 +15,6 @@ import com.tterrag.registrate.util.DataIngredient;
 import net.minecraft.advancements.criterion.EnterBlockTrigger;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.advancements.criterion.ItemPredicate;
-import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.block.Block;
 import net.minecraft.data.CookingRecipeBuilder;
 import net.minecraft.data.DataGenerator;
@@ -28,7 +27,7 @@ import net.minecraft.data.SingleItemRecipeBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.crafting.CookingRecipeSerializer;
 import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.ITag;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.Tags;
@@ -278,19 +277,15 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     // GENERATED START
 
     @Override
-    public void saveRecipeAdvancement(DirectoryCache cache, JsonObject advancementJson, Path pathIn) { super.saveRecipeAdvancement(cache, advancementJson, pathIn); }
+    public void saveRecipeAdvancement(DirectoryCache p_208310_0_, JsonObject cache, Path advancementJson) { super.saveRecipeAdvancement(p_208310_0_, cache, advancementJson); }
 
-    @Override
-    public EnterBlockTrigger.Instance enteredBlock(Block blockIn) { return super.enteredBlock(blockIn); }
+    public static EnterBlockTrigger.Instance enteredBlock(Block p_200407_0_) { return RecipeProvider.enteredBlock(p_200407_0_); }
 
-    @Override
-    public InventoryChangeTrigger.Instance hasItem(IItemProvider itemIn) { return super.hasItem(itemIn); }
+    public static InventoryChangeTrigger.Instance hasItem(IItemProvider p_200403_0_) { return RecipeProvider.hasItem(p_200403_0_); }
 
-    @Override
-    public InventoryChangeTrigger.Instance hasItem(Tag<Item> tagIn) { return super.hasItem(tagIn); }
+    public static InventoryChangeTrigger.Instance hasItem(ITag<Item> p_200409_0_) { return RecipeProvider.hasItem(p_200409_0_); }
 
-    @Override
-    public InventoryChangeTrigger.Instance hasItem(ItemPredicate... predicates) { return super.hasItem(predicates); }
+    public static InventoryChangeTrigger.Instance hasItem(ItemPredicate... p_200405_0_) { return RecipeProvider.hasItem(p_200405_0_); }
 
     // GENERATED END
 }

@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.ValidationTracker;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.storage.loot.LootTable;
-import net.minecraft.world.storage.loot.ValidationTracker;
 
 public interface RegistrateLootTables extends Consumer<BiConsumer<ResourceLocation, LootTable.Builder>> {
 

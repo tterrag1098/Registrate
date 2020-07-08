@@ -10,11 +10,11 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.block.Block;
 import net.minecraft.data.loot.BlockLootTables;
 import net.minecraft.item.Item;
+import net.minecraft.loot.IRandomRange;
+import net.minecraft.loot.LootEntry;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.conditions.ILootCondition;
 import net.minecraft.util.IItemProvider;
-import net.minecraft.world.storage.loot.IRandomRange;
-import net.minecraft.world.storage.loot.LootEntry;
-import net.minecraft.world.storage.loot.LootTable;
-import net.minecraft.world.storage.loot.conditions.ILootCondition;
 
 @RequiredArgsConstructor
 public class RegistrateBlockLootTables extends BlockLootTables implements RegistrateLootTables {
