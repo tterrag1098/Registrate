@@ -80,7 +80,9 @@ import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.ModLoader;
@@ -89,6 +91,7 @@ import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
@@ -201,15 +204,39 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     protected S registerEventListeners(IEventBus bus) {
+        
+        // Wildcard event listeners can only be done with reflective API right now
+        class EventProxy {
+            
+            @SubscribeEvent
+            public void onRegister(RegistryEvent.Register<?> event) {
+                AbstractRegistrate.this.onRegister(event);
+            }
+            
+            @SubscribeEvent(priority = EventPriority.LOWEST)
+            public void onRegisterLate(RegistryEvent.Register<?> event) {
+                AbstractRegistrate.this.onRegisterLate(event);
+            }
+        }
+
         // Register events fire multiple times, so clean them up on common setup
-        Consumer<RegistryEvent.Register<?>> onRegister = this::onRegister;
-        Consumer<RegistryEvent.Register<?>> onRegisterLate = this::onRegisterLate;
-        bus.addListener(onRegister);
-        bus.addListener(onRegisterLate);
-        OneTimeEventReceiver.addListener(bus, FMLCommonSetupEvent.class, $ -> {
-            bus.unregister(onRegister);
-            bus.unregister(onRegisterLate);
-        });
+        final EventProxy proxy = new EventProxy();
+        final RegistryEvent.Register<Block> dummyEvent = new RegistryEvent.Register<>(new ResourceLocation("blocks"), ForgeRegistries.BLOCKS);
+        try {
+            Consumer<RegistryEvent.Register<?>> onRegister = proxy::onRegister;
+            Consumer<RegistryEvent.Register<?>> onRegisterLate = proxy::onRegisterLate;
+            bus.addListener(onRegister);
+            bus.addListener(EventPriority.LOWEST, onRegisterLate);
+            OneTimeEventReceiver.addListener(bus, FMLCommonSetupEvent.class, $ -> {
+                OneTimeEventReceiver.unregister(bus, onRegister, dummyEvent);
+                OneTimeEventReceiver.unregister(bus, onRegisterLate, dummyEvent);
+            });
+        } catch (IllegalArgumentException e) {
+            log.info("Detected new forge version, registering events reflectively.");
+            bus.register(proxy);
+            OneTimeEventReceiver.addListener(bus, FMLCommonSetupEvent.class, $ ->
+                OneTimeEventReceiver.unregister(bus, proxy, dummyEvent));
+        }
 
         if (doDatagen.get()) {
             OneTimeEventReceiver.addListener(bus, GatherDataEvent.class, this::onData);

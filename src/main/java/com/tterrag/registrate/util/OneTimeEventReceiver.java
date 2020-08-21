@@ -4,7 +4,10 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.function.Consumer;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +21,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @RequiredArgsConstructor
 @Log4j2
-public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
+public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullType T> {
     
     public static <T extends Event> void addModListener(Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addModListener(EventPriority.NORMAL, evtClass, listener);
@@ -63,7 +66,11 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
     @Override
     public void accept(T event) {
         listener.accept(event);
-        bus.unregister(this);
+        unregister(bus, this, event);
+    }
+    
+    public static void unregister(IEventBus bus, Object listener, Event event) {
+        bus.unregister(listener);
         try {
             final MethodHandle mh = getBusId;
             if (mh != null) {
