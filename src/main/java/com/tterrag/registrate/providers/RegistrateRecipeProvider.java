@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.DataIngredient;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.advancements.criterion.EnterBlockTrigger;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
@@ -178,11 +179,29 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
         builder.addCriterion("has_" + safeName(source), source.getCritereon(this))
             .build(this, safeId(output.get()));
     }
-    
-    public <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(DataIngredient source, Supplier<? extends T> output) {
+
+    /**
+     * @param <T>
+     * @param source
+     * @param output
+     * @deprecated Broken, use {@link #storage(NonNullSupplier, NonNullSupplier)} or {@link #storage(DataIngredient, NonNullSupplier, DataIngredient, NonNullSupplier)}.
+     */
+    @Deprecated
+    public <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(DataIngredient source, NonNullSupplier<? extends T> output) {
         square(source, output, false);
+        // This is backwards, but leaving in for binary compat
         singleItemUnfinished(source, output, 1, 9)
-            .build(this, safeId(source) + "_from_" + safeName(output.get()));;
+            .build(this, safeId(source) + "_from_" + safeName(output.get()));
+    }
+
+    public <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(NonNullSupplier<? extends T> source, NonNullSupplier<? extends T> output) {
+        storage(DataIngredient.items(source), source, DataIngredient.items(output), output);
+    }
+    
+    public <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(DataIngredient sourceIngredient, NonNullSupplier<? extends T> source, DataIngredient outputIngredient, NonNullSupplier<? extends T> output) {
+        square(sourceIngredient, output, false);
+        singleItemUnfinished(outputIngredient, source, 1, 9)
+            .build(this, safeId(sourceIngredient) + "_from_" + safeName(output.get()));
     }
 
     @CheckReturnValue
