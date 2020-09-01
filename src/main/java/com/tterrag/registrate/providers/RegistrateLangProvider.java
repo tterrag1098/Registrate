@@ -25,6 +25,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Effect;
 import net.minecraft.util.IItemProvider;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.fml.LogicalSide;
@@ -116,15 +117,11 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
     
     public void add(ItemGroup group, String name) {
-        add(group.getTranslationKey(), name);
+        add(((TranslationTextComponent)group.func_242392_c()).getKey(), name);
     }
     
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
         addEntityType(entity, getAutomaticName(entity));
-    }
-    
-    public void addBiome(NonNullSupplier<? extends Biome> biome) {
-        addBiome(biome, getAutomaticName(biome));
     }
     
     // Automatic en_ud generation

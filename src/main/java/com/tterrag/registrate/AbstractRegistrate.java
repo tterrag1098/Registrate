@@ -28,7 +28,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
-import com.tterrag.registrate.builders.BiomeBuilder;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.BuilderCallback;
@@ -78,7 +77,6 @@ import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -1044,23 +1042,5 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, String name, EnchantmentType type, EnchantmentFactory<T> factory) {
         return entry(name, callback -> EnchantmentBuilder.create(this, parent, name, callback, type, factory));
-    }
-    
-    // Biome
-
-    public <T extends Biome> BiomeBuilder<T, S> biome(NonNullFunction<Biome.Builder, T> factory) {
-        return biome(self(), factory);
-    }
-
-    public <T extends Biome> BiomeBuilder<T, S> biome(String name, NonNullFunction<Biome.Builder, T> factory) {
-        return biome(self(), name, factory);
-    }
-
-    public <T extends Biome, P> BiomeBuilder<T, P> biome(P parent, NonNullFunction<Biome.Builder, T> factory) {
-        return biome(parent, currentName(), factory);
-    }
-
-    public <T extends Biome, P> BiomeBuilder<T, P> biome(P parent, String name, NonNullFunction<Biome.Builder, T> factory) {
-        return entry(name, callback -> BiomeBuilder.create(this, parent, name, callback, factory));
     }
 }

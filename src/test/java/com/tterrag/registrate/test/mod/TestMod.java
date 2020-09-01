@@ -35,8 +35,8 @@ import net.minecraft.enchantment.Enchantment.Rarity;
 import net.minecraft.enchantment.EnchantmentType;
 import net.minecraft.entity.EntityClassification;
 import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
-import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -78,24 +78,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.Biome.Category;
-import net.minecraft.world.biome.Biome.RainType;
-import net.minecraft.world.biome.BiomeAmbience;
-import net.minecraft.world.biome.Biomes;
-import net.minecraft.world.biome.DefaultBiomeFeatures;
-import net.minecraft.world.gen.GenerationStage.Carving;
-import net.minecraft.world.gen.GenerationStage.Decoration;
 import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.carver.WorldCarver;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.ProbabilityConfig;
-import net.minecraft.world.gen.placement.FrequencyConfig;
-import net.minecraft.world.gen.placement.Placement;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeManager.BiomeType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
@@ -211,12 +194,12 @@ public class TestMod {
         }
     }
     
-    private static class TestBiome extends Biome {
-
-        public TestBiome(Biome.Builder biomeBuilder) {
-            super(biomeBuilder);
-        }
-    }
+//    private static class TestBiome extends Biome {
+//
+//        public TestBiome(Biome.Builder biomeBuilder) {
+//            super(biomeBuilder);
+//        }
+//    }
     
     private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
     
@@ -233,7 +216,7 @@ public class TestMod {
     
     private final RegistryEntry<EntityType<TestEntity>> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, EntityClassification.CREATURE)
-            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().func_233813_a_())) // TODO include this in the builder
+            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().create())) // TODO include this in the builder
             .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
             .register();
     
@@ -279,7 +262,7 @@ public class TestMod {
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
             .entity(TestEntity::new, EntityClassification.CREATURE)
-            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().func_233813_a_())) // TODO include this in the builder
+            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().create())) // TODO include this in the builder
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::canAnimalSpawn)
             .defaultSpawnEgg(0xFF0000, 0x00FF00)
@@ -300,7 +283,6 @@ public class TestMod {
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())
-            .tag(FluidTags.WATER)
             .bucket()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
                 .build()
@@ -316,52 +298,52 @@ public class TestMod {
             .addArmorSlots()
             .register();
     
-    private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
-            .biome(TestBiome::new)
-            .properties(b -> b.category(Category.PLAINS)
-                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.GRASS_BLOCK.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
-                    .precipitation(RainType.RAIN)
-                    .depth(1)
-                    .scale(1)
-                    .temperature(1)
-                    .downfall(1)
-                    .func_235097_a_(new BiomeAmbience.Builder()
-                            .func_235239_a_(0xFFFFFF) // fog color
-                            .func_235246_b_(0x3f76e4) // water color
-                            .func_235248_c_(0x050533) // water fog color
-                            .func_235238_a_()))
-            .typeWeight(BiomeType.WARM, 1000)
-            .addDictionaryTypes(BiomeDictionary.Type.LUSH)
-            .forceAutomaticDictionaryTypes()
-            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(20))
-            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.ICE_SPIKE, () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(100))
-            .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
-            .addCarver(Carving.AIR, () -> WorldCarver.CAVE, new ProbabilityConfig(0.1F))
-            .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
-            .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
-            .register();
-    
-    private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
-            .biome(TestBiome::new)
-            .properties(b -> b.category(Category.DESERT)
-                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.SAND.getDefaultState(), Blocks.RED_SANDSTONE.getDefaultState(), Blocks.GRAVEL.getDefaultState()))
-                    .precipitation(RainType.NONE)
-                    .depth(1)
-                    .scale(1)
-                    .temperature(1)
-                    .downfall(1)
-                    .func_235097_a_(new BiomeAmbience.Builder()
-                            .func_235239_a_(0xFFFFFF) // fog color
-                            .func_235246_b_(0x3f76e4) // water color
-                            .func_235248_c_(0x050533) // water fog color
-                            .func_235238_a_()))
-            .typeWeight(BiomeType.DESERT, 1000)
-            .addDictionaryTypes(BiomeDictionary.Type.DRY)
-            .forceAutomaticDictionaryTypes()
-            .copyFeatures(() -> Biomes.DESERT)
-            .copyCarvers(() -> Biomes.DESERT)
-            .copySpawns(() -> Biomes.DESERT)
-            .register();
+//    private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
+//            .biome(TestBiome::new)
+//            .properties(b -> b.category(Category.PLAINS)
+//                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.GRASS_BLOCK.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.CLAY.getDefaultState()))
+//                    .precipitation(RainType.RAIN)
+//                    .depth(1)
+//                    .scale(1)
+//                    .temperature(1)
+//                    .downfall(1)
+//                    .func_235097_a_(new BiomeAmbience.Builder()
+//                            .func_235239_a_(0xFFFFFF) // fog color
+//                            .func_235246_b_(0x3f76e4) // water color
+//                            .func_235248_c_(0x050533) // water fog color
+//                            .func_235238_a_()))
+//            .typeWeight(BiomeType.WARM, 1000)
+//            .addDictionaryTypes(BiomeDictionary.Type.LUSH)
+//            .forceAutomaticDictionaryTypes()
+//            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.BAMBOO, new ProbabilityConfig(0), () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(20))
+//            .addFeature(Decoration.SURFACE_STRUCTURES, () -> Feature.ICE_SPIKE, () -> Placement.COUNT_HEIGHTMAP_DOUBLE, new FrequencyConfig(100))
+//            .addFeatures(DefaultBiomeFeatures::addVeryDenseGrass)
+//            .addCarver(Carving.AIR, () -> WorldCarver.CAVE, new ProbabilityConfig(0.1F))
+//            .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
+//            .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
+//            .register();
+//    
+//    private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
+//            .biome(TestBiome::new)
+//            .properties(b -> b.category(Category.DESERT)
+//                    .surfaceBuilder(SurfaceBuilder.DEFAULT, new SurfaceBuilderConfig(Blocks.SAND.getDefaultState(), Blocks.RED_SANDSTONE.getDefaultState(), Blocks.GRAVEL.getDefaultState()))
+//                    .precipitation(RainType.NONE)
+//                    .depth(1)
+//                    .scale(1)
+//                    .temperature(1)
+//                    .downfall(1)
+//                    .func_235097_a_(new BiomeAmbience.Builder()
+//                            .func_235239_a_(0xFFFFFF) // fog color
+//                            .func_235246_b_(0x3f76e4) // water color
+//                            .func_235248_c_(0x050533) // water fog color
+//                            .func_235238_a_()))
+//            .typeWeight(BiomeType.DESERT, 1000)
+//            .addDictionaryTypes(BiomeDictionary.Type.DRY)
+//            .forceAutomaticDictionaryTypes()
+//            .copyFeatures(() -> Biomes.DESERT)
+//            .copyCarvers(() -> Biomes.DESERT)
+//            .copySpawns(() -> Biomes.DESERT)
+//            .register();
     
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)

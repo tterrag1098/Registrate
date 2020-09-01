@@ -1,3 +1,6 @@
 {
-  "parent": "item/water_bucket"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "testmod:item/testfluid_bucket"
+  }
 }

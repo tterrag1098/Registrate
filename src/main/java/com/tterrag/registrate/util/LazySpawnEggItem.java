@@ -32,6 +32,7 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.spawner.AbstractSpawner;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
@@ -96,7 +97,7 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
             }
 
             EntityType<?> entitytype = this.getType(itemstack.getTag());
-            if (entitytype.spawn(world, itemstack, context.getPlayer(), blockpos1, SpawnReason.SPAWN_EGG, true, !Objects.equals(blockpos, blockpos1) && direction == Direction.UP) != null) {
+            if (entitytype.spawn((ServerWorld) world, itemstack, context.getPlayer(), blockpos1, SpawnReason.SPAWN_EGG, true, !Objects.equals(blockpos, blockpos1) && direction == Direction.UP) != null) {
                 itemstack.shrink(1);
             }
 
@@ -119,7 +120,7 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
                     return new ActionResult<>(ActionResultType.PASS, itemstack);
                 } else if (worldIn.isBlockModifiable(playerIn, blockpos) && playerIn.canPlayerEdit(blockpos, blockraytraceresult.getFace(), itemstack)) {
                     EntityType<?> entitytype = this.getType(itemstack.getTag());
-                    if (entitytype.spawn(worldIn, itemstack, playerIn, blockpos, SpawnReason.SPAWN_EGG, false, false) == null) {
+                    if (entitytype.spawn((ServerWorld) worldIn, itemstack, playerIn, blockpos, SpawnReason.SPAWN_EGG, false, false) == null) {
                         return new ActionResult<>(ActionResultType.PASS, itemstack);
                     } else {
                         if (!playerIn.abilities.isCreativeMode) {
