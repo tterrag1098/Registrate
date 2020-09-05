@@ -9,6 +9,7 @@ import net.minecraft.data.TagsProvider;
 import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
+import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
 
 public class RegistrateTagsProvider<T> extends TagsProvider<T> implements RegistrateProvider {
@@ -17,8 +18,8 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     private final ProviderType<RegistrateTagsProvider<T>> type;
     private final String name;
 
-    public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateTagsProvider<T>> type, String name, DataGenerator generatorIn, Registry<T> registryIn) {
-        super(generatorIn, registryIn, owner.getModid());
+    public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateTagsProvider<T>> type, String name, DataGenerator generatorIn, Registry<T> registryIn, ExistingFileHelper existingFileHelper) {
+        super(generatorIn, registryIn, owner.getModid(), existingFileHelper);
         this.owner = owner;
         this.type = type;
         this.name = name;

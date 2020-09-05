@@ -83,6 +83,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.fml.DatagenModLoader;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -165,14 +166,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final Table<Pair<String, Class<?>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
     
-    private final NonNullLazyValue<Boolean> doDatagen = new NonNullLazyValue<>(() -> {
-        try {
-            return ObfuscationReflectionHelper.getPrivateValue(ModLoader.class, ModLoader.get(), "dataGeneratorConfig") != null;
-        } catch (Exception e) {
-            log.warn("Registrate failed to determine datagen status, defaulting to on. If this is not a datagen run, this will result in slightly slower startup times and memory usage. Please report this issue.", e);
-            return true;
-        }
-    });
+    private final NonNullLazyValue<Boolean> doDatagen = new NonNullLazyValue<>(DatagenModLoader::isRunningDataGen);
 
     /**
      * @return The mod ID that this {@link AbstractRegistrate} is creating objects for
