@@ -584,7 +584,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The provider
      */
     @SuppressWarnings("unchecked")
-    public <T extends RegistrateProvider> void genData(ProviderType<T> type, T gen) {
+    public <T extends RegistrateProvider> void genData(ProviderType<? extends T> type, T gen) {
         if (!doDatagen.get()) return;
         datagens.get(type).forEach(cons -> {
             Optional<Pair<String, Class<?>>> entry = null;

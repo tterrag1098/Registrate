@@ -6,6 +6,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.TagsProvider;
+import net.minecraft.tags.ITag;
 import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.Registry;
@@ -15,10 +16,10 @@ import net.minecraftforge.fml.LogicalSide;
 public class RegistrateTagsProvider<T> extends TagsProvider<T> implements RegistrateProvider {
 
     private final AbstractRegistrate<?> owner;
-    private final ProviderType<RegistrateTagsProvider<T>> type;
+    private final ProviderType<? extends RegistrateTagsProvider<T>> type;
     private final String name;
 
-    public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateTagsProvider<T>> type, String name, DataGenerator generatorIn, Registry<T> registryIn, ExistingFileHelper existingFileHelper) {
+    public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<? extends RegistrateTagsProvider<T>> type, String name, DataGenerator generatorIn, Registry<T> registryIn, ExistingFileHelper existingFileHelper) {
         super(generatorIn, registryIn, owner.getModid(), existingFileHelper);
         this.owner = owner;
         this.type = type;
@@ -45,4 +46,7 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
 
     @Override
     public Builder<T> getOrCreateBuilder(INamedTag<T> tag) { return super.getOrCreateBuilder(tag); }
+
+    @Override
+    public ITag.Builder createBuilderIfAbsent(INamedTag<T> tag) { return super.createBuilderIfAbsent(tag); }
 }

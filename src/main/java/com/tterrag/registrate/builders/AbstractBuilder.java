@@ -89,7 +89,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S tag(ProviderType<RegistrateTagsProvider<R>> type, INamedTag<R>... tags) {
+    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, INamedTag<R>... tags) {
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
                     .map(t -> (INamedTag<R>) t)
