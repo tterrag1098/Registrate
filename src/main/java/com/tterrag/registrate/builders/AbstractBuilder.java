@@ -17,7 +17,6 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.data.TagsProvider;
 import net.minecraft.tags.ITag.INamedTag;
 import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.fml.RegistryObject;
@@ -94,7 +93,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
                     .map(t -> (INamedTag<R>) t)
-                    .<TagsProvider.Builder<R>>map(prov::getOrCreateBuilder)
+                    .map(prov::getOrCreateBuilder)
                     .forEach(b -> b.add(asSupplier().get())));
         }
         tagsByType.putAll(type, Arrays.asList(tags));

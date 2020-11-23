@@ -486,7 +486,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
-    public <T extends RegistrateProvider> S addDataGenerator(ProviderType<T> type, NonNullConsumer<? extends T> cons) {
+    public <T extends RegistrateProvider> S addDataGenerator(ProviderType<? extends T> type, NonNullConsumer<? extends T> cons) {
         if (doDatagen.get()) {
             datagens.put(type, cons);
         }
