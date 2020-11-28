@@ -127,7 +127,7 @@ public class TestMod {
                     @Override
                     @Nullable
                     public Container createMenu(int windowId, PlayerInventory inv, PlayerEntity player) {
-                        return new ChestContainer(ContainerType.GENERIC_9X3, windowId, inv, (TestTileEntity) worldIn.getTileEntity(pos), 3);
+                        return new ChestContainer(ContainerType.GENERIC_9X3, windowId, inv, testblockte.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
                     
                     @Override

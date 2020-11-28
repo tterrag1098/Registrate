@@ -1,5 +1,7 @@
 package com.tterrag.registrate.builders;
 
+import javax.annotation.Nullable;
+
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.entry.ContainerEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -28,7 +30,7 @@ public class ContainerBuilder<T extends Container, S extends Screen & IHasContai
 
     public interface ForgeContainerFactory<T extends Container> {
 
-        T create(ContainerType<T> type, int windowId, PlayerInventory inv, PacketBuffer buffer);
+        T create(ContainerType<T> type, int windowId, PlayerInventory inv, @Nullable PacketBuffer buffer);
     }
     
     public interface ScreenFactory<C extends Container, T extends Screen & IHasContainer<C>> {
@@ -54,7 +56,7 @@ public class ContainerBuilder<T extends Container, S extends Screen & IHasContai
         ForgeContainerFactory<T> factory = this.factory;
         NonNullSupplier<ContainerType<T>> supplier = this.asSupplier();
         ContainerType<T> ret = IForgeContainerType.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             ScreenFactory<T, S> screenFactory = this.screenFactory.get();
             ScreenManager.<T, S>registerFactory(ret, (type, inv, displayName) -> screenFactory.create(type, inv, displayName));
         });
