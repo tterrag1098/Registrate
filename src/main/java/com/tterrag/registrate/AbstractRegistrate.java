@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
@@ -33,6 +36,7 @@ import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.BuilderCallback;
 import com.tterrag.registrate.builders.ContainerBuilder;
 import com.tterrag.registrate.builders.ContainerBuilder.ContainerFactory;
+import com.tterrag.registrate.builders.ContainerBuilder.ForgeContainerFactory;
 import com.tterrag.registrate.builders.ContainerBuilder.ScreenFactory;
 import com.tterrag.registrate.builders.EnchantmentBuilder;
 import com.tterrag.registrate.builders.EnchantmentBuilder.EnchantmentFactory;
@@ -84,15 +88,14 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.DatagenModLoader;
-import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryManager;
 
 /**
@@ -135,7 +138,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             this.name = name;
             this.type = type;
             this.creator =  new NonNullLazyValue<>(creator);
-            this.delegate = entryFactory.apply(RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
+            this.delegate = entryFactory.apply(RegistryObject.of(name, (Class<R>) type, AbstractRegistrate.this.getModid()));
         }
         
         void register(IForgeRegistry<R> registry) {
@@ -151,7 +154,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             callbacks.add(callback);
         }
     }
-    
+
     public static boolean isDevEnvironment() {
         return FMLEnvironment.naming.equals("mcp");
     }
@@ -780,6 +783,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return reg.getDelegate();
     }
     
+    @Beta
+    @SuppressWarnings("unchecked")
+    public <R extends IForgeRegistryEntry<R>> Supplier<IForgeRegistry<R>> makeRegistry(String name, Class<? super R> superType, Supplier<RegistryBuilder<R>> builder) {
+        OneTimeEventReceiver.addModListener(RegistryEvent.NewRegistry.class, $ -> builder.get()
+                .setName(new ResourceLocation(getModid(), name))
+                .setType((Class<R>) superType)
+                .create());
+        return Suppliers.memoize(() -> RegistryManager.ACTIVE.<R>getRegistry(superType));
+    }
+    
     /* === Builder helpers === */
     
     // Generic
@@ -1017,6 +1030,22 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Container, SC extends Screen & IHasContainer<T>, P> ContainerBuilder<T, SC, P> container(P parent, String name, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return entry(name, callback -> new ContainerBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
+    }
+
+    public <T extends Container, SC extends Screen & IHasContainer<T>> ContainerBuilder<T, SC, S> container(ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return container(currentName(), factory, screenFactory);
+    }
+
+    public <T extends Container, SC extends Screen & IHasContainer<T>> ContainerBuilder<T, SC, S> container(String name, ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return container(self(), name, factory, screenFactory);
+    }
+
+    public <T extends Container, SC extends Screen & IHasContainer<T>, P> ContainerBuilder<T, SC, P> container(P parent, ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return container(parent, currentName(), factory, screenFactory);
+    }
+
+    public <T extends Container, SC extends Screen & IHasContainer<T>, P> ContainerBuilder<T, SC, P> container(P parent, String name, ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return entry(name, callback -> new ContainerBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
     }
     

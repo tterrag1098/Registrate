@@ -3,6 +3,7 @@ package com.tterrag.registrate.util.nullness;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+@Deprecated
 public interface NullableSupplier<@NullableType T> extends Supplier<T> {
     
     @Override

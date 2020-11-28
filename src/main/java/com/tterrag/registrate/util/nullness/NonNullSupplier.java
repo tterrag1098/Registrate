@@ -1,5 +1,6 @@
 package com.tterrag.registrate.util.nullness;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 @FunctionalInterface
@@ -9,10 +10,14 @@ public interface NonNullSupplier<@NonnullType T> extends Supplier<T> {
     T get();
 
     static <T> NonNullSupplier<T> of(Supplier<@NullableType T> sup) {
-        return ((NullableSupplier<T>)sup::get).asNonNull();
+        return of(sup, () -> "Unexpected null value from supplier");
     }
     
     static <T> NonNullSupplier<T> of(Supplier<@NullableType T> sup, NonNullSupplier<String> errorMsg) {
-        return ((NullableSupplier<T>)sup::get).asNonNull(errorMsg);
+        return () -> {
+            T res = sup.get();
+            Objects.requireNonNull(res, errorMsg);
+            return res;
+        };
     }
 }

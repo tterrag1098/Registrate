@@ -1,6 +1,7 @@
 package com.tterrag.registrate.test.mod;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -10,6 +11,8 @@ import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.EntityEntry;
+import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.entry.TileEntityEntry;
@@ -85,6 +88,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistryEntry;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.RegistryBuilder;
 
 @Mod("testmod")
 public class TestMod {
@@ -199,6 +205,8 @@ public class TestMod {
 //            super(biomeBuilder);
 //        }
 //    }
+
+    private static class TestCustomRegistryEntry extends ForgeRegistryEntry<TestCustomRegistryEntry> {}
     
     private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
     
@@ -213,7 +221,7 @@ public class TestMod {
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                 .register();
     
-    private final RegistryEntry<EntityType<TestEntity>> testduplicatename = registrate.object("testitem")
+    private final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, EntityClassification.CREATURE)
             .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().create())) // TODO include this in the builder
             .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
@@ -278,7 +286,7 @@ public class TestMod {
             .tileEntity(TestDummyTileEntity::new)
             .register();
     
-    private final RegistryEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
+    private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())
@@ -306,11 +314,8 @@ public class TestMod {
 //                    .scale(1)
 //                    .temperature(1)
 //                    .downfall(1)
-//                    .func_235097_a_(new BiomeAmbience.Builder()
-//                            .func_235239_a_(0xFFFFFF) // fog color
-//                            .func_235246_b_(0x3f76e4) // water color
-//                            .func_235248_c_(0x050533) // water fog color
-//                            .func_235238_a_()))
+//                    .waterColor(0x3f76e4)
+//                    .waterFogColor(0x050533))
 //            .typeWeight(BiomeType.WARM, 1000)
 //            .addDictionaryTypes(BiomeDictionary.Type.LUSH)
 //            .forceAutomaticDictionaryTypes()
@@ -331,11 +336,8 @@ public class TestMod {
 //                    .scale(1)
 //                    .temperature(1)
 //                    .downfall(1)
-//                    .func_235097_a_(new BiomeAmbience.Builder()
-//                            .func_235239_a_(0xFFFFFF) // fog color
-//                            .func_235246_b_(0x3f76e4) // water color
-//                            .func_235248_c_(0x050533) // water fog color
-//                            .func_235238_a_()))
+//                    .waterColor(0x3f76e4)
+//                    .waterFogColor(0x050533))
 //            .typeWeight(BiomeType.DESERT, 1000)
 //            .addDictionaryTypes(BiomeDictionary.Type.DRY)
 //            .forceAutomaticDictionaryTypes()
@@ -343,7 +345,19 @@ public class TestMod {
 //            .copyCarvers(() -> Biomes.DESERT)
 //            .copySpawns(() -> Biomes.DESERT)
 //            .register();
-    
+//    
+//    private @Nullable DimensionType testdimensiontype;
+//    private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
+//            .dimension(OverworldDimension::new)
+//            .hasSkyLight(false)
+//            .keepLoaded(false)
+//            .dimensionTypeCallback(t -> testdimensiontype = t)
+//            .register();
+
+    private final Supplier<IForgeRegistry<TestCustomRegistryEntry>> customregistry = registrate.makeRegistry("custom", TestCustomRegistryEntry.class, () -> new RegistryBuilder<>());
+    private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
+            .simple(TestCustomRegistryEntry.class, TestCustomRegistryEntry::new);
+
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)
 //            .addLayer(() -> RenderType::getTranslucent);
