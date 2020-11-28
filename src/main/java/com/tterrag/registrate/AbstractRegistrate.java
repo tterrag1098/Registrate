@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
@@ -103,6 +105,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryManager;
+import net.minecraftforge.versions.forge.ForgeVersion;
 
 /**
  * Manages all registrations and data generators for a mod.
@@ -144,7 +147,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             this.name = name;
             this.type = type;
             this.creator =  new NonNullLazyValue<>(creator);
-            this.delegate = entryFactory.apply(RegistryObject.of(name, RegistryManager.ACTIVE.<R>getRegistry(type)));
+            this.delegate = entryFactory.apply(RegistryObject.of(name, (Class<R>) type, AbstractRegistrate.this.getModid()));
         }
         
         void register(IForgeRegistry<R> registry) {
@@ -160,7 +163,17 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             callbacks.add(callback);
         }
     }
-    
+
+    // TODO formalize this
+    static {
+        ArtifactVersion forgeVersion = new DefaultArtifactVersion(ForgeVersion.getVersion());
+        if (forgeVersion.getMajorVersion() > 31) {
+            throw new IllegalStateException("Remove this code beyond 1.15.2");
+        } else if (forgeVersion.getMajorVersion() < 31 || forgeVersion.getMinorVersion() < 2 || (forgeVersion.getMinorVersion() == 2 && forgeVersion.getIncrementalVersion() < 10)) {
+            throw new IllegalStateException("Registrate requires forge 31.2.10 or higher");
+        }
+    }
+
     public static boolean isDevEnvironment() {
         return FMLEnvironment.naming.equals("mcp");
     }
@@ -775,7 +788,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @Beta
     @SuppressWarnings("unchecked")
     public <R extends IForgeRegistryEntry<R>> Supplier<IForgeRegistry<R>> makeRegistry(String name, Class<? super R> superType, Supplier<RegistryBuilder<R>> builder) {
-        OneTimeEventReceiver.addForgeListener(RegistryEvent.NewRegistry.class, $ -> builder.get()
+        OneTimeEventReceiver.addModListener(RegistryEvent.NewRegistry.class, $ -> builder.get()
                 .setName(new ResourceLocation(getModid(), name))
                 .setType((Class<R>) superType)
                 .create());

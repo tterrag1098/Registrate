@@ -1,6 +1,7 @@
 package com.tterrag.registrate.test.mod;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -107,6 +108,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistryEntry;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.RegistryBuilder;
 
 @Mod("testmod")
 public class TestMod {
@@ -221,6 +225,8 @@ public class TestMod {
             super(biomeBuilder);
         }
     }
+
+    private static class TestCustomRegistryEntry extends ForgeRegistryEntry<TestCustomRegistryEntry> {}
     
     private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
     
@@ -366,7 +372,11 @@ public class TestMod {
             .keepLoaded(false)
             .dimensionTypeCallback(t -> testdimensiontype = t)
             .register();
-    
+
+    private final Supplier<IForgeRegistry<TestCustomRegistryEntry>> customregistry = registrate.makeRegistry("custom", TestCustomRegistryEntry.class, () -> new RegistryBuilder<>());
+    private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
+            .simple(TestCustomRegistryEntry.class, TestCustomRegistryEntry::new);
+
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)
 //            .addLayer(() -> RenderType::getTranslucent);
