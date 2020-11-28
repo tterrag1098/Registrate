@@ -11,6 +11,8 @@ import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.EntityEntry;
+import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.entry.TileEntityEntry;
@@ -233,7 +235,7 @@ public class TestMod {
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                 .register();
     
-    private final RegistryEntry<EntityType<TestEntity>> testduplicatename = registrate.object("testitem")
+    private final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, EntityClassification.CREATURE)
             .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
             .register();
@@ -296,7 +298,7 @@ public class TestMod {
             .tileEntity(TestDummyTileEntity::new)
             .register();
     
-    private final RegistryEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
+    private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())

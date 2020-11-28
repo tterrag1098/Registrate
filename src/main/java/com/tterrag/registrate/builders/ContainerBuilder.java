@@ -1,6 +1,8 @@
 package com.tterrag.registrate.builders;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.entry.ContainerEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
@@ -15,6 +17,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.extensions.IForgeContainerType;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.RegistryObject;
 
 public class ContainerBuilder<T extends Container, S extends Screen & IHasContainer<T>,  P> extends AbstractBuilder<ContainerType<?>, ContainerType<T>, P, ContainerBuilder<T, S, P>> {
     
@@ -56,5 +59,15 @@ public class ContainerBuilder<T extends Container, S extends Screen & IHasContai
             ScreenManager.<T, S>registerFactory(ret, (type, inv, displayName) -> screenFactory.create(type, inv, displayName));
         });
         return ret;
+    }
+
+    @Override
+    protected RegistryEntry<ContainerType<T>> createEntryWrapper(RegistryObject<ContainerType<T>> delegate) {
+        return new ContainerEntry<>(getOwner(), delegate);
+    }
+
+    @Override
+    public ContainerEntry<T> register() {
+        return (ContainerEntry<T>) super.register();
     }
 }

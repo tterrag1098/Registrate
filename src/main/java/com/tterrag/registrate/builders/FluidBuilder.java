@@ -13,6 +13,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.NonNullLazyValue;
+import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
@@ -31,6 +32,7 @@ import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.fml.RegistryObject;
 
 /**
  * A builder for fluids, allows for customization of the {@link ForgeFlowingFluid.Properties} and {@link FluidAttributes}, and creation of the source variant, fluid block, and bucket item, as well as
@@ -386,7 +388,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public RegistryEntry<T> register() {
+    public FluidEntry<T> register() {
         if (defaultSource == Boolean.TRUE) {
             source(ForgeFlowingFluid.Source::new);
         }
@@ -400,6 +402,11 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         if (source != null) {
             getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source);
         }
-        return super.register();
+        return (FluidEntry<T>) super.register();
+    }
+
+    @Override
+    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
+        return new FluidEntry<>(getOwner(), delegate);
     }
 }
