@@ -64,7 +64,7 @@ public class ProtectedMethodScraper {
             return base.toString();
         }
 
-        private static final Pattern HEADER_PATTERN = Pattern.compile("^\\s+protected\\s(static)?\\s?(\\S+)\\s(\\S+)\\((.+)\\)\\s\\{$");
+        private static final Pattern HEADER_PATTERN = Pattern.compile("^\\s+protected\\s(static)?\\s?((?:<[^>]+>\\s)?\\S+)\\s(\\S+)\\((.+)\\)\\s\\{$");
         private static final Pattern PARAM_PATTERN = Pattern.compile("([a-zA-Z_][\\w.$]+(?:<.+>)?)\\s+(\\S+)");
 
         public static Optional<Header> parse(String className, String code) {
