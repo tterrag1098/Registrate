@@ -11,6 +11,8 @@ import net.minecraft.block.Block;
 import net.minecraft.data.loot.BlockLootTables;
 import net.minecraft.item.Item;
 import net.minecraft.util.IItemProvider;
+import net.minecraft.world.storage.loot.ILootConditionConsumer;
+import net.minecraft.world.storage.loot.ILootFunctionConsumer;
 import net.minecraft.world.storage.loot.IRandomRange;
 import net.minecraft.world.storage.loot.LootEntry;
 import net.minecraft.world.storage.loot.LootTable;
@@ -31,9 +33,13 @@ public class RegistrateBlockLootTables extends BlockLootTables implements Regist
     protected Iterable<Block> getKnownBlocks() {
         return parent.getAll(Block.class).stream().map(Supplier::get).collect(Collectors.toList());
     }
-    
+
     // @formatter:off
     // GENERATED START
+
+    public static <T> T withExplosionDecay(IItemProvider p_218552_0_, ILootFunctionConsumer<T> p_218552_1_) { return BlockLootTables.withExplosionDecay(p_218552_0_, p_218552_1_); }
+
+    public static <T> T withSurvivesExplosion(IItemProvider p_218560_0_, ILootConditionConsumer<T> p_218560_1_) { return BlockLootTables.withSurvivesExplosion(p_218560_0_, p_218560_1_); }
 
     public static LootTable.Builder dropping(IItemProvider p_218546_0_) { return BlockLootTables.dropping(p_218546_0_); }
 
