@@ -33,7 +33,7 @@ public class RegistrateEntityLootTables extends EntityLootTables implements Regi
     protected boolean isNonLiving(EntityType<?> entitytype) {
         return entitytype.getClassification() == EntityClassification.MISC; // TODO open this to customization?
     }
-    
+
     // @formatter:off
     // GENERATED START
 

@@ -117,7 +117,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
     
     public void add(ItemGroup group, String name) {
-        add(((TranslationTextComponent)group.func_242392_c()).getKey(), name);
+        add(((TranslationTextComponent)group.getGroupName()).getKey(), name);
     }
     
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {

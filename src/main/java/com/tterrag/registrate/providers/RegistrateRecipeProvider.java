@@ -291,20 +291,20 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
             .addCriterion("has_" + safeName(source), source.getCritereon(this))
             .build(this, safeId(result.get()));
     }
-    
+
     // @formatter:off
     // GENERATED START
 
     @Override
-    public void saveRecipeAdvancement(DirectoryCache p_208310_0_, JsonObject cache, Path advancementJson) { super.saveRecipeAdvancement(p_208310_0_, cache, advancementJson); }
+    public void saveRecipeAdvancement(DirectoryCache cache, JsonObject cache2, Path advancementJson) { super.saveRecipeAdvancement(cache, cache2, advancementJson); }
 
-    public static EnterBlockTrigger.Instance enteredBlock(Block p_200407_0_) { return RecipeProvider.enteredBlock(p_200407_0_); }
+    public static EnterBlockTrigger.Instance enteredBlock(Block block) { return RecipeProvider.enteredBlock(block); }
 
-    public static InventoryChangeTrigger.Instance hasItem(IItemProvider p_200403_0_) { return RecipeProvider.hasItem(p_200403_0_); }
+    public static InventoryChangeTrigger.Instance hasItem(IItemProvider item) { return RecipeProvider.hasItem(item); }
 
-    public static InventoryChangeTrigger.Instance hasItem(ITag<Item> p_200409_0_) { return RecipeProvider.hasItem(p_200409_0_); }
+    public static InventoryChangeTrigger.Instance hasItem(ITag<Item> tag) { return RecipeProvider.hasItem(tag); }
 
-    public static InventoryChangeTrigger.Instance hasItem(ItemPredicate... p_200405_0_) { return RecipeProvider.hasItem(p_200405_0_); }
+    public static InventoryChangeTrigger.Instance hasItem(ItemPredicate... predicate) { return RecipeProvider.hasItem(predicate); }
 
     // GENERATED END
 }
