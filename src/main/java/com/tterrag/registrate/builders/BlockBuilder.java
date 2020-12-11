@@ -122,7 +122,19 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
-    
+
+    /**
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
+     *
+     * @param material
+     *            The material of the initial properties
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> initialProperties(Material material) {
+        initialProperties = () -> Block.Properties.create(material);
+        return this;
+    }
+
     /**
      * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
      * 
