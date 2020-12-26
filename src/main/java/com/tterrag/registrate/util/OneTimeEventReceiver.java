@@ -2,10 +2,14 @@ package com.tterrag.registrate.util;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.tterrag.registrate.util.nullness.NonnullType;
 
@@ -16,7 +20,9 @@ import net.minecraftforge.eventbus.EventBus;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @RequiredArgsConstructor
@@ -58,26 +64,43 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
             ret = null;
         }
         getBusId = ret;
+
+        addModListener(FMLLoadCompleteEvent.class, OneTimeEventReceiver::onLoadComplete);
     }
 
     private final IEventBus bus;
     private final Consumer<? super T> listener;
+    private final AtomicBoolean consumed = new AtomicBoolean();
 
     @Override
     public void accept(T event) {
-        listener.accept(event);
-        unregister(bus, this, event);
-    }
-    
-    public static void unregister(IEventBus bus, Object listener, Event event) {
-        bus.unregister(listener);
-        try {
-            final MethodHandle mh = getBusId;
-            if (mh != null) {
-                event.getListenerList().getListeners((int) mh.invokeExact((EventBus) bus));
-            }
-        } catch (Throwable t) {
-            log.warn("Failed to clear listener list of one-time event receiver, so the receiver has leaked. This is not a big deal.", t);
+        if (consumed.compareAndSet(false, true)) {
+            listener.accept(event);
+            unregister(bus, this, event);
         }
+    }
+
+    private static final List<Triple<IEventBus, Object, Event>> toUnregister = new ArrayList<>();
+
+    public static synchronized void unregister(IEventBus bus, Object listener, Event event) {
+        toUnregister.add(Triple.of(bus, listener, event));
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void onLoadComplete(FMLLoadCompleteEvent event) {
+        DeferredWorkQueue.runLater(() -> {
+            toUnregister.forEach(t -> {
+                t.getLeft().unregister(t.getMiddle());
+                try {
+                    final MethodHandle mh = getBusId;
+                    if (mh != null) {
+                        t.getRight().getListenerList().getListeners((int) mh.invokeExact((EventBus) t.getLeft()));
+                    }
+                } catch (Throwable ex) {
+                    log.warn("Failed to clear listener list of one-time event receiver, so the receiver has leaked. This is not a big deal.", ex);
+                }
+            });
+            toUnregister.clear();
+        });
     }
 }
