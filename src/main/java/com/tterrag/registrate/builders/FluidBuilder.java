@@ -28,6 +28,7 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
@@ -359,6 +360,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         this.defaultBucket = false;
         return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(this.source, p))
+                .properties(p -> p.containerItem(Items.BUCKET).maxStackSize(1))
                 .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
 
