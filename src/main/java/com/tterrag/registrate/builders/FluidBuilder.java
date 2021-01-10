@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
@@ -173,22 +174,22 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
 
         return ret;
     }
-    
+
     private final ResourceLocation stillTexture;
     private final String sourceName;
     private final String bucketName;
     private final NonNullSupplier<FluidAttributes.Builder> attributes;
     private final NonNullFunction<ForgeFlowingFluid.Properties, T> factory;
-    
+
     @Nullable
     private Boolean defaultSource, defaultBlock, defaultBucket;
-    
+
     private NonNullConsumer<FluidAttributes.Builder> attributesCallback = $ -> {};
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
     private NonNullLazyValue<? extends ForgeFlowingFluid> source;
     private List<Tag<Fluid>> tags = new ArrayList<>();
-    
+
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         super(owner, parent, "flowing_" + name, callback, Fluid.class);
@@ -253,10 +254,11 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return this {@link FluidBuilder}
      */
     public FluidBuilder<T, P> source(NonNullFunction<ForgeFlowingFluid.Properties, ? extends ForgeFlowingFluid> factory) {
+        this.defaultSource = false;
         this.source = new NonNullLazyValue<>(() -> factory.apply(makeProperties()));
         return this;
     }
-    
+
     /**
      * Create a standard {@link FlowingFluidBlock} for this fluid, building it immediately, and not allowing for further configuration.
      * 
@@ -292,6 +294,10 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
     public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, Block.Properties, ? extends B> factory) {
+        if (this.defaultBlock == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
+        }
+        this.defaultBlock = false;
         NonNullSupplier<T> supplier = asSupplier();
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
                 .properties(p -> Block.Properties.from(Blocks.WATER).noDrops())
@@ -302,6 +308,15 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
                 })
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
+    }
+
+    @Beta
+    public FluidBuilder<T, P> noBlock() {
+        if (this.defaultBlock == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
+        }
+        this.defaultBlock = false;
+        return this;
     }
 
     /**
@@ -339,11 +354,24 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
     public <I extends BucketItem> ItemBuilder<I, FluidBuilder<T, P>> bucket(NonNullBiFunction<Supplier<? extends ForgeFlowingFluid>, Item.Properties, ? extends I> factory) {
+        if (this.defaultBucket == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
+        }
+        this.defaultBucket = false;
         Supplier<? extends ForgeFlowingFluid> source = this.source;
         return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source, p))
                 .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
-    
+
+    @Beta
+    public FluidBuilder<T, P> noBucket() {
+        if (this.defaultBucket == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
+        }
+        this.defaultBucket = false;
+        return this;
+    }
+
     /**
      * Assign {@link Tag}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      * 
@@ -361,7 +389,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         this.tags.addAll(Arrays.asList(tags));
         return ret;
     }
-    
+
     private ForgeFlowingFluid getSource() {
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
@@ -401,6 +429,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
             getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source);
+        } else {
+            throw new IllegalStateException("Fluid must have a source version: " + getName());
         }
         return (FluidEntry<T>) super.register();
     }
