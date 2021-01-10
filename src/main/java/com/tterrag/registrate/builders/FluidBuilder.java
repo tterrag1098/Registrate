@@ -358,8 +358,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
         this.defaultBucket = false;
-        Supplier<? extends ForgeFlowingFluid> source = this.source;
-        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source, p))
+        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(this.source, p))
                 .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
 
@@ -388,6 +387,19 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;
+    }
+
+    /**
+     * Remove {@link Tag}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
+     * 
+     * @param tags
+     *            The tags to remove
+     * @return this {@link FluidBuilder}
+     */
+    @SafeVarargs
+    public final FluidBuilder<T, P> removeTag(Tag<Fluid>... tags) {
+        this.tags.removeAll(Arrays.asList(tags));
+        return this.removeTag(ProviderType.FLUID_TAGS, tags);
     }
 
     private ForgeFlowingFluid getSource() {

@@ -101,6 +101,26 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     }
 
     /**
+     * Remove a tag (or tags) from this entry of a given type. Useful to remove default tags on fluids, for example. Multiple calls will remove additional tags.
+     * 
+     * @param type
+     *            The provider type (which must be a tag provider)
+     * @param tags
+     *            The tags to remove
+     * @return this {@link Builder}
+     */
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
+    public final S removeTag(ProviderType<RegistrateTagsProvider<R>> type, Tag<R>... tags) {
+        if (tagsByType.containsKey(type)) {
+            for (Tag<R> tag : tags) {
+                tagsByType.remove(type, tag);
+            }
+        }
+        return (S) this;
+    }
+
+    /**
      * Set the lang key for this entry to the default value (specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}). Generally, specific helpers from concrete builders should be used
      * instead.
      * 

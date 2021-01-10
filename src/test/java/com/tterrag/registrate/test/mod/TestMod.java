@@ -244,6 +244,7 @@ public class TestMod {
     private final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, EntityClassification.CREATURE)
             .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
+            .renderer(() -> PigRenderer::new)
             .register();
     
     private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
@@ -313,6 +314,7 @@ public class TestMod {
             .bucket()
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
                 .build()
+//            .removeTag(FluidTags.WATER)
             .register();
     
     private final RegistryEntry<ContainerType<ChestContainer>> testcontainer = registrate.object("testcontainer")
