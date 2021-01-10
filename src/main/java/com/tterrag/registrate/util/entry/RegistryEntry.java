@@ -29,8 +29,8 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     private static RegistryEntry<?> EMPTY; static {
         try {
             // Safe to call with null here and only here
-            @SuppressWarnings("null")
-            RegistryEntry<?> ret = new RegistryEntry<>(null, (RegistryObject<?>) ObfuscationReflectionHelper.findMethod(RegistryObject.class, "empty").invoke(null));
+            @SuppressWarnings({ "null", "unchecked", "rawtypes" })
+            RegistryEntry<?> ret = new RegistryEntry(null, (RegistryObject) ObfuscationReflectionHelper.findMethod(RegistryObject.class, "empty").invoke(null));
             EMPTY = ret;
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new RuntimeException(e);
