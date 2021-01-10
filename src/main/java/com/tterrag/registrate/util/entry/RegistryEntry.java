@@ -1,18 +1,19 @@
 package com.tterrag.registrate.util.entry;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
 import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -25,10 +26,18 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 @EqualsAndHashCode(of = "delegate")
 public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements NonNullSupplier<T> {
 
-    @SuppressWarnings("null") // Safe to call with null here and only here
-    private static RegistryEntry<?> EMPTY = new RegistryEntry<>(null, null);
+    private static RegistryEntry<?> EMPTY; static {
+        try {
+            // Safe to call with null here and only here
+            @SuppressWarnings("null")
+            RegistryEntry<?> ret = new RegistryEntry<>(null, (RegistryObject<?>) ObfuscationReflectionHelper.findMethod(RegistryObject.class, "empty").invoke(null));
+            EMPTY = ret;
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-    private static <T extends IForgeRegistryEntry<? super T>> RegistryEntry<T> empty() {
+    public static <T extends IForgeRegistryEntry<? super T>> RegistryEntry<T> empty() {
         @SuppressWarnings("unchecked")
         RegistryEntry<T> t = (RegistryEntry<T>) EMPTY;
         return t;

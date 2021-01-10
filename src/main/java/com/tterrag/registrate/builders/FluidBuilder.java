@@ -8,13 +8,16 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.NonNullLazyValue;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -27,9 +30,11 @@ import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ITag.INamedTag;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
@@ -137,6 +142,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * <p>
      * The fluid will be assigned the following data:
      * <ul>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * <li>A default {@link ForgeFlowingFluid.Source source fluid} (via {@link #defaultSource})</li>
      * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture (via {@link #defaultBlock()})</li>
      * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid (via {@link #defaultBucket()})</li>
@@ -168,27 +174,27 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     public static <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory)
-                .defaultSource().defaultBlock().defaultBucket()
+                .defaultLang().defaultSource().defaultBlock().defaultBucket()
                 .tag(FluidTags.WATER);
 
         return ret;
     }
-    
+
     private final ResourceLocation stillTexture;
     private final String sourceName;
     private final String bucketName;
     private final NonNullSupplier<FluidAttributes.Builder> attributes;
     private final NonNullFunction<ForgeFlowingFluid.Properties, T> factory;
-    
+
     @Nullable
     private Boolean defaultSource, defaultBlock, defaultBucket;
-    
+
     private NonNullConsumer<FluidAttributes.Builder> attributesCallback = $ -> {};
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
     private NonNullLazyValue<? extends ForgeFlowingFluid> source;
     private List<INamedTag<Fluid>> tags = new ArrayList<>();
-    
+
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         super(owner, parent, "flowing_" + name, callback, Fluid.class);
@@ -230,6 +236,27 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for
+     * undoing previous changes.
+     * 
+     * @return this {@link FluidBuilder}
+     */
+    public FluidBuilder<T, P> defaultLang() {
+        return lang(f -> f.getAttributes().getTranslationKey(), RegistrateLangProvider.toEnglishName(sourceName));
+    }
+
+    /**
+     * Set the translation for this fluid.
+     * 
+     * @param name
+     *            A localized English name
+     * @return this {@link FluidBuilder}
+     */
+    public FluidBuilder<T, P> lang(String name) {
+        return lang(f -> f.getAttributes().getTranslationKey(), name);
+    }
+
+    /**
      * Create a standard {@link ForgeFlowingFluid.Source} for this fluid which will be built and registered along with this fluid.
      * 
      * @return this {@link FluidBuilder}
@@ -253,10 +280,11 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return this {@link FluidBuilder}
      */
     public FluidBuilder<T, P> source(NonNullFunction<ForgeFlowingFluid.Properties, ? extends ForgeFlowingFluid> factory) {
+        this.defaultSource = false;
         this.source = new NonNullLazyValue<>(() -> factory.apply(makeProperties()));
         return this;
     }
-    
+
     /**
      * Create a standard {@link FlowingFluidBlock} for this fluid, building it immediately, and not allowing for further configuration.
      * 
@@ -292,6 +320,10 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
     public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, Block.Properties, ? extends B> factory) {
+        if (this.defaultBlock == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
+        }
+        this.defaultBlock = false;
         NonNullSupplier<T> supplier = asSupplier();
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
                 .properties(p -> Block.Properties.from(Blocks.WATER).noDrops())
@@ -302,6 +334,15 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
                 })
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
+    }
+
+    @Beta
+    public FluidBuilder<T, P> noBlock() {
+        if (this.defaultBlock == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
+        }
+        this.defaultBlock = false;
+        return this;
     }
 
     /**
@@ -339,11 +380,24 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
     public <I extends BucketItem> ItemBuilder<I, FluidBuilder<T, P>> bucket(NonNullBiFunction<Supplier<? extends ForgeFlowingFluid>, Item.Properties, ? extends I> factory) {
-        Supplier<? extends ForgeFlowingFluid> source = this.source;
-        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source, p))
+        if (this.defaultBucket == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
+        }
+        this.defaultBucket = false;
+        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(this.source, p))
+                .properties(p -> p.containerItem(Items.BUCKET).maxStackSize(1))
                 .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
-    
+
+    @Beta
+    public FluidBuilder<T, P> noBucket() {
+        if (this.defaultBucket == Boolean.FALSE) {
+            throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
+        }
+        this.defaultBucket = false;
+        return this;
+    }
+
     /**
      * Assign {@link INamedTag}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      * 
@@ -361,7 +415,20 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         this.tags.addAll(Arrays.asList(tags));
         return ret;
     }
-    
+
+    /**
+     * Remove {@link Tag}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
+     * 
+     * @param tags
+     *            The tags to remove
+     * @return this {@link FluidBuilder}
+     */
+    @SafeVarargs
+    public final FluidBuilder<T, P> removeTag(INamedTag<Fluid>... tags) {
+        this.tags.removeAll(Arrays.asList(tags));
+        return this.removeTag(ProviderType.FLUID_TAGS, tags);
+    }
+
     private ForgeFlowingFluid getSource() {
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
@@ -370,7 +437,19 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     
     private ForgeFlowingFluid.Properties makeProperties() {
         FluidAttributes.Builder attributes = this.attributes.get();
+        RegistryEntry<Block> block = getOwner().getOptional(sourceName, Block.class);
         attributesCallback.accept(attributes);
+        // Force the translation key after the user callback runs
+        // This is done because we need to remove the lang data generator if using the block key,
+        // and if it was possible to undo this change, it might result in the user translation getting
+        // silently lost, as there's no good way to check whether the translation key was changed.
+        // TODO improve this?
+        if (block.isPresent()) {
+            attributes.translationKey(block.get().getTranslationKey());
+            setData(ProviderType.LANG, NonNullBiConsumer.noop());
+        } else {
+            attributes.translationKey(Util.makeTranslationKey("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
+        }
         ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source, asSupplier(), attributes);
         properties.accept(ret);
         return ret;
@@ -401,6 +480,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
             getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source);
+        } else {
+            throw new IllegalStateException("Fluid must have a source version: " + getName());
         }
         return (FluidEntry<T>) super.register();
     }

@@ -9,7 +9,7 @@ af64d14ab81f8d19774a45ad1ca41cb69c280e6e assets/testmod/models/block/testfluid.j
 63fe0b9d5aa5d58f07aa7bd9c0c76604a234c678 assets/testmod/models/item/magic_item_model.json
 1ecfe3e1394a79cacfefe33c36cfb714af953374 assets/testmod/models/item/testblock.json
 98167609bf3898587f7565736a6fc24a7966cacd assets/testmod/models/item/testentity_spawn_egg.json
-13a6d3115ade920d298f1ce2f6d1df7d28bd7e33 assets/testmod/models/item/testfluid_bucket.json
+f5978560e17788b6f4fb40382e25257de00befcc assets/testmod/models/item/testfluid_bucket.json
 44a7f013ea9ed633a6eef7670db72fd6138b7d35 assets/testmod/models/item/testitem.json
 a6cdf498951379d190dc11c82b13398f792e5fb3 data/minecraft/tags/blocks/bamboo_plantable_on.json
 a6cdf498951379d190dc11c82b13398f792e5fb3 data/minecraft/tags/blocks/dragon_immune.json
