@@ -365,7 +365,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> get(String name, Class<? super R> type) {
         return this.<R, T>getRegistration(name, type).getDelegate();
     }
-    
+
+    @Beta
+    public <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> getOptional(String name, Class<? super R> type) {
+        Registration<R, T> reg = this.<R, T>getRegistrationUnchecked(name, type);
+        return reg == null ? RegistryEntry.empty() : reg.getDelegate();
+    }
+
     @SuppressWarnings("unchecked")
     @Nullable
     private <R extends IForgeRegistryEntry<R>, T extends R> Registration<R, T> getRegistrationUnchecked(String name, Class<? super R> type) {    

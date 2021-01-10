@@ -12,10 +12,12 @@ import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.NonNullLazyValue;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
@@ -32,6 +34,7 @@ import net.minecraft.item.Items;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
@@ -139,6 +142,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * <p>
      * The fluid will be assigned the following data:
      * <ul>
+     * <li>The default translation (via {@link #defaultLang()})</li>
      * <li>A default {@link ForgeFlowingFluid.Source source fluid} (via {@link #defaultSource})</li>
      * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture (via {@link #defaultBlock()})</li>
      * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid (via {@link #defaultBucket()})</li>
@@ -170,7 +174,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     public static <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory)
-                .defaultSource().defaultBlock().defaultBucket()
+                .defaultLang().defaultSource().defaultBlock().defaultBucket()
                 .tag(FluidTags.WATER);
 
         return ret;
@@ -229,6 +233,27 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     public FluidBuilder<T, P> properties(NonNullConsumer<ForgeFlowingFluid.Properties> cons) {
         properties = properties.andThen(cons);
         return this;
+    }
+
+    /**
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for
+     * undoing previous changes.
+     * 
+     * @return this {@link FluidBuilder}
+     */
+    public FluidBuilder<T, P> defaultLang() {
+        return lang(f -> f.getAttributes().getTranslationKey(), RegistrateLangProvider.toEnglishName(sourceName));
+    }
+
+    /**
+     * Set the translation for this fluid.
+     * 
+     * @param name
+     *            A localized English name
+     * @return this {@link FluidBuilder}
+     */
+    public FluidBuilder<T, P> lang(String name) {
+        return lang(f -> f.getAttributes().getTranslationKey(), name);
     }
 
     /**
@@ -412,7 +437,19 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     
     private ForgeFlowingFluid.Properties makeProperties() {
         FluidAttributes.Builder attributes = this.attributes.get();
+        RegistryEntry<Block> block = getOwner().getOptional(sourceName, Block.class);
         attributesCallback.accept(attributes);
+        // Force the translation key after the user callback runs
+        // This is done because we need to remove the lang data generator if using the block key,
+        // and if it was possible to undo this change, it might result in the user translation getting
+        // silently lost, as there's no good way to check whether the translation key was changed.
+        // TODO improve this?
+        if (block.isPresent()) {
+            attributes.translationKey(block.get().getTranslationKey());
+            setData(ProviderType.LANG, NonNullBiConsumer.noop());
+        } else {
+            attributes.translationKey(Util.makeTranslationKey("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
+        }
         ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source, asSupplier(), attributes);
         properties.accept(ret);
         return ret;
