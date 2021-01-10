@@ -417,7 +417,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Remove {@link Tag}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
+     * Remove {@link INamedTag}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
      * 
      * @param tags
      *            The tags to remove
