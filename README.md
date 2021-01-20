@@ -23,7 +23,7 @@ Using a constant field is not necessary, it can be passed around and thrown away
 Next, begin adding objects.
 
 ```java
-public static final RegistryObject<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
+public static final RegistryEntry<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
         .block(MyBlock::new)
         .register();
 ```
@@ -31,7 +31,7 @@ public static final RegistryObject<MyBlock> MY_BLOCK = REGISTRATE.object("my_blo
 This simple declaration will create a block, with a default simple blockstate, model, loot table, and lang entry. However all of these can be configured easily to use whatever custom data you may want.
 
 ```java
-public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.object("my_block")
+public static final RegistryEntry<MyStairsBlock> MY_STAIRS = REGISTRATE.object("my_block")
         .block(MyStairsBlock::new)
             .defaultItem()
             .tag(BlockTags.STAIRS)
