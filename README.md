@@ -27,6 +27,7 @@ public static final RegistryEntry<MyBlock> MY_BLOCK = REGISTRATE.object("my_bloc
         .block(MyBlock::new)
         .register();
 ```
+Note: your block's constructor is expected to accept properties, [example here](https://github.com/tterrag1098/Registrate/blob/1.15/src/test/java/com/tterrag/registrate/test/mod/TestMod.java#L132).  
 
 This simple declaration will create a block, with a default simple blockstate, model, loot table, and lang entry. However all of these can be configured easily to use whatever custom data you may want.
 
