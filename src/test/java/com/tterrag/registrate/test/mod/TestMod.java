@@ -19,6 +19,7 @@ import com.tterrag.registrate.util.entry.TileEntityEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.block.Block;
@@ -78,6 +79,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
@@ -369,8 +371,9 @@ public class TestMod {
         return builder.loot((prov, block) -> prov.registerDropping(block, Items.DIAMOND));
     }
 
+    public Advancement advancement;
+
     public TestMod() {
-        
         registrate.addRawLang("testmod.custom.lang", "Test");
         registrate.addLang("tooltip", testblock.getId(), "Egg.");
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
@@ -381,8 +384,16 @@ public class TestMod {
                         adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."), 
                         new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
                 .register(adv, registrate.getModid() + ":root");
+            // Keeping with the egg requirement to make testing the advancements easier
+            advancement = Advancement.Builder.builder()
+                .withCriterion("has_egg", InventoryChangeTrigger.Instance.forItems(Items.EGG))
+                .withDisplay(Items.BARRIER,
+                    new TranslationTextComponent(registrate.getModid() + ".test.testAdvancement"),
+                    new TranslationTextComponent(registrate.getModid() + ".test.testAdvancement.desc"),
+                    new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
+                .register(adv, registrate.getModid() + ":lang/root");
         });
-        
+        registrate.addDataGenerator(ProviderType.LANG, provider -> provider.addAdvancement(advancement, "Test Title", "Test Description"));
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
         MinecraftForge.EVENT_BUS.addListener(this::afterServerStart);
     }
