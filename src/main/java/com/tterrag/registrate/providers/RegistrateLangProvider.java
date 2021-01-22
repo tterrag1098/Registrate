@@ -129,7 +129,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
      * @param title       The title of the advancement
      * @param description The description of the advancement
      */
-    private void addAdvancement(Advancement advancement, String title, String description) {
+    public void addAdvancement(Advancement advancement, String title, String description) {
         final DisplayInfo display = advancement.getDisplay();
         add(display.getTitle().getString(), title);
         add(display.getDescription().getString(), description);
