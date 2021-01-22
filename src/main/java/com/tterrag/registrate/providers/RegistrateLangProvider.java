@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.DisplayInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -118,6 +120,19 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     
     public void add(ItemGroup group, String name) {
         add(((TranslationTextComponent)group.getGroupName()).getKey(), name);
+    }
+
+    /**
+     * Helper function to add advancements to the lang generator
+     *
+     * @param advancement The advancement for localizations to be added
+     * @param title       The title of the advancement
+     * @param description The description of the advancement
+     */
+    private void addAdvancement(Advancement advancement, String title, String description) {
+        final DisplayInfo display = advancement.getDisplay();
+        add(display.getTitle().getString(), title);
+        add(display.getDescription().getString(), description);
     }
     
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
