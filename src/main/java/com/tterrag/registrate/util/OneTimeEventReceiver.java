@@ -23,17 +23,18 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.minecraftforge.fml.event.lifecycle.IModBusEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @RequiredArgsConstructor
 @Log4j2
 public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullType T> {
     
-    public static <T extends Event> void addModListener(Class<? super T> evtClass, Consumer<? super T> listener) {
+    public static <T extends Event & IModBusEvent> void addModListener(Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addModListener(EventPriority.NORMAL, evtClass, listener);
     }
     
-    public static <T extends Event> void addModListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
+    public static <T extends Event & IModBusEvent> void addModListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addListener(FMLJavaModLoadingContext.get().getModEventBus(), priority, evtClass, listener);
     }
     

@@ -1,5 +1,7 @@
 package com.tterrag.registrate.builders;
 
+import java.util.function.Supplier;
+
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -23,7 +25,9 @@ import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntitySpawnPlacementRegistry.IPlacementPredicate;
 import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
+import net.minecraft.entity.ai.attributes.AttributeModifierMap.MutableAttribute;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.tags.ITag.INamedTag;
@@ -31,6 +35,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
@@ -86,7 +91,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     @Nullable
     private NonNullSupplier<IRenderFactory<? super T>> renderer;
     
-    private boolean spawnConfigured;
+    private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
     
     private @Nullable ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder;
 
@@ -139,7 +144,28 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
             }
         });
     }
-    
+
+    /**
+     * Register a attributes for this entity. The entity must extend {@link LivingEntity}.
+     * <p>
+     * Cannot be called more than once per builder.
+     * 
+     * @param attributes
+     *            A supplier to the attributes for this entity, usually of the form {@code EntityClass::createAttributes}
+     * @return this {@link EntityBuilder}
+     * @throws IllegalStateException
+     *             When called more than once
+     */
+    @SuppressWarnings("unchecked")
+    public EntityBuilder<T, P> attributes(Supplier<MutableAttribute> attributes) {
+        if (attributesConfigured) {
+            throw new IllegalStateException("Cannot configure attributes more than once");
+        }
+        attributesConfigured = true;
+        OneTimeEventReceiver.addModListener(EntityAttributeCreationEvent.class, e -> e.put((EntityType<LivingEntity>) getEntry(), attributes.get().create()));
+        return this;
+    }
+
     /**
      * Register a spawn placement for this entity. The entity must extend {@link MobEntity} and allow construction with a {@code null} {@link World}.
      * <p>

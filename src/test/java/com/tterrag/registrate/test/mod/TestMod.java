@@ -270,7 +270,7 @@ public class TestMod {
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
             .entity(TestEntity::new, EntityClassification.CREATURE)
-            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().create())) // TODO include this in the builder
+            .attributes(PigEntity::func_234215_eI_)
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::canAnimalSpawn)
             .defaultSpawnEgg(0xFF0000, 0x00FF00)
