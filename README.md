@@ -22,16 +22,31 @@ Using a constant field is not necessary, it can be passed around and thrown away
 
 Next, begin adding objects.
 
+If you have a block class such as
+
 ```java
-public static final RegistryObject<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
+public class MyBlock extends Block {
+
+    public MyBlock(Block.Properties properties) {
+        super(properties);
+    }
+    
+    ...
+}
+```
+
+then register it like so,
+
+```java
+public static final RegistryEntry<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
         .block(MyBlock::new)
         .register();
 ```
 
-This simple declaration will create a block, with a default simple blockstate, model, loot table, and lang entry. However all of these can be configured easily to use whatever custom data you may want.
+Registrate will create a block, with a default simple blockstate, model, loot table, and lang entry. However, all of these facets can be configured easily to use whatever custom data you may want. Example:
 
 ```java
-public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.object("my_block")
+public static final RegistryEntry<MyStairsBlock> MY_STAIRS = REGISTRATE.object("my_block")
         .block(MyStairsBlock::new)
             .defaultItem()
             .tag(BlockTags.STAIRS)
@@ -43,7 +58,7 @@ public static final RegistryObject<MyStairsBlock> MY_STAIRS = REGISTRATE.object(
 
 This customized version will create a BlockItem (with its own default model and lang entry), add the block to a tag, configure the blockstate for stair properties, and add a custom localization.
 
-To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/job/1.14/javadoc/). For more advanced usage, read the [wiki](https://github.com/tterrag1098/Registrate/wiki) (WIP).
+To get an overview of the different APIs and methods, check out the [Javadocs](https://ci.tterrag.com/job/Registrate/job/1.15/javadoc/). For more advanced usage, read the [wiki](https://github.com/tterrag1098/Registrate/wiki) (WIP).
 
 ## Project Setup
 
