@@ -150,7 +150,21 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
         getOwner().<R, T>addRegisterCallback(getName(), getRegistryType(), callback);
         return (S) this;
     }
-    
+
+    /**
+     * Add a callback to be invoked when this entry is registered, but only after some other registry type has been registered as well. Can be called multiple times to add multiple callbacks.
+     * <p>
+     * Builders which have had this method used on them (or another method which calls this one, such as {@link EntityBuilder#spawnEgg(int, int)}), <strong>must</strong> be registered, via
+     * {@link #register()}, or errors will be thrown when these "dangling" register callbacks are discovered at register time.
+     * 
+     * @param <OR>
+     *            The dependency registry type
+     * @param dependencyType
+     *            the base class for objects of the dependency registry. The callback will be invoked only after this registry has fired its registry events.
+     * @param callback
+     *            the callback to invoke
+     * @return this {@link Builder}
+     */
     default <OR extends IForgeRegistryEntry<OR>> S onRegisterAfter(Class<? super OR> dependencyType, NonNullConsumer<? super T> callback) {
         return onRegister(e -> {
             if (getOwner().<OR>isRegistered(dependencyType)) {
