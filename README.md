@@ -22,14 +22,28 @@ Using a constant field is not necessary, it can be passed around and thrown away
 
 Next, begin adding objects.
 
+If you have a block class such as
+
+```java
+public class MyBlock extends Block {
+
+    public MyBlock(Block.Properties properties) {
+        super(properties);
+    }
+    
+    ...
+}
+```
+
+then register it like so,
+
 ```java
 public static final RegistryEntry<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
         .block(MyBlock::new)
         .register();
 ```
-Note: your block's constructor is expected to accept properties, [example here](https://github.com/tterrag1098/Registrate/blob/1.15/src/test/java/com/tterrag/registrate/test/mod/TestMod.java#L132).  
 
-This simple declaration will create a block, with a default simple blockstate, model, loot table, and lang entry. However all of these can be configured easily to use whatever custom data you may want.
+Registrate will create a block, with a default simple blockstate, model, loot table, and lang entry. However, all of these facets can be configured easily to use whatever custom data you may want. Example:
 
 ```java
 public static final RegistryEntry<MyStairsBlock> MY_STAIRS = REGISTRATE.object("my_block")
