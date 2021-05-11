@@ -13,6 +13,6 @@ public class NonNullLazyValue<T> extends LazyValue<T> implements NonNullSupplier
 
     @Override
     public @NonnullType T get() {
-        return getValue();
+        return super.getValue();
     }
 }
