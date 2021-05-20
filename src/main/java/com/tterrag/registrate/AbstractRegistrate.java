@@ -836,8 +836,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         // TODO clean this up when NonNullLazyValue is fixed better
         NonNullLazyValue<? extends ItemGroup> currentGroup = this.currentGroup;
-        NonNullSupplier<? extends ItemGroup> group = currentGroup == null ? null : NonNullSupplier.of(currentGroup::getValue); 
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, group));
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentGroup == null ? null : currentGroup::getValue));
     }
     
     // Blocks

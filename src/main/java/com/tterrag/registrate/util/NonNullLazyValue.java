@@ -21,4 +21,9 @@ public class NonNullLazyValue<T> extends LazyValue<T> implements NonNullSupplier
     public @NonnullType T get() {
         return super.getValue();
     }
+
+    @Override
+    public @NonnullType T getValue() {
+        return super.getValue();
+    }
 }
