@@ -384,7 +384,11 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
         this.defaultBucket = false;
-        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(this.source, p))
+        NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
+        if (source == null) {
+            throw new IllegalStateException("Cannot create a bucket before creating a source block");
+        }
+        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source::getValue, p))
                 .properties(p -> p.containerItem(Items.BUCKET).maxStackSize(1))
                 .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
@@ -432,7 +436,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private ForgeFlowingFluid getSource() {
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
-        return source.get();
+        return source.getValue();
     }
     
     private ForgeFlowingFluid.Properties makeProperties() {
@@ -450,7 +454,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         } else {
             attributes.translationKey(Util.makeTranslationKey("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
         }
-        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source, asSupplier(), attributes);
+        NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
+        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source == null ? null : source::getValue, asSupplier(), attributes);
         properties.accept(ret);
         return ret;
     }
@@ -477,9 +482,9 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         if (defaultBucket == Boolean.TRUE) {
             bucket().register();
         }
-        NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
+        NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source);
+            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, NonNullSupplier.of(source::getValue));
         } else {
             throw new IllegalStateException("Fluid must have a source version: " + getName());
         }

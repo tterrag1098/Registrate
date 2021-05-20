@@ -142,7 +142,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
         
         void register(IForgeRegistry<R> registry) {
-            T entry = creator.get();
+            T entry = creator.getValue();
             registry.register(entry.setRegistryName(name));
             delegate.updateReference(registry);
             callbacks.forEach(c -> c.accept(entry));
@@ -233,7 +233,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
                 OneTimeEventReceiver.unregister(bus, proxy, dummyEvent));
         }
 
-        if (doDatagen.get()) {
+        if (doDatagen.getValue()) {
             OneTimeEventReceiver.addListener(bus, GatherDataEvent.class, this::onData);
         }
 
@@ -474,7 +474,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return this {@link AbstractRegistrate}
      */
     public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
-        if (!doDatagen.get()) return self();
+        if (!doDatagen.getValue()) return self();
         Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
         if (existing != null) {
             datagens.remove(type, existing);
@@ -496,7 +496,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return this {@link AbstractRegistrate}
      */
     public <T extends RegistrateProvider> S addDataGenerator(ProviderType<? extends T> type, NonNullConsumer<? extends T> cons) {
-        if (doDatagen.get()) {
+        if (doDatagen.getValue()) {
             datagens.put(type, cons);
         }
         return self();
@@ -566,8 +566,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return A {@link TranslationTextComponent} representing the translated text
      */
     public TranslationTextComponent addRawLang(String key, String value) {
-        if (doDatagen.get()) {
-            extraLang.get().add(Pair.of(key, value));
+        if (doDatagen.getValue()) {
+            extraLang.getValue().add(Pair.of(key, value));
         }
         return new TranslationTextComponent(key);
     }
@@ -594,7 +594,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     @SuppressWarnings("unchecked")
     public <T extends RegistrateProvider> void genData(ProviderType<? extends T> type, T gen) {
-        if (!doDatagen.get()) return;
+        if (!doDatagen.getValue()) return;
         datagens.get(type).forEach(cons -> {
             Optional<Pair<String, Class<?>>> entry = null;
             if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
@@ -834,7 +834,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, this.currentGroup));
+        // TODO clean this up when NonNullLazyValue is fixed better
+        NonNullLazyValue<? extends ItemGroup> currentGroup = this.currentGroup;
+        NonNullSupplier<? extends ItemGroup> group = currentGroup == null ? null : NonNullSupplier.of(currentGroup::getValue); 
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, group));
     }
     
     // Blocks
