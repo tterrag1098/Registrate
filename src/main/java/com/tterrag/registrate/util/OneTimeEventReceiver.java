@@ -1,18 +1,6 @@
 package com.tterrag.registrate.util;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.tuple.Triple;
-
 import com.tterrag.registrate.util.nullness.NonnullType;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minecraftforge.common.MinecraftForge;
@@ -21,10 +9,19 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DeferredWorkQueue;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.event.IModBusEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.event.lifecycle.IModBusEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import org.apache.commons.lang3.tuple.Triple;
+
+import javax.annotation.Nullable;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -33,7 +30,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
     public static <T extends Event & IModBusEvent> void addModListener(Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addModListener(EventPriority.NORMAL, evtClass, listener);
     }
-    
+
     public static <T extends Event & IModBusEvent> void addModListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addListener(FMLJavaModLoadingContext.get().getModEventBus(), priority, evtClass, listener);
     }

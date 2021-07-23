@@ -1,14 +1,13 @@
 package com.tterrag.registrate.util.entry;
 
 import com.tterrag.registrate.AbstractRegistrate;
-
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.IItemProvider;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-public class ItemProviderEntry<T extends IForgeRegistryEntry<? super T> & IItemProvider> extends RegistryEntry<T> {
+public class ItemProviderEntry<T extends IForgeRegistryEntry<? super T> & ItemLike> extends RegistryEntry<T> {
 
     public ItemProviderEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
         super(owner, delegate);

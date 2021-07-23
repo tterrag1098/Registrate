@@ -1,7 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Arrays;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -10,17 +8,17 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.entry.LazyRegistryEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.tags.ITag.INamedTag;
+import net.minecraft.tags.Tag.Named;
 import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+
+import java.util.Arrays;
 
 /**
  * Base class which most builders should extend, instead of implementing [@link {@link Builder} directly.
@@ -50,8 +48,8 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     private final BuilderCallback callback;
     @Getter(onMethod = @__({ @Override }))
     private final Class<? super R> registryType;
-    
-    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, INamedTag<?>> tagsByType = HashMultimap.create();
+
+    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Named<?>> tagsByType = HashMultimap.create();
     
     /** A supplier for the entry that will discard the reference to this builder after it is resolved */
     private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
@@ -80,7 +78,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
 
     /**
      * Tag this entry with a tag (or tags) of the correct type. Multiple calls will add additional tags.
-     * 
+     *
      * @param type
      *            The provider type (which must be a tag provider)
      * @param tags
@@ -89,11 +87,11 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, INamedTag<R>... tags) {
+    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, Named<R>... tags) {
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
-                    .map(t -> (INamedTag<R>) t)
-                    .map(prov::getOrCreateBuilder)
+                    .map(t -> (Named<R>) t)
+                    .map(prov::tag)
                     .forEach(b -> b.add(asSupplier().get())));
         }
         tagsByType.putAll(type, Arrays.asList(tags));
@@ -102,7 +100,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
 
     /**
      * Remove a tag (or tags) from this entry of a given type. Useful to remove default tags on fluids, for example. Multiple calls will remove additional tags.
-     * 
+     *
      * @param type
      *            The provider type (which must be a tag provider)
      * @param tags
@@ -111,9 +109,9 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S removeTag(ProviderType<RegistrateTagsProvider<R>> type, INamedTag<R>... tags) {
+    public final S removeTag(ProviderType<RegistrateTagsProvider<R>> type, Named<R>... tags) {
         if (tagsByType.containsKey(type)) {
-            for (INamedTag<R> tag : tags) {
+            for (var tag : tags) {
                 tagsByType.remove(type, tag);
             }
         }
@@ -129,7 +127,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      * @return this {@link Builder}
      */
     public S lang(NonNullFunction<T, String> langKeyProvider) {
-        return lang(langKeyProvider, (p, t) -> p.getAutomaticName(t));
+        return lang(langKeyProvider, RegistrateLangProvider::getAutomaticName);
     }
 
     /**
@@ -145,7 +143,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
         return lang(langKeyProvider, (p, s) -> name);
     }
 
-    private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
+    private S lang(NonNullFunction<T, String> langKeyProvider, BlockEntityFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
         return setData(ProviderType.LANG, (ctx, prov) -> prov.add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(prov, ctx::getEntry)));
     }
 }

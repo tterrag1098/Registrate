@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
         maven {
             name = "forge"
-            url = "http://files.minecraftforge.net/maven"
+            url = "https://maven.minecraftforge.net/"
         }
         maven {
             name = "sonatype"
@@ -11,7 +11,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
     }
 }
 plugins {
@@ -24,9 +24,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
 
-import org.ajoberstar.grgit.Grgit
-
-boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false');
+boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false')
 def getVersion = {
     def raw = grgit.describe(longDescr: true, tags:true)
     def desc = (raw == null ? '0.0-0-unknown' : grgit.describe(longDescr: true, tags:true)).split('-') as List
@@ -39,12 +37,11 @@ version = "MC${minecraft_version}-${getVersion()}"
 group = "com.tterrag.registrate"
 archivesBaseName = "Registrate"
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
 minecraft {
-    mappings channel: 'snapshot', version: '20201028-1.16.3'
-    
+    mappings channel: 'official', version: minecraft_version
+
     runs {
         client {
             taskName 'testmod_client'
@@ -105,7 +102,7 @@ sourceSets.main.resources {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     testImplementation     "org.junit.jupiter:junit-jupiter-api:5.2.0"
-    testRuntime         "org.junit.jupiter:junit-jupiter-engine:5.2.0"
+    testRuntimeOnly        "org.junit.jupiter:junit-jupiter-engine:5.2.0"
 }
 
 lombok {
@@ -172,8 +169,8 @@ String getChangelogText() {
                 temp = "<h2>$temp</h2>"
             } else if (it.startsWith('-')) {
                 temp = "&nbsp;&nbsp;&nbsp;$temp"
-                temp = temp.replaceAll("(\\S+\\/\\S+)#([0-9]+)\\b", "<a href=\"https://github.com/\$1/issues/\$2\">\$0</a>");
-                temp = temp.replaceAll("#([0-9]+)\\b(?!<\\/a>)", "<a href=\"https://github.com/$github_project/issues/\$1\">\$0</a>");
+                temp = temp.replaceAll("(\\S+\\/\\S+)#([0-9]+)\\b", "<a href=\"https://github.com/\$1/issues/\$2\">\$0</a>")
+                temp = temp.replaceAll("#([0-9]+)\\b(?!<\\/a>)", "<a href=\"https://github.com/$github_project/issues/\$1\">\$0</a>")
             } else {
                 temp = "<h4>$temp</h4>"
             }

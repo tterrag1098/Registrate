@@ -1,9 +1,6 @@
 package com.tterrag.registrate.providers;
 
-import java.util.function.Function;
-
 import com.tterrag.registrate.AbstractRegistrate;
-
 import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.item.Item;
@@ -11,12 +8,14 @@ import net.minecraft.tags.ITag;
 import net.minecraft.util.registry.Registry;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
+import java.util.function.Function;
+
 public class RegistrateItemTagsProvider extends RegistrateTagsProvider<Item> {
 
     private final Function<ITag.INamedTag<Block>, ITag.Builder> builderLookup;
 
-    @SuppressWarnings({ "deprecation", "null" })
-    public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, DataGenerator generatorIn, ExistingFileHelper existingFileHelper, RegistrateTagsProvider<Block> blockTags) {
+    @SuppressWarnings({"deprecation", "null"})
+    public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, DataGenerator generatorIn, ExistingFileHelper existingFileHelper, RegistrateProvider blockTags) {
         super(owner, type, name, generatorIn, Registry.ITEM, existingFileHelper);
         this.builderLookup = blockTags::createBuilderIfAbsent;
     }

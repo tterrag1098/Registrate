@@ -1,17 +1,16 @@
 package com.tterrag.registrate.providers;
 
-import java.nio.file.Path;
-
 import com.tterrag.registrate.AbstractRegistrate;
-
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.TagsProvider;
-import net.minecraft.tags.ITag;
-import net.minecraft.tags.ITag.INamedTag;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.Tag;
+import net.minecraft.tags.Tag.Named;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
+
+import java.nio.file.Path;
 
 public class RegistrateTagsProvider<T> extends TagsProvider<T> implements RegistrateProvider {
 
@@ -35,7 +34,7 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     }
 
     @Override
-    protected void registerTags() {
+    protected void addTags() {
         owner.genData(type, this);
     }
 
@@ -44,9 +43,11 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
         return LogicalSide.SERVER;
     }
 
-    @Override
-    public Builder<T> getOrCreateBuilder(INamedTag<T> tag) { return super.getOrCreateBuilder(tag); }
+    public TagAppender<T> tag(Named<T> tag) {
+        return super.tag(tag);
+    }
 
-    @Override
-    public ITag.Builder createBuilderIfAbsent(INamedTag<T> tag) { return super.createBuilderIfAbsent(tag); }
+    public Tag.Builder createBuilderIfAbsent(Named<T> tag) {
+        return super.getOrCreateRawBuilder(tag);
+    }
 }

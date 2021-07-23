@@ -1,13 +1,12 @@
 package com.tterrag.registrate.util.entry;
 
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.RegistryObject;
+import javax.annotation.Nullable;
 
 public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<T>> {
 
@@ -15,7 +14,8 @@ public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<T>> 
         super(owner, delegate);
     }
 
-    public @Nullable T create(World world) {
+    public @Nullable
+    T create(Level world) {
         return get().create(world);
     }
 
