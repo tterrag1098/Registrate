@@ -1,38 +1,33 @@
 package com.tterrag.registrate.providers;
 
+import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonnullType;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.HashCache;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.common.data.LanguageProvider;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.registries.IForgeRegistryEntry;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonnullType;
-
-import net.minecraft.block.Block;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Effect;
-import net.minecraft.util.IItemProvider;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.data.LanguageProvider;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.registries.IForgeRegistryEntry;
+import static java.util.Map.entry;
 
 public class RegistrateLangProvider extends LanguageProvider implements RegistrateProvider {
-    
+
     private static class AccessibleLanguageProvider extends LanguageProvider {
 
         public AccessibleLanguageProvider(DataGenerator gen, String modid, String locale) {
@@ -45,11 +40,12 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         }
 
         @Override
-        protected void addTranslations() {}
+        protected void addTranslations() {
+        }
     }
-    
+
     private final AbstractRegistrate<?> owner;
-    
+
     private final AccessibleLanguageProvider upsideDown;
 
     public RegistrateLangProvider(AbstractRegistrate<?> owner, DataGenerator gen) {
@@ -62,7 +58,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     public LogicalSide getSide() {
         return LogicalSide.CLIENT;
     }
-    
+
     @Override
     public String getName() {
         return "Lang (en_us/en_ud)";
@@ -72,85 +68,142 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     protected void addTranslations() {
         owner.genData(ProviderType.LANG, this);
     }
-    
-    public static final String toEnglishName(String internalName) {
+
+    public static String toEnglishName(String internalName) {
         return Arrays.stream(internalName.toLowerCase(Locale.ROOT).split("_"))
                 .map(StringUtils::capitalize)
                 .collect(Collectors.joining(" "));
     }
-    
+
     public String getAutomaticName(NonNullSupplier<? extends IForgeRegistryEntry<?>> sup) {
         return toEnglishName(sup.get().getRegistryName().getPath());
     }
-    
+
     public void addBlock(NonNullSupplier<? extends Block> block) {
         addBlock(block, getAutomaticName(block));
     }
-    
+
     public void addBlockWithTooltip(NonNullSupplier<? extends Block> block, String tooltip) {
         addBlock(block);
         addTooltip(block, tooltip);
     }
-    
+
     public void addBlockWithTooltip(NonNullSupplier<? extends Block> block, String name, String tooltip) {
         addBlock(block, name);
         addTooltip(block, tooltip);
     }
-    
+
     public void addItem(NonNullSupplier<? extends Item> item) {
         addItem(item, getAutomaticName(item));
     }
-    
+
     public void addItemWithTooltip(NonNullSupplier<? extends Item> block, String name, List<@NonnullType String> tooltip) {
         addItem(block, name);
         addTooltip(block, tooltip);
     }
-    
-    public void addTooltip(NonNullSupplier<? extends IItemProvider> item, String tooltip) {
-        add(item.get().asItem().getTranslationKey() + ".desc", tooltip);
+
+    public void addTooltip(NonNullSupplier<? extends ItemLike> item, String tooltip) {
+        add(item.get().asItem().getDescriptionId() + ".desc", tooltip);
     }
-    
-    public void addTooltip(NonNullSupplier<? extends IItemProvider> item, List<@NonnullType String> tooltip) {
+
+    public void addTooltip(NonNullSupplier<? extends ItemLike> item, List<@NonnullType String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
-            add(item.get().asItem().getTranslationKey() + ".desc." + i, tooltip.get(i));
+            add(item.get().asItem().getDescriptionId() + ".desc." + i, tooltip.get(i));
         }
     }
-    
-    public void add(ItemGroup group, String name) {
-        add(((TranslationTextComponent)group.getGroupName()).getKey(), name);
+
+    public void add(CreativeModeTab group, String name) {
+        add(((TranslatableComponent) group.getDisplayName()).getKey(), name);
     }
-    
+
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
         addEntityType(entity, getAutomaticName(entity));
     }
-    
-    // Automatic en_ud generation
 
-    private static final String NORMAL_CHARS = 
-            /* lowercase */ "abcdefghijklmn\u00F1opqrstuvwxyz" +
-            /* uppercase */ "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-            /*  numbers  */ "0123456789" +
-            /*  special  */ "_,;.?!/\\'";
-    private static final String UPSIDE_DOWN_CHARS = 
-            /* lowercase */ "\u0250q\u0254p\u01DD\u025Fb\u0265\u0131\u0638\u029E\u05DF\u026Fuuodb\u0279s\u0287n\u028C\u028Dx\u028Ez" +
-            /* uppercase */ "\u2C6F\u15FA\u0186\u15E1\u018E\u2132\u2141HI\u017F\u029E\uA780WNO\u0500\u1F49\u1D1AS\u27D8\u2229\u039BMX\u028EZ" +
-            /*  numbers  */ "0\u0196\u1105\u0190\u3123\u03DB9\u312586" +
-            /*  special  */ "\u203E'\u061B\u02D9\u00BF\u00A1/\\,";
-    
-    static {
-        if (NORMAL_CHARS.length() != UPSIDE_DOWN_CHARS.length()) {
-            throw new AssertionError("Char maps do not match in length!");
-        }
-    }
+    // Automatic en_ud generation
+    private static final Map<Character, Character> NORMAL_TO_UPSIDE_DOWN_CHARS = Map.ofEntries(
+            entry('a', '\u0250'),
+            entry('b', 'q'),
+            entry('c', '\u0254'),
+            entry('d', 'p'),
+            entry('e', '\u01DD'),
+            entry('f', '\u025F'),
+            entry('g', 'b'),
+            entry('h', '\u0265'),
+            entry('i', '\u0131'),
+            entry('j', '\u0638'),
+            entry('k', '\u029E'),
+            entry('l', '\u05DF'),
+            entry('m', '\u026F'),
+            entry('n', 'u'),
+            entry('\u00F1', 'u'),
+            entry('o', 'o'),
+            entry('p', 'd'),
+            entry('q', 'b'),
+            entry('r', '\u0279'),
+            entry('s', 's'),
+            entry('t', '\u0287'),
+            entry('u', 'n'),
+            entry('v', '\u028C'),
+            entry('w', '\u028D'),
+            entry('x', 'x'),
+            entry('y', '\u028E'),
+            entry('z', 'z'),
+            entry('A', 'Ɐ'),
+            entry('B', 'ᗺ'),
+            entry('C', 'Ↄ'),
+            entry('D', 'ᗡ'),
+            entry('E', 'Ǝ'),
+            entry('F', 'Ⅎ'),
+            entry('G', '⅁'),
+            entry('H', 'H'),
+            entry('I', 'I'),
+            entry('J', 'ſ'),
+            entry('K', 'ʞ'),
+            entry('L', 'Ꞁ'),
+            entry('M', 'W'),
+            entry('N', 'N'),
+            entry('O', 'O'),
+            entry('P', 'Ԁ'),
+            entry('Q', 'Ὁ'),
+            entry('R', 'ᴚ'),
+            entry('S', 's'),
+            entry('T', '⟘'),
+            entry('U', '∩'),
+            entry('V', 'Λ'),
+            entry('W', 'M'),
+            entry('X', 'X'),
+            entry('Y', 'ʎ'),
+            entry('Z', 'Z'),
+            entry('0', '0'),
+            entry('1', 'Ɩ'),
+            entry('2', 'ᄅ'),
+            entry('3', 'Ɛ'),
+            entry('4', 'ㄣ'),
+            entry('5', 'ϛ'),
+            entry('6', '9'),
+            entry('7', 'ㄥ'),
+            entry('8', '8'),
+            entry('9', '6'),
+            entry('_', '‾'),
+            entry(',', '\''),
+            entry(';', '؛'),
+            entry('.', '˙'),
+            entry('?', '¿'),
+            entry('!', '¡'),
+            entry('/', '/'),
+            entry('\\', '\\'),
+            entry('\'', '\'')
+    );
 
     private String toUpsideDown(String normal) {
         char[] ud = new char[normal.length()];
         for (int i = 0; i < normal.length(); i++) {
             char c = normal.charAt(i);
             if (c == '%') {
-                String fmtArg = "";
+                StringBuilder fmtArg = new StringBuilder();
                 while (Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd') { // TODO this is a bit lazy
-                    fmtArg += c;
+                    fmtArg.append(c);
                     i++;
                     c = i == normal.length() ? 0 : normal.charAt(i);
                 }
@@ -160,10 +213,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
                 }
                 continue;
             }
-            int lookup = NORMAL_CHARS.indexOf(c);
-            if (lookup >= 0) {
-                c = UPSIDE_DOWN_CHARS.charAt(lookup);
-            }
+            c = NORMAL_TO_UPSIDE_DOWN_CHARS.get(c);
             ud[normal.length() - 1 - i] = c;
         }
         return new String(ud);
@@ -176,8 +226,8 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
-        super.act(cache);
-        upsideDown.act(cache);
+    public void run(HashCache cache) throws IOException {
+        super.run(cache);
+        upsideDown.run(cache);
     }
 }

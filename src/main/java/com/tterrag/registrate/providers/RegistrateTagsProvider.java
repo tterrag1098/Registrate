@@ -25,7 +25,7 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
         this.name = name;
     }
 
-    protected Path makePath(ResourceLocation id) {
+    protected Path getPath(ResourceLocation id) {
         return this.generator.getOutputFolder().resolve("data/" + id.getNamespace() + "/tags/" + name + "/" + id.getPath() + ".json");
     }
 

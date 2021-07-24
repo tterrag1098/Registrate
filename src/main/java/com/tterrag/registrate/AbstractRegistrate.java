@@ -756,7 +756,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<Block.Properties, T> factory) {
-        return block(parent, name, Material.ROCK, factory);
+        return block(parent, name, Material.STONE, factory);
     }
 
     public <T extends Block> BlockBuilder<T, S> block(Material material, NonNullFunction<Block.Properties, T> factory) {
@@ -772,7 +772,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Material material, NonNullFunction<Block.Properties, T> factory) {
-        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory, material));
+        return entry(name, callback -> BlockBuilder.of(this, parent, name, callback, factory, material));
     }
 
     // Entities
@@ -828,7 +828,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-                                                            BlockEntityFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+                                                            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(self(), stillTexture, flowingTexture, attributesFactory);
     }
 
@@ -848,12 +848,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-                                                                  BlockEntityFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+                                                                  NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(self(), stillTexture, flowingTexture, attributesFactory, factory);
     }
 
     public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-                                                            BlockEntityFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
+                                                            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, attributesFactory);
     }
 
@@ -871,7 +871,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-                                                                  BlockEntityFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+                                                                  NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(self(), name, stillTexture, flowingTexture, attributesFactory, factory);
     }
 

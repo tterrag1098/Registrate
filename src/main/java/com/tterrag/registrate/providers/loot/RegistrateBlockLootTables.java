@@ -45,7 +45,7 @@ public class RegistrateBlockLoot extends BlockLoot implements RegistrateLoot {
     }
 
     public static LootTable.Builder dropping(ItemLike item) {
-        return BlockLoot.createSelfDropDispatchTable(item);
+        return BlockLoot.createSelfDropDispatchTable(item, );
     }
 
     public static LootTable.Builder dropping(Block block, LootItemCondition.Builder conditionBuilder, LootPoolEntryContainer.Builder<?> entry) {

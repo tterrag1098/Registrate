@@ -44,7 +44,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
 
     @SuppressWarnings("null")
     private static final ImmutableMap<SimpleCookingSerializer<?>, String> COOKING_TYPE_NAMES = ImmutableMap.<SimpleCookingSerializer<?>, String> builder()
-            .put(RecipeSerializer.SMELTING_RECIPE, SMELTING_NAME)
+            .put(RecipeSerializer.SMELTING_RECIPE, "smelting")
             .put(RecipeSerializer.BLASTING_RECIPE, "blasting")
             .put(RecipeSerializer.SMOKING_RECIPE, "smoking")
             .put(RecipeSerializer.CAMPFIRE_COOKING_RECIPE, "campfire")
@@ -84,8 +84,6 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     public static final int DEFAULT_BLAST_TIME = DEFAULT_SMELT_TIME / 2;
     public static final int DEFAULT_SMOKE_TIME = DEFAULT_BLAST_TIME;
     public static final int DEFAULT_CAMPFIRE_TIME = DEFAULT_SMELT_TIME * 3;
-
-    private static final String SMELTING_NAME = "smelting";
 
     public static InventoryChangeTrigger.TriggerInstance hasItem(ItemLike item) {
         return RecipeProvider.has(item);

@@ -113,7 +113,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     @Override
     protected BlockEntityType<T> createEntry() {
         var factory = this.factory;
-        return BlockEntityType.Builder.<T> of(factory::create, validBlocks.stream()
+        return BlockEntityType.Builder.<T> of(factory, validBlocks.stream()
                 .map(NonNullSupplier::get)
                 .toArray(Block[]::new)
         ).build(null);

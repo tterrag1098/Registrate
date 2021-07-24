@@ -8,6 +8,7 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.entry.LazyRegistryEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
@@ -87,7 +88,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, Named<R>... tags) {
+    public final S tag(ProviderType<RegistrateTagsProvider<R>> type, Named<R>... tags) {
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
                     .map(t -> (Named<R>) t)
@@ -143,7 +144,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
         return lang(langKeyProvider, (p, s) -> name);
     }
 
-    private S lang(NonNullFunction<T, String> langKeyProvider, BlockEntityFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
+    private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
         return setData(ProviderType.LANG, (ctx, prov) -> prov.add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(prov, ctx::getEntry)));
     }
 }

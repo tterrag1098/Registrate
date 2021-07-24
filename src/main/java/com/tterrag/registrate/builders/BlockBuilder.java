@@ -58,7 +58,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     private NonNullSupplier<Supplier<BlockColor>> colorHandler;
 
     /**
-     * Create a new {@link BlockBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * Create a new {@link BlockBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that
+     * alternate initialization strategies can be done in subclasses.
      * <p>
      * The block will be assigned the following data:
      * <ul>
@@ -68,22 +69,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * <li>The default translation (via {@link #defaultLang()})</li>
      * </ul>
      *
-     * @param <T>
-     *            The type of the builder
-     * @param <P>
-     *            Parent object type
-     * @param owner
-     *            The owning {@link AbstractRegistrate} object
-     * @param parent
-     *            The parent object
-     * @param name
-     *            Name of the entry being built
-     * @param callback
-     *            A callback used to actually register the built entry
-     * @param factory
-     *            Factory to of the block
-     * @param material
-     *            The {@link Material} to use for the initial {@link Block.Properties} object
+     * @param <T>      The type of the builder
+     * @param <P>      Parent object type
+     * @param owner    The owning {@link AbstractRegistrate} object
+     * @param parent   The parent object
+     * @param name     Name of the entry being built
+     * @param callback A callback used to actually register the built entry
+     * @param factory  Factory to of the block
+     * @param material The {@link Material} to use for the initial {@link Block.Properties} object
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
     public static <T extends Block, P> BlockBuilder<T, P> of(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Block.Properties, T> factory, Material material) {
@@ -98,13 +91,12 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Modify the properties of the block. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
-     * different operations.
+     * Modify the properties of the block. Modifications are done lazily, but the passed function is composed with the
+     * current one, and as such this method can be called multiple times to perform different operations.
      * <p>
      * If a different properties instance is returned, it will replace the existing one entirely.
-     * 
-     * @param func
-     *            The action to perform on the properties
+     *
+     * @param func The action to perform on the properties
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> properties(NonNullUnaryOperator<Block.Properties> func) {
@@ -113,10 +105,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via
+     * {@link #properties(NonNullUnaryOperator)}.
      *
-     * @param material
-     *            The material of the initial properties
+     * @param material The material of the initial properties
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(Material material) {
@@ -125,12 +117,11 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
-     * 
-     * @param material
-     *            The material of the initial properties
-     * @param color
-     *            The color of the intial properties
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via
+     * {@link #properties(NonNullUnaryOperator)}.
+     *
+     * @param material The material of the initial properties
+     * @param color    The color of the intial properties
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(Material material, DyeColor color) {
@@ -139,12 +130,11 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
-     * 
-     * @param material
-     *            The material of the initial properties
-     * @param color
-     *            The color of the intial properties
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via
+     * {@link #properties(NonNullUnaryOperator)}.
+     *
+     * @param material The material of the initial properties
+     * @param color    The color of the intial properties
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(Material material, MaterialColor color) {
@@ -153,10 +143,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
-     * 
-     * @param block
-     *            The block to of the initial properties from (via {@link BlockBehaviour.Properties#copy(BlockBehaviour)})
+     * Replace the initial state of the block properties, without replacing or removing any modifications done via
+     * {@link #properties(NonNullUnaryOperator)}.
+     *
+     * @param block The block to of the initial properties from (via {@link BlockBehaviour.Properties#copy(BlockBehaviour)})
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
@@ -188,9 +178,11 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Create a standard {@link BlockItem} for this block, building it immediately, and not allowing for further configuration.
+     * Create a standard {@link BlockItem} for this block, building it immediately, and not allowing for further
+     * configuration.
      * <p>
-     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
+     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link
+     * RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
      *
      * @return this {@link BlockBuilder}
      * @see #item()
@@ -200,10 +192,12 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Create a standard {@link BlockItem} for this block, and return the builder for it so that further customization can be done.
+     * Create a standard {@link BlockItem} for this block, and return the builder for it so that further customization
+     * can be done.
      * <p>
-     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
-     * 
+     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link
+     * RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
+     *
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public ItemBuilder<BlockItem, BlockBuilder<T, P>> item() {
@@ -211,14 +205,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Create a {@link BlockItem} for this block, which is created by the given factory, and return the builder for it so that further customization can be done.
+     * Create a {@link BlockItem} for this block, which is created by the given factory, and return the builder for it
+     * so that further customization can be done.
      * <p>
-     * By default, the item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
-     * 
-     * @param <I>
-     *            The type of the item
-     * @param factory
-     *            A factory for the item, which accepts the block object and properties and returns a new item
+     * By default, the item will have no lang entry (since it would duplicate the block's) and a simple block item model
+     * (via {@link RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
+     *
+     * @param <I>     The type of the item
+     * @param factory A factory for the item, which accepts the block object and properties and returns a new item
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends BlockItem> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
@@ -239,29 +233,13 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                     }
                 });
     }
-    
-    /**
-     * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
-     *
-     * @param <BE>
-     *            The type of the tile entity
-     * @param factory
-     *            A factory for the tile entity
-     * @return this {@link BlockBuilder}
-     * @deprecated Use {@link #simpleBlockEntity(NonNullFunction)}
-     */
-    @Deprecated
-    public <BE extends BlockEntity> BlockBuilder<T, P> simpleBlockEntity(NonNullSupplier<? extends BE> factory) {
-        return blockEntity(factory).build();
-    }
 
     /**
-     * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
+     * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as
+     * its one and only valid block.
      *
-     * @param <BE>
-     *            The type of the tile entity
-     * @param factory
-     *            A factory for the tile entity
+     * @param <BE>    The type of the tile entity
+     * @param factory A factory for the tile entity
      * @return this {@link BlockBuilder}
      */
     public <BE extends BlockEntity> BlockBuilder<T, P> simpleBlockEntity(BlockEntitySupplier<? extends BE> factory) {
@@ -269,25 +247,23 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
+     * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as
+     * its one and only valid block.
      * <p>
      * The created {@link BlockEntityBuilder} is returned for further configuration.
      *
-     * @param <BE>
-     *            The type of the tile entity
-     * @param factory
-     *            A factory for the tile entity
+     * @param <BE>    The type of the tile entity
+     * @param factory A factory for the tile entity
      * @return the {@link BlockEntityBuilder}
      */
-    public <BE extends BlockEntity> BlockEntityBuilder<BE, BlockBuilder<T, P>> blockEntity(BlockEntitySupplier<? extends BE> factory) {
+    public <BE extends BlockEntity> BlockEntityBuilder<? extends BE, BlockBuilder<T, P>> blockEntity(BlockEntitySupplier<? extends BE> factory) {
         return getOwner().blockEntity(this, getName(), factory).validBlock(asSupplier());
     }
 
     /**
      * Register a block color handler for this block. The {@link BlockColor} instance can be shared across many blocks.
      *
-     * @param colorHandler
-     *            The color handler to register for this block
+     * @param colorHandler The color handler to register for this block
      * @return this {@link BlockBuilder}
      */
     // TODO it might be worthwhile to abstract this more and add the capability to automatically copy to the item
@@ -309,9 +285,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign the default blockstate, which maps all states to a single model file (via {@link RegistrateBlockstateProvider#simpleBlock(Block)}). This is the default, so it is generally not necessary
-     * to call, unless for undoing previous changes.
-     * 
+     * Assign the default blockstate, which maps all states to a single model file (via {@link
+     * RegistrateBlockstateProvider#simpleBlock(Block)}). This is the default, so it is generally not necessary to call,
+     * unless for undoing previous changes.
+     *
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> defaultBlockstate() {
@@ -320,9 +297,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     /**
      * Configure the blockstate/models for this block.
-     * 
-     * @param cons
-     *            The callback which will be invoked during data generation.
+     *
+     * @param cons The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
@@ -331,9 +307,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for undoing
-     * previous changes.
-     * 
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}.
+     * This is the default, so it is generally not necessary to call, unless for undoing previous changes.
+     *
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> defaultLang() {
@@ -342,9 +318,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     /**
      * Set the translation for this block.
-     * 
-     * @param name
-     *            A localized English name
+     *
+     * @param name A localized English name
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> lang(String name) {
@@ -352,8 +327,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign the default loot table, as specified by {@link RegistrateBlockLoot#dropSelf(Block)}. This is the default, so it is generally not necessary to call, unless for
-     * undoing previous changes.
+     * Assign the default loot table, as specified by {@link RegistrateBlockLoot#dropSelf(Block)}. This is the default,
+     * so it is generally not necessary to call, unless for undoing previous changes.
      *
      * @return this {@link BlockBuilder}
      */
@@ -362,13 +337,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Configure the loot table for this block. This is different than most data gen callbacks as the callback does not accept a {@link DataGenContext}, but instead a
-     * {@link RegistrateBlockLoot}, for creating specifically block loot tables.
+     * Configure the loot table for this block. This is different than most data gen callbacks as the callback does not
+     * accept a {@link DataGenContext}, but instead a {@link RegistrateBlockLoot}, for creating specifically block loot
+     * tables.
      * <p>
-     * If the block does not have a loot table (i.e. {@link Block.Properties#noDrops()} is called) this action will be <em>skipped</em>.
+     * If the block does not have a loot table (i.e. {@link Block.Properties#noDrops()} is called) this action will be
+     * <em>skipped</em>.
      *
-     * @param cons
-     *            The callback which will be invoked during block loot table creation.
+     * @param cons The callback which will be invoked during block loot table creation.
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> loot(NonNullBiConsumer<RegistrateBlockLoot, T> cons) {
@@ -381,9 +357,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     /**
      * Configure the recipe(s) for this block.
-     * 
-     * @param cons
-     *            The callback which will be invoked during data generation.
+     *
+     * @param cons The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
@@ -394,8 +369,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Assign {@link Named}{@code s} to this block. Multiple calls will add additional tags.
      *
-     * @param tags
-     *            The tags to assign
+     * @param tags The tags to assign
      * @return this {@link BlockBuilder}
      */
     @SafeVarargs
@@ -409,12 +383,12 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }
-    
+
     @Override
     protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
         return new BlockEntry<>(getOwner(), delegate);
     }
-    
+
     @Override
     public BlockEntry<T> register() {
         return (BlockEntry<T>) super.register();

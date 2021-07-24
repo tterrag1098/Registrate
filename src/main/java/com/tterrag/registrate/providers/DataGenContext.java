@@ -4,6 +4,7 @@ import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import lombok.experimental.Delegate;
@@ -17,6 +18,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * @param <R> Type of the registry to which the entry belongs
  * @param <E> Type of the object for which data is being generated
  */
+@EqualsAndHashCode(callSuper = true)
 @Value
 public record DataGenContext<R extends IForgeRegistryEntry<R>, E extends R>(
         @Getter(AccessLevel.NONE) @Delegate NonNullSupplier<E> entry,

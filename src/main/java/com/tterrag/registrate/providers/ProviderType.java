@@ -3,6 +3,7 @@ package com.tterrag.registrate.providers;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
 import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.core.Registry;
@@ -60,7 +61,7 @@ public interface ProviderType<T extends RegistrateProvider> {
     }
 
     @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullFunction<ProviderType<T>, BlockEntityFunction<AbstractRegistrate<?>, GatherDataEvent, T>> type) {
+    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullFunction<ProviderType<T>, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T>> type) {
         var ret = new ProviderType<T>() {
             @Override
             public T create(@Nonnull AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
@@ -71,7 +72,7 @@ public interface ProviderType<T extends RegistrateProvider> {
     }
 
     @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, BlockEntityFunction<AbstractRegistrate<?>, GatherDataEvent, T> type) {
+    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T> type) {
         ProviderType<T> ret = (parent, event, existing) -> type.apply(parent, event);
         return register(name, ret);
     }

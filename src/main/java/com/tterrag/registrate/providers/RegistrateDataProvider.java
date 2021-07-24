@@ -1,29 +1,23 @@
 package com.tterrag.registrate.providers;
 
-import java.io.IOException;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.nullness.NonnullType;
-
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.HashCache;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Log4j2
-public class RegistrateDataProvider implements IDataProvider {
+public class RegistrateDataProvider implements DataProvider {
 
     @SuppressWarnings("null")
     static final BiMap<String, ProviderType<?>> TYPES = HashBiMap.create();
@@ -59,16 +53,16 @@ public class RegistrateDataProvider implements IDataProvider {
     }
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
+    public void run(HashCache cache) throws IOException {
         for (Map.Entry<@NonnullType ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
             log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
-            e.getValue().act(cache);
+            e.getValue().run(cache);
         }
     }
 
     @Override
     public String getName() {
-        return "Registrate Provider for " + mod + " [" + subProviders.values().stream().map(IDataProvider::getName).collect(Collectors.joining(", ")) + "]";
+        return "Registrate Provider for " + mod + " [" + subProviders.values().stream().map(DataProvider::getName).collect(Collectors.joining(", ")) + "]";
     }
 
     @SuppressWarnings("unchecked")

@@ -50,7 +50,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
      *            The registry to pull the entry from.
      */
     @SuppressWarnings("unchecked")
-    public void updateReference(IForgeRegistry<T> registry) {
+    public void updateReference(IForgeRegistry<? extends T> registry) {
         RegistryObject<T> delegate = this.delegate;
         Objects.requireNonNull(delegate, "Registry entry is empty").updateReference(registry);
     }
