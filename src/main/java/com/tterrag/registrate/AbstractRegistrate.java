@@ -98,6 +98,8 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryManager;
 
+import net.minecraft.block.AbstractBlock;
+
 /**
  * Manages all registrations and data generators for a mod.
  * <p>
@@ -142,7 +144,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
         
         void register(IForgeRegistry<R> registry) {
-            T entry = creator.getValue();
+            T entry = creator.get();
             registry.register(entry.setRegistryName(name));
             delegate.updateReference(registry);
             callbacks.forEach(c -> c.accept(entry));
@@ -233,7 +235,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
                 OneTimeEventReceiver.unregister(bus, proxy, dummyEvent));
         }
 
-        if (doDatagen.getValue()) {
+        if (doDatagen.get()) {
             OneTimeEventReceiver.addListener(bus, GatherDataEvent.class, this::onData);
         }
 
@@ -474,7 +476,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return this {@link AbstractRegistrate}
      */
     public <P extends RegistrateProvider, R extends IForgeRegistryEntry<R>> S setDataGenerator(String entry, Class<? super R> registryType, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
-        if (!doDatagen.getValue()) return self();
+        if (!doDatagen.get()) return self();
         Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
         if (existing != null) {
             datagens.remove(type, existing);
@@ -496,7 +498,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return this {@link AbstractRegistrate}
      */
     public <T extends RegistrateProvider> S addDataGenerator(ProviderType<? extends T> type, NonNullConsumer<? extends T> cons) {
-        if (doDatagen.getValue()) {
+        if (doDatagen.get()) {
             datagens.put(type, cons);
         }
         return self();
@@ -536,7 +538,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return A {@link TranslationTextComponent} representing the translated text
      */
     public TranslationTextComponent addLang(String type, ResourceLocation id, String localizedName) {
-        return addRawLang(Util.makeTranslationKey(type, id), localizedName);
+        return addRawLang(Util.makeDescriptionId(type, id), localizedName);
     }
     
     /**
@@ -553,7 +555,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return A {@link TranslationTextComponent} representing the translated text
      */
     public TranslationTextComponent addLang(String type, ResourceLocation id, String suffix, String localizedName) {
-        return addRawLang(Util.makeTranslationKey(type, id) + "." + suffix, localizedName);
+        return addRawLang(Util.makeDescriptionId(type, id) + "." + suffix, localizedName);
     }
 
     /**
@@ -566,8 +568,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return A {@link TranslationTextComponent} representing the translated text
      */
     public TranslationTextComponent addRawLang(String key, String value) {
-        if (doDatagen.getValue()) {
-            extraLang.getValue().add(Pair.of(key, value));
+        if (doDatagen.get()) {
+            extraLang.get().add(Pair.of(key, value));
         }
         return new TranslationTextComponent(key);
     }
@@ -594,7 +596,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     @SuppressWarnings("unchecked")
     public <T extends RegistrateProvider> void genData(ProviderType<? extends T> type, T gen) {
-        if (!doDatagen.getValue()) return;
+        if (!doDatagen.get()) return;
         datagens.get(type).forEach(cons -> {
             Optional<Pair<String, Class<?>>> entry = null;
             if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {
@@ -836,40 +838,40 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         // TODO clean this up when NonNullLazyValue is fixed better
         NonNullLazyValue<? extends ItemGroup> currentGroup = this.currentGroup;
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentGroup == null ? null : currentGroup::getValue));
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentGroup == null ? null : currentGroup::get));
     }
     
     // Blocks
     
-    public <T extends Block> BlockBuilder<T, S> block(NonNullFunction<Block.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<T, S> block(NonNullFunction<AbstractBlock.Properties, T> factory) {
         return block(self(), factory);
     }
     
-    public <T extends Block> BlockBuilder<T, S> block(String name, NonNullFunction<Block.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<T, S> block(String name, NonNullFunction<AbstractBlock.Properties, T> factory) {
         return block(self(), name, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, NonNullFunction<Block.Properties, T> factory) {
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, NonNullFunction<AbstractBlock.Properties, T> factory) {
         return block(parent, currentName(), factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<Block.Properties, T> factory) {
-        return block(parent, name, Material.ROCK, factory);
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<AbstractBlock.Properties, T> factory) {
+        return block(parent, name, Material.STONE, factory);
     }
     
-    public <T extends Block> BlockBuilder<T, S> block(Material material, NonNullFunction<Block.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<T, S> block(Material material, NonNullFunction<AbstractBlock.Properties, T> factory) {
         return block(self(), material, factory);
     }
     
-    public <T extends Block> BlockBuilder<T, S> block(String name, Material material, NonNullFunction<Block.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<T, S> block(String name, Material material, NonNullFunction<AbstractBlock.Properties, T> factory) {
         return block(self(), name, material, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, Material material, NonNullFunction<Block.Properties, T> factory) {
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, Material material, NonNullFunction<AbstractBlock.Properties, T> factory) {
         return block(parent, currentName(), material, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Material material, NonNullFunction<Block.Properties, T> factory) {
+    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Material material, NonNullFunction<AbstractBlock.Properties, T> factory) {
         return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory, material));
     }
     

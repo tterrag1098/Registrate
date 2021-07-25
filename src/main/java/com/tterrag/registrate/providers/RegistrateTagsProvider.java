@@ -13,6 +13,8 @@ import net.minecraft.util.registry.Registry;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
 
+import net.minecraft.data.TagsProvider.Builder;
+
 public class RegistrateTagsProvider<T> extends TagsProvider<T> implements RegistrateProvider {
 
     private final AbstractRegistrate<?> owner;
@@ -26,7 +28,7 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
         this.name = name;
     }
 
-    protected Path makePath(ResourceLocation id) {
+    protected Path getPath(ResourceLocation id) {
         return this.generator.getOutputFolder().resolve("data/" + id.getNamespace() + "/tags/" + name + "/" + id.getPath() + ".json");
     }
 
@@ -35,7 +37,7 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     }
 
     @Override
-    protected void registerTags() {
+    protected void addTags() {
         owner.genData(type, this);
     }
 
@@ -45,8 +47,8 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     }
 
     @Override
-    public Builder<T> getOrCreateBuilder(INamedTag<T> tag) { return super.getOrCreateBuilder(tag); }
+    public Builder<T> tag(INamedTag<T> tag) { return super.tag(tag); }
 
     @Override
-    public ITag.Builder createBuilderIfAbsent(INamedTag<T> tag) { return super.createBuilderIfAbsent(tag); }
+    public ITag.Builder getOrCreateRawBuilder(INamedTag<T> tag) { return super.getOrCreateRawBuilder(tag); }
 }

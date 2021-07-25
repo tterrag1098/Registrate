@@ -113,7 +113,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      * @return this {@link EnchantmentBuilder}
      */
     public EnchantmentBuilder<T, P> defaultLang() {
-        return lang(Enchantment::getName);
+        return lang(Enchantment::getDescriptionId);
     }
 
     /**
@@ -124,7 +124,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      * @return this {@link EnchantmentBuilder}
      */
     public EnchantmentBuilder<T, P> lang(String name) {
-        return lang(Enchantment::getName, name);
+        return lang(Enchantment::getDescriptionId, name);
     }
 
     @Override

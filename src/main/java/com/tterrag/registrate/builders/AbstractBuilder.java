@@ -93,7 +93,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
                     .map(t -> (INamedTag<R>) t)
-                    .map(prov::getOrCreateBuilder)
+                    .map(prov::tag)
                     .forEach(b -> b.add(asSupplier().get())));
         }
         tagsByType.putAll(type, Arrays.asList(tags));

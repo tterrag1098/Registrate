@@ -18,12 +18,12 @@ public class RegistrateItemTagsProvider extends RegistrateTagsProvider<Item> {
     @SuppressWarnings({ "deprecation", "null" })
     public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, DataGenerator generatorIn, ExistingFileHelper existingFileHelper, RegistrateTagsProvider<Block> blockTags) {
         super(owner, type, name, generatorIn, Registry.ITEM, existingFileHelper);
-        this.builderLookup = blockTags::createBuilderIfAbsent;
+        this.builderLookup = blockTags::getOrCreateRawBuilder;
     }
 
     public void copy(ITag.INamedTag<Block> p_240521_1_, ITag.INamedTag<Item> p_240521_2_) {
-        ITag.Builder itag$builder = this.createBuilderIfAbsent(p_240521_2_);
+        ITag.Builder itag$builder = this.getOrCreateRawBuilder(p_240521_2_);
         ITag.Builder itag$builder1 = this.builderLookup.apply(p_240521_1_);
-        itag$builder1.getProxyStream().forEach(itag$builder::addProxyTag);
+        itag$builder1.getEntries().forEach(itag$builder::add);
     }
 }

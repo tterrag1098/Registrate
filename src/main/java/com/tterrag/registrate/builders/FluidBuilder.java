@@ -39,6 +39,8 @@ import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.RegistryObject;
 
+import net.minecraft.block.AbstractBlock;
+
 /**
  * A builder for fluids, allows for customization of the {@link ForgeFlowingFluid.Properties} and {@link FluidAttributes}, and creation of the source variant, fluid block, and bucket item, as well as
  * data associated with fluids (tags, etc.).
@@ -319,18 +321,18 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      *            A factory for the block, which accepts the block object and properties and returns a new block
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
-    public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, Block.Properties, ? extends B> factory) {
+    public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, AbstractBlock.Properties, ? extends B> factory) {
         if (this.defaultBlock == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
         }
         this.defaultBlock = false;
         NonNullSupplier<T> supplier = asSupplier();
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
-                .properties(p -> Block.Properties.from(Blocks.WATER).noDrops())
+                .properties(p -> AbstractBlock.Properties.copy(Blocks.WATER).noDrops())
                 .properties(p -> {
                     // TODO is this ok?
                     FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
-                    return p.setLightLevel($ -> attrs.getLuminosity());
+                    return p.lightLevel($ -> attrs.getLuminosity());
                 })
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().getBuilder(sourceName)
                                 .texture("particle", stillTexture)));
@@ -388,8 +390,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         if (source == null) {
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }
-        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source::getValue, p))
-                .properties(p -> p.containerItem(Items.BUCKET).maxStackSize(1))
+        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source::get, p))
+                .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
                 .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
     }
 
@@ -414,7 +416,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid> setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS,
-                    prov -> this.tags.stream().map(prov::getOrCreateBuilder).forEach(p -> p.add(getSource())));
+                    prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource())));
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;
@@ -436,7 +438,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private ForgeFlowingFluid getSource() {
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
-        return source.getValue();
+        return source.get();
     }
     
     private ForgeFlowingFluid.Properties makeProperties() {
@@ -449,13 +451,13 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         // silently lost, as there's no good way to check whether the translation key was changed.
         // TODO improve this?
         if (block.isPresent()) {
-            attributes.translationKey(block.get().getTranslationKey());
+            attributes.translationKey(block.get().getDescriptionId());
             setData(ProviderType.LANG, NonNullBiConsumer.noop());
         } else {
-            attributes.translationKey(Util.makeTranslationKey("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
+            attributes.translationKey(Util.makeDescriptionId("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
         }
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
-        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source == null ? null : source::getValue, asSupplier(), attributes);
+        ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source == null ? null : source::get, asSupplier(), attributes);
         properties.accept(ret);
         return ret;
     }
@@ -484,7 +486,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source::getValue);
+            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source::get);
         } else {
             throw new IllegalStateException("Fluid must have a source version: " + getName());
         }

@@ -29,12 +29,12 @@ public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
 
     @Override
     public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
-        return get().isEquivalentTo((Fluid) entry);
+        return get().isSame((Fluid) entry);
     }
 
     @SuppressWarnings({ "unchecked", "null" })
     <S extends ForgeFlowingFluid> S getSource() {
-        return (S) get().getStillFluid();
+        return (S) get().getSource();
     }
 
     @SuppressWarnings({ "unchecked", "null" })
@@ -44,6 +44,6 @@ public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
 
     @SuppressWarnings({ "unchecked", "null" })
     <I extends Item> Optional<I> getBucket() {
-        return Optional.ofNullable((I) get().getFilledBucket());
+        return Optional.ofNullable((I) get().getBucket());
     }
 }

@@ -58,7 +58,7 @@ public class ContainerBuilder<T extends Container, S extends Screen & IHasContai
         ContainerType<T> ret = IForgeContainerType.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             ScreenFactory<T, S> screenFactory = this.screenFactory.get();
-            ScreenManager.<T, S>registerFactory(ret, (type, inv, displayName) -> screenFactory.create(type, inv, displayName));
+            ScreenManager.<T, S>register(ret, (type, inv, displayName) -> screenFactory.create(type, inv, displayName));
         });
         return ret;
     }

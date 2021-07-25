@@ -141,7 +141,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     public ItemBuilder<T, P> group(NonNullSupplier<? extends ItemGroup> group) {
-        return properties(p -> p.group(group.get()));
+        return properties(p -> p.tab(group.get()));
     }
     
     /**
@@ -196,7 +196,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> defaultLang() {
-        return lang(Item::getTranslationKey);
+        return lang(Item::getDescriptionId);
     }
     
     /**
@@ -207,7 +207,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> lang(String name) {
-        return lang(Item::getTranslationKey, name);
+        return lang(Item::getDescriptionId, name);
     }
 
     /**

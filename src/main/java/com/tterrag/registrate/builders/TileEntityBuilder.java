@@ -127,7 +127,7 @@ public class TileEntityBuilder<T extends TileEntity, P> extends AbstractBuilder<
     protected TileEntityType<T> createEntry() {
         NonNullFunction<TileEntityType<T>, ? extends T> factory = this.factory;
         Supplier<TileEntityType<T>> supplier = asSupplier();
-        return TileEntityType.Builder.<T>create(() -> factory.apply(supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
+        return TileEntityType.Builder.<T>of(() -> factory.apply(supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
                 .build(null);
     }
     

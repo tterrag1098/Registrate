@@ -86,15 +86,15 @@ public final class DataIngredient extends Ingredient {
 
     @SafeVarargs
     public static <T extends IItemProvider & IForgeRegistryEntry<?>> DataIngredient items(T first, T... others) {
-        return ingredient(Ingredient.fromItems(ObjectArrays.concat(first, others)), first);
+        return ingredient(Ingredient.of(ObjectArrays.concat(first, others)), first);
     }
 
     public static DataIngredient stacks(ItemStack first, ItemStack... others) {
-        return ingredient(Ingredient.fromStacks(ObjectArrays.concat(first, others)), first.getItem());
+        return ingredient(Ingredient.of(ObjectArrays.concat(first, others)), first.getItem());
     }
 
     public static DataIngredient tag(INamedTag<Item> tag) {
-        return ingredient(Ingredient.fromTag(tag), tag);
+        return ingredient(Ingredient.of(tag), tag);
     }
     
     public static DataIngredient ingredient(Ingredient parent, IItemProvider required) {

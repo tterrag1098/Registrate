@@ -107,17 +107,17 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
     
     public void addTooltip(NonNullSupplier<? extends IItemProvider> item, String tooltip) {
-        add(item.get().asItem().getTranslationKey() + ".desc", tooltip);
+        add(item.get().asItem().getDescriptionId() + ".desc", tooltip);
     }
     
     public void addTooltip(NonNullSupplier<? extends IItemProvider> item, List<@NonnullType String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
-            add(item.get().asItem().getTranslationKey() + ".desc." + i, tooltip.get(i));
+            add(item.get().asItem().getDescriptionId() + ".desc." + i, tooltip.get(i));
         }
     }
     
     public void add(ItemGroup group, String name) {
-        add(((TranslationTextComponent)group.getGroupName()).getKey(), name);
+        add(((TranslationTextComponent)group.getDisplayName()).getKey(), name);
     }
     
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
@@ -176,8 +176,8 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
-        super.act(cache);
-        upsideDown.act(cache);
+    public void run(DirectoryCache cache) throws IOException {
+        super.run(cache);
+        upsideDown.run(cache);
     }
 }

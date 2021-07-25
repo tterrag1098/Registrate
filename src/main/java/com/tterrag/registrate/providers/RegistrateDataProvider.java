@@ -59,10 +59,10 @@ public class RegistrateDataProvider implements IDataProvider {
     }
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
+    public void run(DirectoryCache cache) throws IOException {
         for (Map.Entry<@NonnullType ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
             log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
-            e.getValue().act(cache);
+            e.getValue().run(cache);
         }
     }
 

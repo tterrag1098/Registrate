@@ -103,7 +103,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         };
     }
     
-    private static final BiMap<ResourceLocation, LootParameterSet> SET_REGISTRY = ObfuscationReflectionHelper.getPrivateValue(LootParameterSets.class, null, "field_216268_i");
+    private static final BiMap<ResourceLocation, LootParameterSet> SET_REGISTRY = ObfuscationReflectionHelper.getPrivateValue(LootParameterSets.class, null, "REGISTRY");
     
     @Override
     protected List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootParameterSet>> getTables() {

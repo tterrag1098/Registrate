@@ -64,7 +64,7 @@ public class TileEntityEntry<T extends TileEntity> extends RegistryEntry<TileEnt
      */
     @SuppressWarnings("unchecked")
     public @Nullable T getNullable(IBlockReader world, BlockPos pos) {
-        TileEntity te = world.getTileEntity(pos);
+        TileEntity te = world.getBlockEntity(pos);
         return is(te) ? (T) te : null;
     }
 

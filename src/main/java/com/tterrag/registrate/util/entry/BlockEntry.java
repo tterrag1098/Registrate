@@ -13,7 +13,7 @@ public class BlockEntry<T extends Block> extends ItemProviderEntry<T> {
     }
 
     public BlockState getDefaultState() {
-        return get().getDefaultState();
+        return get().defaultBlockState();
     }
 
     public boolean has(BlockState state) {

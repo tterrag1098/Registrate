@@ -52,7 +52,7 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
     private Set<ResourceLocation> seenAdvancements = new HashSet<>();
 
     @Override
-    public void act(DirectoryCache cache) throws IOException {
+    public void run(DirectoryCache cache) throws IOException {
         try {
             this.cache = cache;
             this.seenAdvancements.clear();
@@ -76,7 +76,7 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
             Path path1 = getPath(path, t);
 
             try {
-                IDataProvider.save(GSON, cache, t.copy().serialize(), path1);
+                IDataProvider.save(GSON, cache, t.deconstruct().serializeToJson(), path1);
             } catch (IOException ioexception) {
                 log.error("Couldn't save advancement {}", path1, ioexception);
             }

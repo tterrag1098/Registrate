@@ -31,17 +31,17 @@ public class RegistrateEntityLootTables extends EntityLootTables implements Regi
 
     @Override
     protected boolean isNonLiving(EntityType<?> entitytype) {
-        return entitytype.getClassification() == EntityClassification.MISC; // TODO open this to customization?
+        return entitytype.getCategory() == EntityClassification.MISC; // TODO open this to customization?
     }
 
     // @formatter:off
     // GENERATED START
 
     @Override
-    public void registerLootTable(EntityType<?> type, LootTable.Builder table) { super.registerLootTable(type, table); }
+    public void add(EntityType<?> type, LootTable.Builder table) { super.add(type, table); }
 
     @Override
-    public void registerLootTable(ResourceLocation id, LootTable.Builder table) { super.registerLootTable(id, table); }
+    public void add(ResourceLocation id, LootTable.Builder table) { super.add(id, table); }
 
     // GENERATED END
 }

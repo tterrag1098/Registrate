@@ -61,7 +61,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     @Override
-    protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
+    protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
         this.callback = consumer;
         owner.genData(ProviderType.RECIPE, this);
         this.callback = null;
@@ -99,10 +99,10 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     private static final String SMELTING_NAME = "smelting";
     @SuppressWarnings("null")
     private static final ImmutableMap<CookingRecipeSerializer<?>, String> COOKING_TYPE_NAMES = ImmutableMap.<CookingRecipeSerializer<?>, String>builder()
-            .put(IRecipeSerializer.SMELTING, SMELTING_NAME)
-            .put(IRecipeSerializer.BLASTING, "blasting")
-            .put(IRecipeSerializer.SMOKING, "smoking")
-            .put(IRecipeSerializer.CAMPFIRE_COOKING, "campfire")
+            .put(IRecipeSerializer.SMELTING_RECIPE, SMELTING_NAME)
+            .put(IRecipeSerializer.BLASTING_RECIPE, "blasting")
+            .put(IRecipeSerializer.SMOKING_RECIPE, "smoking")
+            .put(IRecipeSerializer.CAMPFIRE_COOKING_RECIPE, "campfire")
             .build();
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void cooking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime, CookingRecipeSerializer<?> serializer) {
@@ -110,9 +110,9 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void cooking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime, String typeName, CookingRecipeSerializer<?> serializer) {
-        CookingRecipeBuilder.cookingRecipe(source, result.get(), experience, cookingTime, serializer)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
+        CookingRecipeBuilder.cooking(source, result.get(), experience, cookingTime, serializer)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void smelting(DataIngredient source, Supplier<? extends T> result, float experience) {
@@ -120,7 +120,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void smelting(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, IRecipeSerializer.SMELTING);
+        cooking(source, result, experience, cookingTime, IRecipeSerializer.SMELTING_RECIPE);
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void blasting(DataIngredient source, Supplier<? extends T> result, float experience) {
@@ -128,7 +128,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void blasting(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, IRecipeSerializer.BLASTING);
+        cooking(source, result, experience, cookingTime, IRecipeSerializer.BLASTING_RECIPE);
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void smoking(DataIngredient source, Supplier<? extends T> result, float experience) {
@@ -136,7 +136,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void smoking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, IRecipeSerializer.SMOKING);
+        cooking(source, result, experience, cookingTime, IRecipeSerializer.SMOKING_RECIPE);
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void campfire(DataIngredient source, Supplier<? extends T> result, float experience) {
@@ -144,7 +144,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void campfire(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, IRecipeSerializer.CAMPFIRE_COOKING);
+        cooking(source, result, experience, cookingTime, IRecipeSerializer.CAMPFIRE_COOKING_RECIPE);
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void stonecutting(DataIngredient source, Supplier<? extends T> result) {
@@ -152,9 +152,9 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void stonecutting(DataIngredient source, Supplier<? extends T> result, int resultAmount) {
-        SingleItemRecipeBuilder.stonecuttingRecipe(source, result.get(), resultAmount)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()) + "_from_" + safeName(source) + "_stonecutting");
+        SingleItemRecipeBuilder.stonecutting(source, result.get(), resultAmount)
+            .unlocks("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_stonecutting");
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void smeltingAndBlasting(DataIngredient source, Supplier<? extends T> result, float xp) {
@@ -169,15 +169,15 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void square(DataIngredient source, Supplier<? extends T> output, boolean small) {
-        ShapedRecipeBuilder builder = ShapedRecipeBuilder.shapedRecipe(output.get())
-                .key('X', source);
+        ShapedRecipeBuilder builder = ShapedRecipeBuilder.shaped(output.get())
+                .define('X', source);
         if (small) {
-            builder.patternLine("XX").patternLine("XX");
+            builder.pattern("XX").pattern("XX");
         } else {
-            builder.patternLine("XXX").patternLine("XXX").patternLine("XXX");
+            builder.pattern("XXX").pattern("XXX").pattern("XXX");
         }
-        builder.addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(output.get()));
+        builder.unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(output.get()));
     }
 
     /**
@@ -191,7 +191,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
         square(source, output, false);
         // This is backwards, but leaving in for binary compat
         singleItemUnfinished(source, output, 1, 9)
-            .build(this, safeId(source) + "_from_" + safeName(output.get()));
+            .save(this, safeId(source) + "_from_" + safeName(output.get()));
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(NonNullSupplier<? extends T> source, NonNullSupplier<? extends T> output) {
@@ -201,110 +201,110 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void storage(DataIngredient sourceIngredient, NonNullSupplier<? extends T> source, DataIngredient outputIngredient, NonNullSupplier<? extends T> output) {
         square(sourceIngredient, output, false);
         singleItemUnfinished(outputIngredient, source, 1, 9)
-            .build(this, safeId(sourceIngredient) + "_from_" + safeName(output.get()));
+            .save(this, safeId(sourceIngredient) + "_from_" + safeName(output.get()));
     }
 
     @CheckReturnValue
     public <T extends IItemProvider & IForgeRegistryEntry<?>> ShapelessRecipeBuilder singleItemUnfinished(DataIngredient source, Supplier<? extends T> result, int required, int amount) {
-        return ShapelessRecipeBuilder.shapelessRecipe(result.get(), amount)
-            .addIngredient(source, required)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this));
+        return ShapelessRecipeBuilder.shapeless(result.get(), amount)
+            .requires(source, required)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this));
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void singleItem(DataIngredient source, Supplier<? extends T> result, int required, int amount) {
-        singleItemUnfinished(source, result, required, amount).build(this, safeId(result.get()));
+        singleItemUnfinished(source, result, required, amount).save(this, safeId(result.get()));
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void planks(DataIngredient source, Supplier<? extends T> result) {
         singleItemUnfinished(source, result, 1, 4)
-            .setGroup("planks")
-            .build(this, safeId(result.get()));
+            .group("planks")
+            .save(this, safeId(result.get()));
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void stairs(DataIngredient source, Supplier<? extends T> result, @Nullable String group, boolean stone) {
-        ShapedRecipeBuilder.shapedRecipe(result.get(), 4)
-            .patternLine("X  ").patternLine("XX ").patternLine("XXX")
-            .key('X', source)
-            .setGroup(group)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()));
+        ShapedRecipeBuilder.shaped(result.get(), 4)
+            .pattern("X  ").pattern("XX ").pattern("XXX")
+            .define('X', source)
+            .group(group)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()));
         if (stone) {
             stonecutting(source, result);
         }
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void slab(DataIngredient source, Supplier<? extends T> result, @Nullable String group, boolean stone) {
-        ShapedRecipeBuilder.shapedRecipe(result.get(), 6)
-            .patternLine("XXX")
-            .key('X', source)
-            .setGroup(group)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()));
+        ShapedRecipeBuilder.shaped(result.get(), 6)
+            .pattern("XXX")
+            .define('X', source)
+            .group(group)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()));
         if (stone) {
             stonecutting(source, result, 2);
         }
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void fence(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shapedRecipe(result.get(), 3)
-            .patternLine("W#W").patternLine("W#W")
-            .key('W', source)
-            .key('#', Tags.Items.RODS_WOODEN)
-            .setGroup(group)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()));
+        ShapedRecipeBuilder.shaped(result.get(), 3)
+            .pattern("W#W").pattern("W#W")
+            .define('W', source)
+            .define('#', Tags.Items.RODS_WOODEN)
+            .group(group)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()));
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void fenceGate(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shapedRecipe(result.get())
-            .patternLine("#W#").patternLine("#W#")
-            .key('W', source)
-            .key('#', Tags.Items.RODS_WOODEN)
-            .setGroup(group)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()));
+        ShapedRecipeBuilder.shaped(result.get())
+            .pattern("#W#").pattern("#W#")
+            .define('W', source)
+            .define('#', Tags.Items.RODS_WOODEN)
+            .group(group)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()));
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void wall(DataIngredient source, Supplier<? extends T> result) {
-        ShapedRecipeBuilder.shapedRecipe(result.get(), 6)
-            .patternLine("XXX").patternLine("XXX")
-            .key('X', source)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()));
+        ShapedRecipeBuilder.shaped(result.get(), 6)
+            .pattern("XXX").pattern("XXX")
+            .define('X', source)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()));
         stonecutting(source, result);
     }
     
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void door(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shapedRecipe(result.get(), 3)
-            .patternLine("XX").patternLine("XX").patternLine("XX")
-            .key('X', source)
-            .setGroup(group)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()));
+        ShapedRecipeBuilder.shaped(result.get(), 3)
+            .pattern("XX").pattern("XX").pattern("XX")
+            .define('X', source)
+            .group(group)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()));
     }
 
     public <T extends IItemProvider & IForgeRegistryEntry<?>> void trapDoor(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shapedRecipe(result.get(), 2)
-            .patternLine("XXX").patternLine("XXX")
-            .key('X', source)
-            .setGroup(group)
-            .addCriterion("has_" + safeName(source), source.getCritereon(this))
-            .build(this, safeId(result.get()));
+        ShapedRecipeBuilder.shaped(result.get(), 2)
+            .pattern("XXX").pattern("XXX")
+            .define('X', source)
+            .group(group)
+            .unlockedBy("has_" + safeName(source), source.getCritereon(this))
+            .save(this, safeId(result.get()));
     }
 
     // @formatter:off
     // GENERATED START
 
     @Override
-    public void saveRecipeAdvancement(DirectoryCache cache, JsonObject cache2, Path advancementJson) { super.saveRecipeAdvancement(cache, cache2, advancementJson); }
+    public void saveAdvancement(DirectoryCache cache, JsonObject cache2, Path advancementJson) { super.saveAdvancement(cache, cache2, advancementJson); }
 
-    public static EnterBlockTrigger.Instance enteredBlock(Block block) { return RecipeProvider.enteredBlock(block); }
+    public static EnterBlockTrigger.Instance enteredBlock(Block block) { return RecipeProvider.insideOf(block); }
 
-    public static InventoryChangeTrigger.Instance hasItem(IItemProvider item) { return RecipeProvider.hasItem(item); }
+    public static InventoryChangeTrigger.Instance hasItem(IItemProvider item) { return RecipeProvider.has(item); }
 
-    public static InventoryChangeTrigger.Instance hasItem(ITag<Item> tag) { return RecipeProvider.hasItem(tag); }
+    public static InventoryChangeTrigger.Instance hasItem(ITag<Item> tag) { return RecipeProvider.has(tag); }
 
-    public static InventoryChangeTrigger.Instance hasItem(ItemPredicate... predicate) { return RecipeProvider.hasItem(predicate); }
+    public static InventoryChangeTrigger.Instance hasItem(ItemPredicate... predicate) { return RecipeProvider.inventoryTrigger(predicate); }
 
     // GENERATED END
 }
