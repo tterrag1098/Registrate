@@ -11,17 +11,6 @@ public class NonNullLazyValue<T> extends LazyValue<T> implements NonNullSupplier
         super(supplier);
     }
 
-    /**
-     * This conflicts with mojmaps as of 1.16.
-     * <p>
-     * Do not use this if your project is on mojmaps, and probably best to just avoid it entirely.
-     */
-    @Deprecated
-    @Override
-    public @NonnullType T get() {
-        return super.get();
-    }
-
     @Override
     public @NonnullType T get() {
         return super.get();

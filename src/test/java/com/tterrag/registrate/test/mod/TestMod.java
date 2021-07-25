@@ -102,7 +102,7 @@ public class TestMod {
         }
 
         @Override
-        public ItemStack createIcon() {
+        public ItemStack makeIcon() {
             return new ItemStack(Items.EGG);
         }
     }
@@ -114,20 +114,20 @@ public class TestMod {
         }
         
         @Override
-        protected void fillStateContainer(Builder<Block, BlockState> builder) {
-            super.fillStateContainer(builder);
+        protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
+            super.createBlockStateDefinition(builder);
             builder.add(BlockStateProperties.CHEST_TYPE);
         }
 
         @Override
-        public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
-            if (!worldIn.isRemote) {
-                player.openContainer(new INamedContainerProvider() {
+        public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+            if (!worldIn.isClientSide) {
+                player.openMenu(new INamedContainerProvider() {
                     
                     @Override
                     @Nullable
                     public Container createMenu(int windowId, PlayerInventory inv, PlayerEntity player) {
-                        return new ChestContainer(ContainerType.GENERIC_9X3, windowId, inv, testblockte.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
+                        return new ChestContainer(ContainerType.GENERIC_9x3, windowId, inv, testblockte.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
                     
                     @Override
@@ -166,10 +166,10 @@ public class TestMod {
 
         @Override
         public void render(TestTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
-            matrixStackIn.push();
+            matrixStackIn.pushPose();
             matrixStackIn.translate(0.5, 0.5, 0.5);
-            Minecraft.getInstance().getItemRenderer().renderItem(new ItemStack(Items.DIAMOND), TransformType.GROUND, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn);
-            matrixStackIn.pop();
+            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(Items.DIAMOND), TransformType.GROUND, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn);
+            matrixStackIn.popPose();
         }
     }
     
@@ -215,7 +215,7 @@ public class TestMod {
     private final RegistryEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
-                .properties(p -> p.food(new Food.Builder().hunger(1).saturation(0.2f).build()))
+                .properties(p -> p.food(new Food.Builder().nutrition(1).saturationMod(0.2f).build()))
                 .color(() -> () -> (stack, index) -> 0xFF0000FF)
                 .tag(ItemTags.BEDS)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
@@ -223,25 +223,25 @@ public class TestMod {
     
     private final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, EntityClassification.CREATURE)
-            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.func_234215_eI_().create())) // TODO include this in the builder
-            .loot((tb, e) -> tb.registerLootTable(e, LootTable.builder()))
+            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.createAttributes().build())) // TODO include this in the builder
+            .loot((tb, e) -> tb.add(e, LootTable.lootTable()))
             .renderer(() -> PigRenderer::new)
             .register();
     
     private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
-                .properties(p -> p.notSolid())
-                .addLayer(() -> RenderType::getCutout)
+                .properties(p -> p.noOcclusion())
+                .addLayer(() -> RenderType::cutout)
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                                 prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass"))))
                 .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
-                    ShapedRecipeBuilder.shapedRecipe(ctx.getEntry())
-                            .patternLine("DDD").patternLine("DED").patternLine("DDD")
-                            .key('D', Items.DIAMOND)
-                            .key('E', Items.EGG)
-                            .addCriterion("has_egg", prov.hasItem(Items.EGG))
-                            .build(prov);
+                    ShapedRecipeBuilder.shaped(ctx.getEntry())
+                            .pattern("DDD").pattern("DED").pattern("DDD")
+                            .define('D', Items.DIAMOND)
+                            .define('E', Items.EGG)
+                            .unlockedBy("has_egg", prov.hasItem(Items.EGG))
+                            .save(prov);
                     
                     prov.food(DataIngredient.items(ctx), Blocks.DIAMOND_BLOCK.delegate, 1f);
                 })
@@ -270,16 +270,16 @@ public class TestMod {
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
             .entity(TestEntity::new, EntityClassification.CREATURE)
-            .attributes(PigEntity::func_234215_eI_)
+            .attributes(PigEntity::createAttributes)
             .renderer(() -> PigRenderer::new)
-            .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::canAnimalSpawn)
+            .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::checkAnimalSpawnRules)
             .defaultSpawnEgg(0xFF0000, 0x00FF00)
-            .loot((prov, type) -> prov.registerLootTable(type, LootTable.builder()
-                    .addLootPool(LootPool.builder()
-                            .rolls(ConstantRange.of(1))
-                            .addEntry(ItemLootEntry.builder(Items.DIAMOND)
-                                    .acceptFunction(SetCount.builder(RandomValueRange.of(1, 3)))
-                                    .acceptFunction(LootingEnchantBonus.builder(RandomValueRange.of(0, 2)))))))
+            .loot((prov, type) -> prov.add(type, LootTable.lootTable()
+                    .withPool(LootPool.lootPool()
+                            .setRolls(ConstantRange.exactly(1))
+                            .add(ItemLootEntry.lootTableItem(Items.DIAMOND)
+                                    .apply(SetCount.setCount(RandomValueRange.between(1, 3)))
+                                    .apply(LootingEnchantBonus.lootingMultiplier(RandomValueRange.between(0, 2)))))))
             .tag(EntityTypeTags.RAIDERS)
             .register();
     
@@ -366,7 +366,7 @@ public class TestMod {
 //            .addLayer(() -> RenderType::getTranslucent);
     
     private static <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
-        return builder.loot((prov, block) -> prov.registerDropping(block, Items.DIAMOND));
+        return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
     }
 
     public TestMod() {
@@ -375,12 +375,12 @@ public class TestMod {
         registrate.addLang("tooltip", testblock.getId(), "Egg.");
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
         registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
-            Advancement.Builder.builder()
-                .withCriterion("has_egg", InventoryChangeTrigger.Instance.forItems(Items.EGG))
-                .withDisplay(Items.EGG,
+            Advancement.Builder.advancement()
+                .addCriterion("has_egg", InventoryChangeTrigger.Instance.hasItems(Items.EGG))
+                .display(Items.EGG,
                         adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."), 
                         new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
-                .register(adv, registrate.getModid() + ":root");
+                .save(adv, registrate.getModid() + ":root");
         });
         
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);

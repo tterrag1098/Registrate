@@ -37,7 +37,7 @@ public final class DataIngredient extends Ingredient {
 
         IIngredientSerializer<DataIngredient> getSerializer();
 
-        void write(PacketBuffer buffer);
+        void toNetwork(PacketBuffer buffer);
 
         boolean isVanilla();
     }
