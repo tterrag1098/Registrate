@@ -1,7 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Arrays;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -13,7 +11,6 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +18,8 @@ import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+
+import java.util.Arrays;
 
 /**
  * Base class which most builders should extend, instead of implementing [@link {@link Builder} directly.
@@ -40,15 +39,15 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 @RequiredArgsConstructor
 public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
 
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final AbstractRegistrate<?> owner;
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final P parent;
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final String name;
     @Getter(AccessLevel.PROTECTED)
     private final BuilderCallback callback;
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final Class<? super R> registryType;
     
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Tag.Named<?>> tagsByType = HashMultimap.create();
