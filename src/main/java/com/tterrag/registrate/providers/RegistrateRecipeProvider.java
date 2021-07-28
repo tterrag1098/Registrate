@@ -22,6 +22,7 @@ import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.data.recipes.SingleItemRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.Tag;
@@ -109,7 +110,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
     
     public <T extends ItemLike & IForgeRegistryEntry<?>> void cooking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime, String typeName, SimpleCookingSerializer<?> serializer) {
-        SimpleCookingSerializer.cooking(source, result.get(), experience, cookingTime, serializer)
+        SimpleCookingRecipeBuilder.cooking(source, result.get(), experience, cookingTime, serializer)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
     }
