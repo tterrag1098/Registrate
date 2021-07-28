@@ -1,5 +1,7 @@
 package com.tterrag.registrate.builders;
 
+import java.util.Arrays;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -11,6 +13,7 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +21,6 @@ import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-
-import java.util.Arrays;
 
 /**
  * Base class which most builders should extend, instead of implementing [@link {@link Builder} directly.
