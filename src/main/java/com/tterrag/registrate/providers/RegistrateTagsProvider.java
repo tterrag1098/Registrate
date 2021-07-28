@@ -4,16 +4,13 @@ import java.nio.file.Path;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.TagsProvider;
-import net.minecraft.tags.ITag;
-import net.minecraft.tags.ITag.INamedTag;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.Tag;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
-
-import net.minecraft.data.TagsProvider.Builder;
 
 public class RegistrateTagsProvider<T> extends TagsProvider<T> implements RegistrateProvider {
 
@@ -47,8 +44,8 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     }
 
     @Override
-    public Builder<T> tag(INamedTag<T> tag) { return super.tag(tag); }
+    public TagAppender<T> tag(Tag.Named<T> tag) { return super.tag(tag); }
 
     @Override
-    public ITag.Builder getOrCreateRawBuilder(INamedTag<T> tag) { return super.getOrCreateRawBuilder(tag); }
+    public Tag.Builder getOrCreateRawBuilder(Tag.Named<T> tag) { return super.getOrCreateRawBuilder(tag); }
 }

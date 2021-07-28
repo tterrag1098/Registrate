@@ -23,23 +23,23 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FlowingFluidBlock;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BucketItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
+import net.minecraft.Util;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ITag.INamedTag;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
+import net.minecraft.tags.Tag;
+import net.minecraft.tags.Tag.Named;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.fml.RegistryObject;
-
-import net.minecraft.block.AbstractBlock;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
 /**
  * A builder for fluids, allows for customization of the {@link ForgeFlowingFluid.Properties} and {@link FluidAttributes}, and creation of the source variant, fluid block, and bucket item, as well as
@@ -195,7 +195,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
     private NonNullLazyValue<? extends ForgeFlowingFluid> source;
-    private List<INamedTag<Fluid>> tags = new ArrayList<>();
+    private List<Named<Fluid>> tags = new ArrayList<>();
 
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
@@ -208,7 +208,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         
         String bucketName = this.bucketName;
         this.properties = p -> p.bucket(() -> owner.get(bucketName, Item.class).get())
-                .block(() -> owner.<Block, FlowingFluidBlock>get(name, Block.class).get());
+                .block(() -> owner.<Block, LiquidBlock>get(name, Block.class).get());
     }
     
     /**
@@ -308,8 +308,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * 
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
-    public BlockBuilder<FlowingFluidBlock, FluidBuilder<T, P>> block() {
-        return block(FlowingFluidBlock::new);
+    public BlockBuilder<LiquidBlock, FluidBuilder<T, P>> block() {
+        return block(LiquidBlock::new);
     }
 
     /**
@@ -321,14 +321,14 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      *            A factory for the block, which accepts the block object and properties and returns a new block
      * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
      */
-    public <B extends FlowingFluidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, AbstractBlock.Properties, ? extends B> factory) {
+    public <B extends LiquidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, BlockBehaviour.Properties, ? extends B> factory) {
         if (this.defaultBlock == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
         }
         this.defaultBlock = false;
         NonNullSupplier<T> supplier = asSupplier();
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
-                .properties(p -> AbstractBlock.Properties.copy(Blocks.WATER).noDrops())
+                .properties(p -> BlockBehaviour.Properties.copy(Blocks.WATER).noDrops())
                 .properties(p -> {
                     // TODO is this ok?
                     FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
@@ -405,14 +405,14 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Assign {@link INamedTag}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
+     * Assign {@link Tag.Named}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    public final FluidBuilder<T, P> tag(INamedTag<Fluid>... tags) {
+    public final FluidBuilder<T, P> tag(Tag.Named<Fluid>... tags) {
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid> setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS,
@@ -423,14 +423,14 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Remove {@link INamedTag}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
+     * Remove {@link Tag.Named}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
      * 
      * @param tags
      *            The tags to remove
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    public final FluidBuilder<T, P> removeTag(INamedTag<Fluid>... tags) {
+    public final FluidBuilder<T, P> removeTag(Tag.Named<Fluid>... tags) {
         this.tags.removeAll(Arrays.asList(tags));
         return this.removeTag(ProviderType.FLUID_TAGS, tags);
     }

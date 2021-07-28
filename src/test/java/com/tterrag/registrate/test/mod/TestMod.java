@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
@@ -20,73 +20,72 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.inventory.ChestScreen;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.PigRenderer;
-import net.minecraft.client.renderer.model.ItemCameraTransforms.TransformType;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.data.ShapedRecipeBuilder;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.Enchantment.Rarity;
-import net.minecraft.enchantment.EnchantmentType;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.PigEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.ChestContainer;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Food;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.loot.ConstantRange;
-import net.minecraft.loot.ItemLootEntry;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.RandomValueRange;
-import net.minecraft.loot.functions.LootingEnchantBonus;
-import net.minecraft.loot.functions.SetCount;
-import net.minecraft.state.StateContainer.Builder;
-import net.minecraft.state.properties.BlockStateProperties;
+import net.minecraft.core.BlockPos;
+import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tileentity.ChestTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantment.Rarity;
+import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition.Builder;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.LootingEnchantFunction;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fmlserverevents.FMLServerStartedEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -95,7 +94,7 @@ import net.minecraftforge.registries.RegistryBuilder;
 @Mod("testmod")
 public class TestMod {
     
-    private static class TestItemGroup extends ItemGroup {
+    private static class TestItemGroup extends CreativeModeTab {
 
         public TestItemGroup() {
             super("testmod");
@@ -107,7 +106,7 @@ public class TestMod {
         }
     }
     
-    private class TestBlock extends Block {
+    private class TestBlock extends Block implements EntityBlock {
 
         public TestBlock(Properties properties) {
             super(properties);
@@ -120,76 +119,70 @@ public class TestMod {
         }
 
         @Override
-        public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit) {
+        public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
             if (!worldIn.isClientSide) {
-                player.openMenu(new INamedContainerProvider() {
+                player.openMenu(new MenuProvider() {
                     
                     @Override
                     @Nullable
-                    public Container createMenu(int windowId, PlayerInventory inv, PlayerEntity player) {
-                        return new ChestContainer(ContainerType.GENERIC_9x3, windowId, inv, testblockte.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
+                    public AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
+                        return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, testblockte.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
                     
                     @Override
-                    public ITextComponent getDisplayName() {
-                        return new StringTextComponent("Test");
+                    public Component getDisplayName() {
+                        return new TextComponent("Test");
                     }
                 });
             }
-            return ActionResultType.SUCCESS;
-        }
-
-        @Override
-        public boolean hasTileEntity(BlockState state) {
-            return true;
+            return InteractionResult.SUCCESS;
         }
 
         @Override
         @Nullable
-        public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-            return testblockte.create();
+        public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+            return testblockte.create(pos, state);
         }
     }
 
-    private static class TestTileEntity extends ChestTileEntity {
+    private static class TestTileEntity extends ChestBlockEntity {
 
-        public TestTileEntity(TileEntityType<? extends TestTileEntity> type) {
-            super(type);
+        public TestTileEntity(BlockPos pos, BlockState state, BlockEntityType<? extends TestTileEntity> type) {
+            super(type, pos, state);
         }
     }
     
-    private static class TestTileEntityRenderer extends TileEntityRenderer<TestTileEntity> {
+    private static class TestTileEntityRenderer implements BlockEntityRenderer<TestTileEntity> {
 
-        public TestTileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
-            super(rendererDispatcherIn);
+        public TestTileEntityRenderer(BlockEntityRendererProvider.Context ctx) {
         }
 
         @Override
-        public void render(TestTileEntity tileEntityIn, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+        public void render(TestTileEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
             matrixStackIn.pushPose();
             matrixStackIn.translate(0.5, 0.5, 0.5);
-            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(Items.DIAMOND), TransformType.GROUND, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn);
+            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(Items.DIAMOND), TransformType.GROUND, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn, 0);
             matrixStackIn.popPose();
         }
     }
     
-    private class TestDummyTileEntity extends TileEntity {
+    private class TestDummyTileEntity extends BlockEntity {
 
-        public TestDummyTileEntity(TileEntityType<? extends TestDummyTileEntity> type) {
-            super(type);
+        public TestDummyTileEntity(BlockPos pos, BlockState state, BlockEntityType<? extends TestDummyTileEntity> type) {
+            super(type, pos, state);
         }
     }
 
-    private static class TestEntity extends PigEntity {
+    private static class TestEntity extends Pig {
 
-        public TestEntity(EntityType<? extends PigEntity> p_i50250_1_, World p_i50250_2_) {
+        public TestEntity(EntityType<? extends Pig> p_i50250_1_, Level p_i50250_2_) {
             super(p_i50250_1_, p_i50250_2_);
         }
     }
     
     private static class TestEnchantment extends Enchantment {
 
-        public TestEnchantment(Rarity rarityIn, EnchantmentType typeIn, EquipmentSlotType... slots) {
+        public TestEnchantment(Rarity rarityIn, EnchantmentCategory typeIn, EquipmentSlot... slots) {
             super(rarityIn, typeIn, slots);
         }
         
@@ -215,15 +208,15 @@ public class TestMod {
     private final RegistryEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
-                .properties(p -> p.food(new Food.Builder().nutrition(1).saturationMod(0.2f).build()))
+                .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationMod(0.2f).build()))
                 .color(() -> () -> (stack, index) -> 0xFF0000FF)
                 .tag(ItemTags.BEDS)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                 .register();
     
     private final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
-            .entity(TestEntity::new, EntityClassification.CREATURE)
-            .onRegister(t -> GlobalEntityTypeAttributes.put(t, PigEntity.createAttributes().build())) // TODO include this in the builder
+            .entity(TestEntity::new, MobCategory.CREATURE)
+            .attributes(Pig::createAttributes)
             .loot((tb, e) -> tb.add(e, LootTable.lootTable()))
             .renderer(() -> PigRenderer::new)
             .register();
@@ -240,7 +233,7 @@ public class TestMod {
                             .pattern("DDD").pattern("DED").pattern("DDD")
                             .define('D', Items.DIAMOND)
                             .define('E', Items.EGG)
-                            .unlockedBy("has_egg", prov.hasItem(Items.EGG))
+                            .unlockedBy("has_egg", prov.has(Items.EGG))
                             .save(prov);
                     
                     prov.food(DataIngredient.items(ctx), Blocks.DIAMOND_BLOCK.delegate, 1f);
@@ -265,21 +258,21 @@ public class TestMod {
             .register();
     
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Item.class);
-    private final TileEntityEntry<ChestTileEntity> testblockte = TileEntityEntry.cast(testblock.getSibling(ForgeRegistries.TILE_ENTITIES));
+    private final TileEntityEntry<ChestBlockEntity> testblockte = TileEntityEntry.cast(testblock.getSibling(ForgeRegistries.BLOCK_ENTITIES));
     
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
-            .entity(TestEntity::new, EntityClassification.CREATURE)
-            .attributes(PigEntity::createAttributes)
+            .entity(TestEntity::new, MobCategory.CREATURE)
+            .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
-            .spawnPlacement(PlacementType.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, AnimalEntity::checkAnimalSpawnRules)
+            .spawnPlacement(SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules)
             .defaultSpawnEgg(0xFF0000, 0x00FF00)
             .loot((prov, type) -> prov.add(type, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
-                            .setRolls(ConstantRange.exactly(1))
-                            .add(ItemLootEntry.lootTableItem(Items.DIAMOND)
-                                    .apply(SetCount.setCount(RandomValueRange.between(1, 3)))
-                                    .apply(LootingEnchantBonus.lootingMultiplier(RandomValueRange.between(0, 2)))))))
+                            .setRolls(ConstantValue.exactly(1))
+                            .add(LootItem.lootTableItem(Items.DIAMOND)
+                                    .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 3)))
+                                    .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0, 2)))))))
             .tag(EntityTypeTags.RAIDERS)
             .register();
     
@@ -298,12 +291,12 @@ public class TestMod {
 //            .removeTag(FluidTags.WATER)
             .register();
     
-    private final RegistryEntry<ContainerType<ChestContainer>> testcontainer = registrate.object("testcontainer")
-            .container((type, windowId, inv) -> new ChestContainer(type, windowId, inv, new Inventory(9 * 9), 9), () -> ChestScreen::new)
+    private final RegistryEntry<MenuType<ChestMenu>> testcontainer = registrate.object("testcontainer")
+            .container((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
     
     private final RegistryEntry<TestEnchantment> testenchantment = registrate.object("testenchantment")
-            .enchantment(EnchantmentType.ARMOR, TestEnchantment::new)
+            .enchantment(EnchantmentCategory.ARMOR, TestEnchantment::new)
             .rarity(Rarity.UNCOMMON)
             .addArmorSlots()
             .register();
@@ -376,7 +369,7 @@ public class TestMod {
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
         registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
             Advancement.Builder.advancement()
-                .addCriterion("has_egg", InventoryChangeTrigger.Instance.hasItems(Items.EGG))
+                .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
                 .display(Items.EGG,
                         adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."), 
                         new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
@@ -395,7 +388,7 @@ public class TestMod {
         testblock.asStack();
         testitem.is(Items.SNOWBALL);
         testblockitem.is(Items.STONE);
-        testblockte.is(TileEntityType.CHEST);
+        testblockte.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
     }
     

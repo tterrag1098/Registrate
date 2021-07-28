@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -15,18 +14,14 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
-import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Effect;
-import net.minecraft.util.IItemProvider;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.data.HashCache;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -106,18 +101,18 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         addTooltip(block, tooltip);
     }
     
-    public void addTooltip(NonNullSupplier<? extends IItemProvider> item, String tooltip) {
+    public void addTooltip(NonNullSupplier<? extends ItemLike> item, String tooltip) {
         add(item.get().asItem().getDescriptionId() + ".desc", tooltip);
     }
     
-    public void addTooltip(NonNullSupplier<? extends IItemProvider> item, List<@NonnullType String> tooltip) {
+    public void addTooltip(NonNullSupplier<? extends ItemLike> item, List<@NonnullType String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
             add(item.get().asItem().getDescriptionId() + ".desc." + i, tooltip.get(i));
         }
     }
     
-    public void add(ItemGroup group, String name) {
-        add(((TranslationTextComponent)group.getDisplayName()).getKey(), name);
+    public void add(CreativeModeTab group, String name) {
+        add(((TranslatableComponent)group.getDisplayName()).getKey(), name);
     }
     
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
@@ -176,7 +171,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     @Override
-    public void run(DirectoryCache cache) throws IOException {
+    public void run(HashCache cache) throws IOException {
         super.run(cache);
         upsideDown.run(cache);
     }

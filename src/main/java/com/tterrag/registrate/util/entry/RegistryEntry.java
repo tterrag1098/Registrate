@@ -12,8 +12,8 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 

@@ -6,41 +6,41 @@ import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
-public class TileEntityEntry<T extends TileEntity> extends RegistryEntry<TileEntityType<T>> {
+public class TileEntityEntry<T extends BlockEntity> extends RegistryEntry<BlockEntityType<T>> {
 
-    public TileEntityEntry(AbstractRegistrate<?> owner, RegistryObject<TileEntityType<T>> delegate) {
+    public TileEntityEntry(AbstractRegistrate<?> owner, RegistryObject<BlockEntityType<T>> delegate) {
         super(owner, delegate);
     }
 
     /**
-     * Create a "default" instance of this {@link TileEntity} via the {@link TileEntityType}.
+     * Create a "default" instance of this {@link BlockEntity} via the {@link BlockEntityType}.
      * 
      * @return The instance
      */
-    @SuppressWarnings("null")
-    public T create() {
-        return get().create();
+    public T create(BlockPos pos, BlockState state) {
+        return get().create(pos, state);
     }
 
     /**
-     * Check that the given {@link TileEntity} is an instance of this type.
+     * Check that the given {@link BlockEntity} is an instance of this type.
      * 
      * @param t
-     *            The {@link TileEntity} instance
+     *            The {@link BlockEntity} instance
      * @return {@code true} if the type matches, {@code false} otherwise.
      */
-    public boolean is(@Nullable TileEntity t) {
+    public boolean is(@Nullable BlockEntity t) {
         return t != null && t.getType() == get();
     }
 
     /**
-     * Get an instance of this {@link TileEntity} from the world.
+     * Get an instance of this {@link BlockEntity} from the world.
      * 
      * @param world
      *            The world to look for the instance in
@@ -48,13 +48,12 @@ public class TileEntityEntry<T extends TileEntity> extends RegistryEntry<TileEnt
      *            The position of the instance
      * @return An {@link Optional} containing the instance, if it exists and matches this type. Otherwise, {@link Optional#empty()}.
      */
-    @SuppressWarnings("null")
-    public Optional<T> get(IBlockReader world, BlockPos pos) {
+    public Optional<T> get(BlockGetter world, BlockPos pos) {
         return Optional.ofNullable(getNullable(world, pos));
     }
 
     /**
-     * Get an instance of this {@link TileEntity} from the world.
+     * Get an instance of this {@link BlockEntity} from the world.
      * 
      * @param world
      *            The world to look for the instance in
@@ -63,12 +62,12 @@ public class TileEntityEntry<T extends TileEntity> extends RegistryEntry<TileEnt
      * @return The instance, if it exists and matches this type. Otherwise, {@code null}.
      */
     @SuppressWarnings("unchecked")
-    public @Nullable T getNullable(IBlockReader world, BlockPos pos) {
-        TileEntity te = world.getBlockEntity(pos);
+    public @Nullable T getNullable(BlockGetter world, BlockPos pos) {
+        BlockEntity te = world.getBlockEntity(pos);
         return is(te) ? (T) te : null;
     }
 
-    public static <T extends TileEntity> TileEntityEntry<T> cast(RegistryEntry<TileEntityType<T>> entry) {
+    public static <T extends BlockEntity> TileEntityEntry<T> cast(RegistryEntry<BlockEntityType<T>> entry) {
         return RegistryEntry.cast(TileEntityEntry.class, entry);
     }
 }

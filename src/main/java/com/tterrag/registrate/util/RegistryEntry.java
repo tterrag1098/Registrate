@@ -2,7 +2,7 @@ package com.tterrag.registrate.util;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**

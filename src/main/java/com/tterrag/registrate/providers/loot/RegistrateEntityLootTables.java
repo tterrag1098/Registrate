@@ -7,14 +7,14 @@ import java.util.stream.Collectors;
 import com.tterrag.registrate.AbstractRegistrate;
 
 import lombok.RequiredArgsConstructor;
-import net.minecraft.data.loot.EntityLootTables;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntityType;
-import net.minecraft.loot.LootTable;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.loot.EntityLoot;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 @RequiredArgsConstructor
-public class RegistrateEntityLootTables extends EntityLootTables implements RegistrateLootTables {
+public class RegistrateEntityLootTables extends EntityLoot implements RegistrateLootTables {
     
     private final AbstractRegistrate<?> parent;
     private final Consumer<RegistrateEntityLootTables> callback;
@@ -31,7 +31,7 @@ public class RegistrateEntityLootTables extends EntityLootTables implements Regi
 
     @Override
     protected boolean isNonLiving(EntityType<?> entitytype) {
-        return entitytype.getCategory() == EntityClassification.MISC; // TODO open this to customization?
+        return entitytype.getCategory() == MobCategory.MISC; // TODO open this to customization?
     }
 
     // @formatter:off

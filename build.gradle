@@ -23,6 +23,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
+apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
 
 boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false')
 def getVersion = {
@@ -40,7 +41,7 @@ archivesBaseName = "Registrate"
 java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
 minecraft {
-    mappings channel: 'snapshot', version: '20201028-1.16.3'
+    mappings channel: 'official', version: minecraft_version
 
     runs {
         client {

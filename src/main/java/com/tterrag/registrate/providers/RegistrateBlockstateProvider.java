@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
-import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.MultiPartBlockStateBuilder;
 import net.minecraftforge.client.model.generators.VariantBlockStateBuilder;

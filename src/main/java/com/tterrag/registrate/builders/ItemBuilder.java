@@ -18,14 +18,14 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
-import net.minecraft.client.renderer.color.IItemColor;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.tags.ITag.INamedTag;
+import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.tags.Tag.Named;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
@@ -94,7 +94,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The {@link ItemGroup} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends ItemGroup> group) {
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> group) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
                 .defaultModel().defaultLang()
                 .transform(ib -> group == null ? ib : ib.group(group));
@@ -106,7 +106,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     
     @Nullable
-    private NonNullSupplier<Supplier<IItemColor>> colorHandler;
+    private NonNullSupplier<Supplier<ItemColor>> colorHandler;
     
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Item.class);
@@ -140,7 +140,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
-    public ItemBuilder<T, P> group(NonNullSupplier<? extends ItemGroup> group) {
+    public ItemBuilder<T, P> group(NonNullSupplier<? extends CreativeModeTab> group) {
         return properties(p -> p.tab(group.get()));
     }
     
@@ -151,7 +151,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The color handler to register for this item
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> color(NonNullSupplier<Supplier<IItemColor>> colorHandler) {
+    public ItemBuilder<T, P> color(NonNullSupplier<Supplier<ItemColor>> colorHandler) {
         if (this.colorHandler == null) {
             DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerItemColor);
         }
@@ -161,7 +161,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     
     protected void registerItemColor() {
         OneTimeEventReceiver.addModListener(ColorHandlerEvent.Item.class, e -> {
-            NonNullSupplier<Supplier<IItemColor>> colorHandler = this.colorHandler;
+            NonNullSupplier<Supplier<ItemColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
                 e.getItemColors().register(colorHandler.get().get(), getEntry());
             }
@@ -223,14 +223,14 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     /**
-     * Assign {@link INamedTag}{@code s} to this item. Multiple calls will add additional tags.
+     * Assign {@link Tag.Named}{@code s} to this item. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tag to assign
      * @return this {@link ItemBuilder}
      */
     @SafeVarargs
-    public final ItemBuilder<T, P> tag(INamedTag<Item>... tags) {
+    public final ItemBuilder<T, P> tag(Named<Item>... tags) {
         return tag(ProviderType.ITEM_TAGS, tags);
     }
     

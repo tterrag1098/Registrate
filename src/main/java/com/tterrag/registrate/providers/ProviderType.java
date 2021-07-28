@@ -12,11 +12,11 @@ import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityType;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.util.registry.Registry;
-import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
+import net.minecraft.core.Registry;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 
 /**
  * Represents a type of data that can be generated, and specifies a factory for the provider.

@@ -17,9 +17,9 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.minecraft.tags.ITag.INamedTag;
+import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
@@ -51,7 +51,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     @Getter(onMethod = @__({ @Override }))
     private final Class<? super R> registryType;
     
-    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, INamedTag<?>> tagsByType = HashMultimap.create();
+    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Tag.Named<?>> tagsByType = HashMultimap.create();
     
     /** A supplier for the entry that will discard the reference to this builder after it is resolved */
     private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
@@ -89,10 +89,10 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, INamedTag<R>... tags) {
+    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, Tag.Named<R>... tags) {
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
-                    .map(t -> (INamedTag<R>) t)
+                    .map(t -> (Tag.Named<R>) t)
                     .map(prov::tag)
                     .forEach(b -> b.add(asSupplier().get())));
         }
@@ -111,9 +111,9 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S removeTag(ProviderType<RegistrateTagsProvider<R>> type, INamedTag<R>... tags) {
+    public final S removeTag(ProviderType<RegistrateTagsProvider<R>> type, Tag.Named<R>... tags) {
         if (tagsByType.containsKey(type)) {
-            for (INamedTag<R> tag : tags) {
+            for (Tag.Named<R> tag : tags) {
                 tagsByType.remove(type, tag);
             }
         }

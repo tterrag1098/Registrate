@@ -2,9 +2,9 @@ package com.tterrag.registrate.util.entry;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
 public class BlockEntry<T extends Block> extends ItemProviderEntry<T> {
 

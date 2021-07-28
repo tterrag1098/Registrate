@@ -16,10 +16,10 @@ import com.tterrag.registrate.AbstractRegistrate;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.HashCache;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.LogicalSide;
 
 @Log4j2
@@ -40,19 +40,19 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
         return LogicalSide.SERVER;
     }
     
-    public TranslationTextComponent title(String category, String name, String title) {
+    public TranslatableComponent title(String category, String name, String title) {
         return owner.addLang("advancements", new ResourceLocation(category, name), "title", title);
     }
     
-    public TranslationTextComponent desc(String category, String name, String desc) {
+    public TranslatableComponent desc(String category, String name, String desc) {
         return owner.addLang("advancements", new ResourceLocation(category, name), "description", desc);
     }
     
-    private @Nullable DirectoryCache cache;
+    private @Nullable HashCache cache;
     private Set<ResourceLocation> seenAdvancements = new HashSet<>();
 
     @Override
-    public void run(DirectoryCache cache) throws IOException {
+    public void run(HashCache cache) throws IOException {
         try {
             this.cache = cache;
             this.seenAdvancements.clear();
@@ -64,7 +64,7 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
     
     @Override
     public void accept(@Nullable Advancement t) {
-        DirectoryCache cache = this.cache;
+        HashCache cache = this.cache;
         if (cache == null) {
             throw new IllegalStateException("Cannot accept advancements outside of act");
         }
@@ -76,7 +76,7 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
             Path path1 = getPath(path, t);
 
             try {
-                IDataProvider.save(GSON, cache, t.deconstruct().serializeToJson(), path1);
+                DataProvider.save(GSON, cache, t.deconstruct().serializeToJson(), path1);
             } catch (IOException ioexception) {
                 log.error("Couldn't save advancement {}", path1, ioexception);
             }

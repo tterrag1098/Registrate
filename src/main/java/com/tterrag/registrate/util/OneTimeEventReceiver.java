@@ -21,10 +21,10 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DeferredWorkQueue;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.event.IModBusEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.event.lifecycle.IModBusEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -89,7 +89,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
 
     @SuppressWarnings("deprecation")
     private static void onLoadComplete(FMLLoadCompleteEvent event) {
-        DeferredWorkQueue.runLater(() -> {
+        event.enqueueWork(() -> {
             toUnregister.forEach(t -> {
                 t.getLeft().unregister(t.getMiddle());
                 try {

@@ -16,31 +16,29 @@ import com.tterrag.registrate.util.entry.EntityEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntitySpawnPlacementRegistry;
-import net.minecraft.entity.EntitySpawnPlacementRegistry.IPlacementPredicate;
-import net.minecraft.entity.EntitySpawnPlacementRegistry.PlacementType;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.ai.attributes.AttributeModifierMap.MutableAttribute;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.SpawnEggItem;
-import net.minecraft.tags.ITag.INamedTag;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.SpawnPlacements.SpawnPredicate;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.client.registry.IRenderFactory;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
 /**
  * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
@@ -78,8 +76,8 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The {@link EntityClassification} of the entity
      * @return A new {@link EntityBuilder} with reasonable default data generators.
      */
-    public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory,
-            EntityClassification classification) {
+    public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory,
+            MobCategory classification) {
         return new EntityBuilder<>(owner, parent, name, callback, factory, classification)
                 .defaultLang();
     }
@@ -89,13 +87,13 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
     
     @Nullable
-    private NonNullSupplier<IRenderFactory<? super T>> renderer;
+    private NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer;
     
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
     
     private @Nullable ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder;
 
-    protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.IFactory<T> factory, EntityClassification classification) {
+    protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
         super(owner, parent, name, callback, EntityType.class);
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
@@ -117,27 +115,25 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * Register an {@link EntityRenderer} for this entity.
      * <p>
      * 
-     * @apiNote This requires the {@link Class} of the entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed with a {@code null} {@link World}
-     *          to register the renderer.
-     * 
      * @param renderer
-     *            A (server safe) supplier to an {@link IRenderFactory} that will provide this entity's renderer
+     *            A (server safe) supplier to an {@link EntityRendererProvider} that will provide this entity's renderer
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> renderer(NonNullSupplier<IRenderFactory<? super T>> renderer) {
+    public EntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerRenderer);
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
         this.renderer = renderer;
         return this;
     }
     
     protected void registerRenderer() {
-        OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
-            NonNullSupplier<IRenderFactory<? super T>> renderer = this.renderer;
+        OneTimeEventReceiver.addModListener(EntityRenderersEvent.RegisterRenderers.class, evt -> {
+            var renderer = this.renderer;
             if (renderer != null) {
                 try {
-                    RenderingRegistry.registerEntityRenderingHandler(getEntry(), renderer.get());
+                    var provider = renderer.get();
+                    evt.registerEntityRenderer(getEntry(), provider::apply);
                 } catch (Exception e) {
                     throw new IllegalStateException("Failed to register renderer for Entity " + get().getId(), e);
                 }
@@ -157,7 +153,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *             When called more than once
      */
     @SuppressWarnings("unchecked")
-    public EntityBuilder<T, P> attributes(Supplier<MutableAttribute> attributes) {
+    public EntityBuilder<T, P> attributes(Supplier<AttributeSupplier.Builder> attributes) {
         if (attributesConfigured) {
             throw new IllegalStateException("Cannot configure attributes more than once");
         }
@@ -182,7 +178,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *             When called more than once
      */
     @SuppressWarnings("unchecked")
-    public EntityBuilder<T, P> spawnPlacement(PlacementType type, Heightmap.Type heightmap, IPlacementPredicate<T> predicate) {
+    public EntityBuilder<T, P> spawnPlacement(SpawnPlacements.Type type, Heightmap.Types heightmap, SpawnPredicate<T> predicate) {
         if (spawnConfigured) {
             throw new IllegalStateException("Cannot configure spawn placement more than once");
         }
@@ -197,7 +193,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
                 throw new RuntimeException("Failed to type check entity " + t.getRegistryName() + " when registering spawn placement", e);
             }
             */
-            EntitySpawnPlacementRegistry.register((EntityType<MobEntity>) t, type, heightmap, (IPlacementPredicate<MobEntity>) predicate);
+            SpawnPlacements.register((EntityType<Mob>) t, type, heightmap, (SpawnPredicate<Mob>) predicate);
         });
         return this;
     }
@@ -235,7 +231,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      */
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
-        ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> ret = getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(asSupplier(), primaryColor, secondaryColor, p)).properties(p -> p.tab(ItemGroup.TAB_MISC))
+        ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> ret = getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(asSupplier(), primaryColor, secondaryColor, p)).properties(p -> p.tab(CreativeModeTab.TAB_MISC))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
         if (this.spawnEggBuilder == null) { // First call only
             this.onRegister(this::injectSpawnEggType);
@@ -278,14 +274,14 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
-     * Assign {@link INamedTag}{@code s} to this entity. Multiple calls will add additional tags.
+     * Assign {@link Tag.Named}{@code s} to this entity. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link EntityBuilder}
      */
     @SafeVarargs
-    public final EntityBuilder<T, P> tag(INamedTag<EntityType<?>>... tags) {
+    public final EntityBuilder<T, P> tag(Tag.Named<EntityType<?>>... tags) {
         return tag(ProviderType.ENTITY_TAGS, tags);
     }
 

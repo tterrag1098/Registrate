@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.TileEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
@@ -30,25 +31,24 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
+import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.client.renderer.color.IBlockColor;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.DyeColor;
-import net.minecraft.item.Item;
-import net.minecraft.loot.LootTables;
-import net.minecraft.tags.ITag.INamedTag;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.tags.Tag;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fmllegacy.RegistryObject;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -89,21 +89,21 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            The {@link Material} to use for the initial {@link Block.Properties} object
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
-    public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<AbstractBlock.Properties, T> factory, Material material) {
-        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> AbstractBlock.Properties.of(material))
+    public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, Material material) {
+        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of(material))
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
 
-    private final NonNullFunction<AbstractBlock.Properties, T> factory;
+    private final NonNullFunction<BlockBehaviour.Properties, T> factory;
     
-    private NonNullSupplier<AbstractBlock.Properties> initialProperties;
-    private NonNullFunction<AbstractBlock.Properties, AbstractBlock.Properties> propertiesCallback = NonNullUnaryOperator.identity();
+    private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
+    private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
     
     @Nullable
-    private NonNullSupplier<Supplier<IBlockColor>> colorHandler;
+    private NonNullSupplier<Supplier<BlockColor>> colorHandler;
 
-    protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<AbstractBlock.Properties, T> factory, NonNullSupplier<AbstractBlock.Properties> initialProperties) {
+    protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, NonNullSupplier<BlockBehaviour.Properties> initialProperties) {
         super(owner, parent, name, callback, Block.class);
         this.factory = factory;
         this.initialProperties = initialProperties;
@@ -119,7 +119,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            The action to perform on the properties
      * @return this {@link BlockBuilder}
      */
-    public BlockBuilder<T, P> properties(NonNullUnaryOperator<AbstractBlock.Properties> func) {
+    public BlockBuilder<T, P> properties(NonNullUnaryOperator<BlockBehaviour.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
@@ -132,7 +132,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(Material material) {
-        initialProperties = () -> AbstractBlock.Properties.of(material);
+        initialProperties = () -> BlockBehaviour.Properties.of(material);
         return this;
     }
 
@@ -146,7 +146,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(Material material, DyeColor color) {
-        initialProperties = () -> AbstractBlock.Properties.of(material, color);
+        initialProperties = () -> BlockBehaviour.Properties.of(material, color);
         return this;
     }
 
@@ -160,7 +160,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(Material material, MaterialColor color) {
-        initialProperties = () -> AbstractBlock.Properties.of(material, color);
+        initialProperties = () -> BlockBehaviour.Properties.of(material, color);
         return this;
     }
 
@@ -168,11 +168,11 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
      * 
      * @param block
-     *            The block to create the initial properties from (via {@link Block.Properties#from(AbstractBlock)})
+     *            The block to create the initial properties from (via {@link Block.Properties#from(BlockBehaviour)})
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
-        initialProperties = () -> AbstractBlock.Properties.copy(block.get());
+        initialProperties = () -> BlockBehaviour.Properties.copy(block.get());
         return this;
     }
 
@@ -191,12 +191,12 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             if (renderLayers.size() == 1) {
                 final RenderType layer = renderLayers.get(0).get().get();
-                RenderTypeLookup.setRenderLayer(entry, layer);
+                ItemBlockRenderTypes.setRenderLayer(entry, layer);
             } else if (renderLayers.size() > 1) {
                 final Set<RenderType> layers = renderLayers.stream()
                         .map(s -> s.get().get())
                         .collect(Collectors.toSet());
-                RenderTypeLookup.setRenderLayer(entry, layers::contains);
+                ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
             }
         });
     }
@@ -253,76 +253,44 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
                     }
                 });
     }
-    
-    /**
-     * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
-     * 
-     * @param <TE>
-     *            The type of the tile entity
-     * @param factory
-     *            A factory for the tile entity
-     * @return this {@link BlockBuilder}
-     * @deprecated Use {@link #simpleTileEntity(NonNullFunction)}
-     */
-    @Deprecated
-    public <TE extends TileEntity> BlockBuilder<T, P> simpleTileEntity(NonNullSupplier<? extends TE> factory) {
-        return tileEntity(factory).build();
-    }
 
     /**
-     * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
+     * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
      * 
-     * @param <TE>
+     * @param <BE>
      *            The type of the tile entity
      * @param factory
      *            A factory for the tile entity
      * @return this {@link BlockBuilder}
      */
-    public <TE extends TileEntity> BlockBuilder<T, P> simpleTileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
+    public <BE extends BlockEntity> BlockBuilder<T, P> simpleTileEntity(BlockEntityFactory<BE> factory) {
         return tileEntity(factory).build();
     }
 
     /**
-     * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
+     * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
      * <p>
      * The created {@link TileEntityBuilder} is returned for further configuration.
      * 
-     * @param <TE>
-     *            The type of the tile entity
-     * @param factory
-     *            A factory for the tile entity
-     * @return the {@link TileEntityBuilder}
-     * @deprecated Use {@link #tileEntity(NonNullFunction)}
-     */
-    @Deprecated
-    public <TE extends TileEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullSupplier<? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(asSupplier());
-    }
-
-    /**
-     * Create a {@link TileEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
-     * <p>
-     * The created {@link TileEntityBuilder} is returned for further configuration.
-     * 
-     * @param <TE>
+     * @param <BE>
      *            The type of the tile entity
      * @param factory
      *            A factory for the tile entity
      * @return the {@link TileEntityBuilder}
      */
-    public <TE extends TileEntity> TileEntityBuilder<TE, BlockBuilder<T, P>> tileEntity(NonNullFunction<TileEntityType<TE>, ? extends TE> factory) {
-        return getOwner().<TE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(asSupplier());
+    public <BE extends BlockEntity> TileEntityBuilder<BE, BlockBuilder<T, P>> tileEntity(BlockEntityFactory<BE> factory) {
+        return getOwner().<BE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(asSupplier());
     }
     
     /**
-     * Register a block color handler for this block. The {@link IBlockColor} instance can be shared across many blocks.
+     * Register a block color handler for this block. The {@link BlockColor} instance can be shared across many blocks.
      * 
      * @param colorHandler
      *            The color handler to register for this block
      * @return this {@link BlockBuilder}
      */
     // TODO it might be worthwhile to abstract this more and add the capability to automatically copy to the item
-    public BlockBuilder<T, P> color(NonNullSupplier<Supplier<IBlockColor>> colorHandler) {
+    public BlockBuilder<T, P> color(NonNullSupplier<Supplier<BlockColor>> colorHandler) {
         if (this.colorHandler == null) {
             DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerBlockColor);
         }
@@ -332,7 +300,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     protected void registerBlockColor() {
         OneTimeEventReceiver.addModListener(ColorHandlerEvent.Block.class, e -> {
-            NonNullSupplier<Supplier<IBlockColor>> colorHandler = this.colorHandler;
+            NonNullSupplier<Supplier<BlockColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
                 e.getBlockColors().register(colorHandler.get().get(), getEntry());
             }
@@ -404,7 +372,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public BlockBuilder<T, P> loot(NonNullBiConsumer<RegistrateBlockLootTables, T> cons) {
         return setData(ProviderType.LOOT, (ctx, prov) -> prov.addLootAction(LootType.BLOCK, tb -> {
-            if (!ctx.getEntry().getLootTable().equals(LootTables.EMPTY)) {
+            if (!ctx.getEntry().getLootTable().equals(BuiltInLootTables.EMPTY)) {
                 cons.accept(tb, ctx.getEntry());
             }
         }));
@@ -423,20 +391,20 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign {@link INamedTag}{@code s} to this block. Multiple calls will add additional tags.
+     * Assign {@link Tag.Named}{@code s} to this block. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link BlockBuilder}
      */
     @SafeVarargs
-    public final BlockBuilder<T, P> tag(INamedTag<Block>... tags) {
+    public final BlockBuilder<T, P> tag(Tag.Named<Block>... tags) {
         return tag(ProviderType.BLOCK_TAGS, tags);
     }
 
     @Override
     protected T createEntry() {
-        @Nonnull AbstractBlock.Properties properties = this.initialProperties.get();
+        @Nonnull BlockBehaviour.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }
