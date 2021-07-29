@@ -40,15 +40,15 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 @RequiredArgsConstructor
 public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
 
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final AbstractRegistrate<?> owner;
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final P parent;
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final String name;
     @Getter(AccessLevel.PROTECTED)
     private final BuilderCallback callback;
-    @Getter(onMethod = @__({ @Override }))
+    @Getter(onMethod_ = {@Override})
     private final Class<? super R> registryType;
     
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Tag.Named<?>> tagsByType = HashMultimap.create();
