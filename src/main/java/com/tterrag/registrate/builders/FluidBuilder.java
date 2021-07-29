@@ -484,7 +484,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source::getValue);
+            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, NonNullSupplier.of(source::getValue));
         } else {
             throw new IllegalStateException("Fluid must have a source version: " + getName());
         }
