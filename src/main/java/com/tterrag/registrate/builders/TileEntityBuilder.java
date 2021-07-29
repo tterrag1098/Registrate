@@ -15,6 +15,7 @@ import com.tterrag.registrate.util.entry.TileEntityEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.BlockPos;
@@ -71,7 +72,7 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
     private final BlockEntityFactory<T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
     @Nullable
-    private NonNullSupplier<BlockEntityRendererProvider<? super T>> renderer;
+    private NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer;
 
     protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
         super(owner, parent, name, callback, BlockEntityType.class);
@@ -113,7 +114,7 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
      *            A (server safe) supplier to an {@link Function} that will provide this tile entity's renderer given the renderer dispatcher
      * @return this {@link TileEntityBuilder}
      */
-    public TileEntityBuilder<T, P> renderer(NonNullSupplier<BlockEntityRendererProvider<? super T>> renderer) {
+    public TileEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
@@ -123,9 +124,9 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
     
     protected void registerRenderer() {
         OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
-            NonNullSupplier<BlockEntityRendererProvider<? super T>> renderer = this.renderer;
+            var renderer = this.renderer;
             if (renderer != null) {
-                BlockEntityRenderers.register(getEntry(), renderer.get());
+                BlockEntityRenderers.register(getEntry(), renderer.get()::apply);
             }
         });
     }
