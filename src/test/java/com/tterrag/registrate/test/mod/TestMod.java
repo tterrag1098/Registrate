@@ -292,9 +292,9 @@ public class TestMod {
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())
 //            .noBucket()
-            .bucket()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
-                .build()
+//            .bucket()
+//                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
+//                .build()
 //            .removeTag(FluidTags.WATER)
             .register();
     
