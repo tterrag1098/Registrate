@@ -385,7 +385,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         this.defaultBucket = false;
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
-        if (source == null) {
+        if (source == null && defaultSource != Boolean.TRUE) {
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }
         return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source::getValue, p))
