@@ -53,9 +53,9 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     private final AccessibleLanguageProvider upsideDown;
 
     public RegistrateLangProvider(AbstractRegistrate<?> owner, DataGenerator gen) {
-        super(gen, owner.getModid(), "en_us");
+        super(gen, owner.getDomain(), "en_us");
         this.owner = owner;
-        this.upsideDown = new AccessibleLanguageProvider(gen, owner.getModid(), "en_ud");
+        this.upsideDown = new AccessibleLanguageProvider(gen, owner.getDomain(), "en_ud");
     }
 
     @Override

@@ -390,7 +390,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(this.source::getValue, p))
                 .properties(p -> p.containerItem(Items.BUCKET).maxStackSize(1))
-                .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getModid(), "item/" + bucketName)));
+                .model((ctx, prov) -> prov.generated(ctx::getEntry, new ResourceLocation(getOwner().getDomain(), "item/" + bucketName)));
     }
 
     @Beta

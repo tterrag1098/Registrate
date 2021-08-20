@@ -138,7 +138,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             this.name = name;
             this.type = type;
             this.creator =  new NonNullLazyValue<>(creator);
-            this.delegate = entryFactory.apply(RegistryObject.of(name, (Class<R>) type, AbstractRegistrate.this.getModid()));
+            this.delegate = entryFactory.apply(RegistryObject.of(name, (Class<R>) type, AbstractRegistrate.this.getDomain()));
         }
         
         void register(IForgeRegistry<R> registry) {
@@ -176,21 +176,40 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     @Getter
     private final String modid;
+
+    /**
+     * @return The domain that this {@link AbstractRegistrate} is creating objects in
+     */
+    @Getter
+    private final String domain;
     
     @Nullable
     private String currentName;
     @Nullable
     private NonNullLazyValue<? extends ItemGroup> currentGroup;
     private boolean skipErrors;
+
+    /**
+     * Construct a new Registrate for the given mod ID.
+     *
+     * @param modid
+     *            The mod ID for which objects will be registered
+     */
+    protected AbstractRegistrate(String modid) {
+        this(modid, modid);
+    }
     
     /**
      * Construct a new Registrate for the given mod ID.
      * 
      * @param modid
      *            The mod ID for which objects will be registered
+     * @param domain
+     *            The domain in which objects will be registered
      */
-    protected AbstractRegistrate(String modid) {
+    protected AbstractRegistrate(String modid, String domain) {
         this.modid = modid;
+        this.domain = domain;
     }
     
     @SuppressWarnings("unchecked")
@@ -778,7 +797,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     protected <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
-        Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, creator, entryFactory);
+        Registration<R, T> reg = new Registration<>(new ResourceLocation(domain, name), type, creator, entryFactory);
         log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.getName());
         registerCallbacks.removeAll(Pair.of(name, type)).forEach(callback -> {
             @SuppressWarnings({ "unchecked", "null" })
@@ -793,7 +812,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @SuppressWarnings("unchecked")
     public <R extends IForgeRegistryEntry<R>> Supplier<IForgeRegistry<R>> makeRegistry(String name, Class<? super R> superType, Supplier<RegistryBuilder<R>> builder) {
         OneTimeEventReceiver.addModListener(RegistryEvent.NewRegistry.class, $ -> builder.get()
-                .setName(new ResourceLocation(getModid(), name))
+                .setName(new ResourceLocation(getDomain(), name))
                 .setType((Class<R>) superType)
                 .create());
         return Suppliers.memoize(() -> RegistryManager.ACTIVE.<R>getRegistry(superType));
@@ -1002,7 +1021,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
     
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name) {
-        return fluid(parent, name, new ResourceLocation(getModid(), "block/" + currentName() + "_still"), new ResourceLocation(getModid(), "block/" + currentName() + "_flow"));
+        return fluid(parent, name, new ResourceLocation(getDomain(), "block/" + currentName() + "_still"), new ResourceLocation(getDomain(), "block/" + currentName() + "_flow"));
     }
 
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {

@@ -17,7 +17,7 @@ public class RegistrateBlockstateProvider extends BlockStateProvider implements 
     private final AbstractRegistrate<?> parent;
 
     public RegistrateBlockstateProvider(AbstractRegistrate<?> parent, DataGenerator gen, ExistingFileHelper exFileHelper) {
-        super(gen, parent.getModid(), exFileHelper);
+        super(gen, parent.getDomain(), exFileHelper);
         this.parent = parent;
     }
 
