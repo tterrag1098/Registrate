@@ -35,6 +35,6 @@ public class DataGenContext<R extends IForgeRegistryEntry<R>, E extends R> imple
 
     public static <R extends IForgeRegistryEntry<R>, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder, Class<? super R> clazz) {
         return new DataGenContext<R, E>(NonNullSupplier.of(builder.getOwner().<R, E>get(builder.getName(), clazz)), builder.getName(),
-                new ResourceLocation(builder.getOwner().getModid(), builder.getName()));
+                new ResourceLocation(builder.getOwner().getNamespace(), builder.getName()));
     }
 }

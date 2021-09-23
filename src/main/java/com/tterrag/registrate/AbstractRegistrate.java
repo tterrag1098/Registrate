@@ -528,7 +528,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     });
     
     /**
-     * Add a custom translation mapping, prepending this registrate's {@link #getModid() mod id} to the translation key.
+     * Add a custom translation mapping, prepending this registrate's {@link #getNamespace() namespace} to the translation key.
      * 
      * @param key
      *            The translation key
@@ -538,7 +538,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     @Deprecated
     public TranslationTextComponent addLang(String key, String value) {
-        final String prefixedKey = getModid() + "." + key;
+        final String prefixedKey = getNamespace() + "." + key;
         addDataGenerator(ProviderType.LANG, p -> p.add(prefixedKey, value));
         return new TranslationTextComponent(prefixedKey);
     }

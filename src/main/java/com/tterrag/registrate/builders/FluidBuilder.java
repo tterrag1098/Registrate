@@ -452,7 +452,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
             attributes.translationKey(block.get().getTranslationKey());
             setData(ProviderType.LANG, NonNullBiConsumer.noop());
         } else {
-            attributes.translationKey(Util.makeTranslationKey("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
+            attributes.translationKey(Util.makeTranslationKey("fluid", new ResourceLocation(getOwner().getNamespace(), sourceName)));
         }
         NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
         ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source == null ? null : source::getValue, asSupplier(), attributes);
