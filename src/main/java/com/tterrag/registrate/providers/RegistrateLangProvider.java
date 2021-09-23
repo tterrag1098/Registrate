@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -18,15 +17,11 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.block.Block;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DirectoryCache;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Effect;
 import net.minecraft.util.IItemProvider;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -53,9 +48,9 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     private final AccessibleLanguageProvider upsideDown;
 
     public RegistrateLangProvider(AbstractRegistrate<?> owner, DataGenerator gen) {
-        super(gen, owner.getDomain(), "en_us");
+        super(gen, owner.getNamespace(), "en_us");
         this.owner = owner;
-        this.upsideDown = new AccessibleLanguageProvider(gen, owner.getDomain(), "en_ud");
+        this.upsideDown = new AccessibleLanguageProvider(gen, owner.getNamespace(), "en_ud");
     }
 
     @Override

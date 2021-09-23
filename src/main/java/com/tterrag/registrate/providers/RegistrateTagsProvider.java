@@ -20,7 +20,7 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     private final String name;
 
     public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<? extends RegistrateTagsProvider<T>> type, String name, DataGenerator generatorIn, Registry<T> registryIn, ExistingFileHelper existingFileHelper) {
-        super(generatorIn, registryIn, owner.getDomain(), existingFileHelper);
+        super(generatorIn, registryIn, owner.getNamespace(), existingFileHelper);
         this.owner = owner;
         this.type = type;
         this.name = name;

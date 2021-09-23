@@ -17,7 +17,7 @@ public class RegistrateItemModelProvider extends ItemModelProvider implements Re
     private final AbstractRegistrate<?> parent;
 
     public RegistrateItemModelProvider(AbstractRegistrate<?> parent, DataGenerator generator, ExistingFileHelper existingFileHelper) {
-        super(generator, parent.getDomain(), existingFileHelper);
+        super(generator, parent.getNamespace(), existingFileHelper);
         this.parent = parent;
     }
 

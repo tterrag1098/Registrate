@@ -68,7 +68,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
     
     public ResourceLocation safeId(ResourceLocation id) {
-        return new ResourceLocation(owner.getDomain(), safeName(id));
+        return new ResourceLocation(owner.getNamespace(), safeName(id));
     }
 
     public ResourceLocation safeId(DataIngredient source) {
