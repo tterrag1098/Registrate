@@ -124,7 +124,7 @@ jar {
     exclude('assets/**', 'data/**', '.cache/**') // Exclude generated assets, can't find a better way to do this :(
     manifest {
         attributes(
-            'FMLModType': 'LIBRARY'
+            'FMLModType': 'GAMELIBRARY'
         )
     }
 }
