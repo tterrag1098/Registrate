@@ -15,7 +15,7 @@ import com.tterrag.registrate.util.entry.EntityEntry;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.entry.TileEntityEntry;
+import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
@@ -126,7 +126,7 @@ public class TestMod {
                     @Override
                     @Nullable
                     public AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
-                        return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, testblockte.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
+                        return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, testblockbe.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
                     
                     @Override
@@ -141,24 +141,24 @@ public class TestMod {
         @Override
         @Nullable
         public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-            return testblockte.create(pos, state);
+            return testblockbe.create(pos, state);
         }
     }
 
-    private static class TestTileEntity extends ChestBlockEntity {
+    private static class TestBlockEntity extends ChestBlockEntity {
 
-        public TestTileEntity(BlockPos pos, BlockState state, BlockEntityType<? extends TestTileEntity> type) {
+        public TestBlockEntity(BlockEntityType<? extends TestBlockEntity> type, BlockPos pos, BlockState state) {
             super(type, pos, state);
         }
     }
     
-    private static class TestTileEntityRenderer implements BlockEntityRenderer<TestTileEntity> {
+    private static class TestBlockEntityRenderer implements BlockEntityRenderer<TestBlockEntity> {
 
-        public TestTileEntityRenderer(BlockEntityRendererProvider.Context ctx) {
+        public TestBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
         }
 
         @Override
-        public void render(TestTileEntity tileEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
+        public void render(TestBlockEntity blockEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn) {
             matrixStackIn.pushPose();
             matrixStackIn.translate(0.5, 0.5, 0.5);
             Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(Items.DIAMOND), TransformType.GROUND, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn, 0);
@@ -166,9 +166,9 @@ public class TestMod {
         }
     }
     
-    private class TestDummyTileEntity extends BlockEntity {
+    private class TestDummyBlockEntity extends BlockEntity {
 
-        public TestDummyTileEntity(BlockPos pos, BlockState state, BlockEntityType<? extends TestDummyTileEntity> type) {
+        public TestDummyBlockEntity(BlockEntityType<? extends TestDummyBlockEntity> type, BlockPos pos, BlockState state) {
             super(type, pos, state);
         }
     }
@@ -245,8 +245,8 @@ public class TestMod {
                     .color(() -> () -> (stack, index) -> 0xFFFF0000)
                     .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/egg")))
                     .build()
-                .tileEntity(TestTileEntity::new)
-                    .renderer(() -> TestTileEntityRenderer::new)
+                .blockEntity(TestBlockEntity::new)
+                    .renderer(() -> TestBlockEntityRenderer::new)
                     .build()
                 .register();
     
@@ -258,7 +258,7 @@ public class TestMod {
             .register();
     
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Item.class);
-    private final TileEntityEntry<ChestBlockEntity> testblockte = TileEntityEntry.cast(testblock.getSibling(ForgeRegistries.BLOCK_ENTITIES));
+    private final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(ForgeRegistries.BLOCK_ENTITIES));
     
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
@@ -276,8 +276,8 @@ public class TestMod {
             .tag(EntityTypeTags.RAIDERS)
             .register();
     
-    private final TileEntityEntry<TestDummyTileEntity> testtile = registrate.object("testtile")
-            .tileEntity(TestDummyTileEntity::new)
+    private final BlockEntityEntry<TestDummyBlockEntity> testblockentity = registrate.object("testblockentity")
+            .blockEntity(TestDummyBlockEntity::new)
             .register();
     
     private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
@@ -291,8 +291,8 @@ public class TestMod {
 //            .removeTag(FluidTags.WATER)
             .register();
     
-    private final RegistryEntry<MenuType<ChestMenu>> testcontainer = registrate.object("testcontainer")
-            .container((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
+    private final RegistryEntry<MenuType<ChestMenu>> testmenu = registrate.object("testmenu")
+            .menu((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
     
     private final RegistryEntry<TestEnchantment> testenchantment = registrate.object("testenchantment")
@@ -388,7 +388,7 @@ public class TestMod {
         testblock.asStack();
         testitem.is(Items.SNOWBALL);
         testblockitem.is(Items.STONE);
-        testblockte.is(BlockEntityType.CHEST);
+        testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
     }
     

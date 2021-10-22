@@ -3,7 +3,7 @@ package com.tterrag.registrate.builders;
 import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.util.entry.ContainerEntry;
+import com.tterrag.registrate.util.entry.MenuEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -21,31 +21,31 @@ import net.minecraftforge.common.extensions.IForgeContainerType;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fmllegacy.RegistryObject;
 
-public class ContainerBuilder<T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<MenuType<?>, MenuType<T>, P, ContainerBuilder<T, S, P>> {
+public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<MenuType<?>, MenuType<T>, P, MenuBuilder<T, S, P>> {
     
-    public interface ContainerFactory<T extends AbstractContainerMenu> {
+    public interface MenuFactory<T extends AbstractContainerMenu> {
         
         T create(MenuType<T> type, int windowId, Inventory inv);
     }
 
-    public interface ForgeContainerFactory<T extends AbstractContainerMenu> {
+    public interface ForgeMenuFactory<T extends AbstractContainerMenu> {
 
         T create(MenuType<T> type, int windowId, Inventory inv, @Nullable FriendlyByteBuf buffer);
     }
     
-    public interface ScreenFactory<C extends AbstractContainerMenu, T extends Screen & MenuAccess<C>> {
+    public interface ScreenFactory<M extends AbstractContainerMenu, T extends Screen & MenuAccess<M>> {
         
-        T create(C container, Inventory inv, Component displayName);
+        T create(M menu, Inventory inv, Component displayName);
     }
     
-    private final ForgeContainerFactory<T> factory;
+    private final ForgeMenuFactory<T> factory;
     private final NonNullSupplier<ScreenFactory<T, S>> screenFactory;
 
-    public ContainerBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
+    public MenuBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
         this(owner, parent, name, callback, (type, windowId, inv, $) -> factory.create(type, windowId, inv), screenFactory);
     }
 
-    public ContainerBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
+    public MenuBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
         super(owner, parent, name, callback, MenuType.class);
         this.factory = factory;
         this.screenFactory = screenFactory;
@@ -53,7 +53,7 @@ public class ContainerBuilder<T extends AbstractContainerMenu, S extends Screen 
 
     @Override
     protected @NonnullType MenuType<T> createEntry() {
-        ForgeContainerFactory<T> factory = this.factory;
+        ForgeMenuFactory<T> factory = this.factory;
         NonNullSupplier<MenuType<T>> supplier = this.asSupplier();
         MenuType<T> ret = IForgeContainerType.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
@@ -65,11 +65,11 @@ public class ContainerBuilder<T extends AbstractContainerMenu, S extends Screen 
 
     @Override
     protected RegistryEntry<MenuType<T>> createEntryWrapper(RegistryObject<MenuType<T>> delegate) {
-        return new ContainerEntry<>(getOwner(), delegate);
+        return new MenuEntry<>(getOwner(), delegate);
     }
 
     @Override
-    public ContainerEntry<T> register() {
-        return (ContainerEntry<T>) super.register();
+    public MenuEntry<T> register() {
+        return (MenuEntry<T>) super.register();
     }
 }

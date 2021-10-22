@@ -19,6 +19,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.tags.Tag;
 import net.minecraft.tags.Tag.Named;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -73,7 +74,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * <ul>
      * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
      * <li>The default translation (via {@link #defaultLang()})</li>
-     * <li>An {@link ItemGroup} set in the properties from the group supplier parameter, if non-null</li>
+     * <li>An {@link CreativeModeTab} set in the properties from the group supplier parameter, if non-null</li>
      * </ul>
      * 
      * @param <T>
@@ -91,7 +92,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param factory
      *            Factory to create the item
      * @param group
-     *            The {@link ItemGroup} for the object, can be null for none
+     *            The {@link CreativeModeTab} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
     public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> group) {
@@ -145,7 +146,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     /**
-     * Register a block color handler for this item. The {@link IItemColor} instance can be shared across many items.
+     * Register a block color handler for this item. The {@link ItemColor} instance can be shared across many items.
      * 
      * @param colorHandler
      *            The color handler to register for this item

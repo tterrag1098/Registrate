@@ -13,9 +13,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fmllegacy.RegistryObject;
 
-public class TileEntityEntry<T extends BlockEntity> extends RegistryEntry<BlockEntityType<T>> {
+public class BlockEntityEntry<T extends BlockEntity> extends RegistryEntry<BlockEntityType<T>> {
 
-    public TileEntityEntry(AbstractRegistrate<?> owner, RegistryObject<BlockEntityType<T>> delegate) {
+    public BlockEntityEntry(AbstractRegistrate<?> owner, RegistryObject<BlockEntityType<T>> delegate) {
         super(owner, delegate);
     }
 
@@ -63,11 +63,11 @@ public class TileEntityEntry<T extends BlockEntity> extends RegistryEntry<BlockE
      */
     @SuppressWarnings("unchecked")
     public @Nullable T getNullable(BlockGetter world, BlockPos pos) {
-        BlockEntity te = world.getBlockEntity(pos);
-        return is(te) ? (T) te : null;
+        BlockEntity be = world.getBlockEntity(pos);
+        return is(be) ? (T) be : null;
     }
 
-    public static <T extends BlockEntity> TileEntityEntry<T> cast(RegistryEntry<BlockEntityType<T>> entry) {
-        return RegistryEntry.cast(TileEntityEntry.class, entry);
+    public static <T extends BlockEntity> BlockEntityEntry<T> cast(RegistryEntry<BlockEntityType<T>> entry) {
+        return RegistryEntry.cast(BlockEntityEntry.class, entry);
     }
 }

@@ -288,7 +288,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Create a standard {@link FlowingFluidBlock} for this fluid, building it immediately, and not allowing for further configuration.
+     * Create a standard {@link LiquidBlock} for this fluid, building it immediately, and not allowing for further configuration.
      * 
      * @return this {@link FluidBuilder}
      * @see #block()
@@ -304,22 +304,22 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Create a standard {@link FlowingFluidBlock} for this fluid, and return the builder for it so that further customization can be done.
+     * Create a standard {@link LiquidBlock} for this fluid, and return the builder for it so that further customization can be done.
      * 
-     * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
+     * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
     public BlockBuilder<LiquidBlock, FluidBuilder<T, P>> block() {
         return block(LiquidBlock::new);
     }
 
     /**
-     * Create a {@link FlowingFluidBlock} for this fluid, which is created by the given factory, and return the builder for it so that further customization can be done.
+     * Create a {@link LiquidBlock} for this fluid, which is created by the given factory, and return the builder for it so that further customization can be done.
      * 
      * @param <B>
      *            The type of the block
      * @param factory
      *            A factory for the block, which accepts the block object and properties and returns a new block
-     * @return the {@link BlockBuilder} for the {@link FlowingFluidBlock}
+     * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
     public <B extends LiquidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<NonNullSupplier<? extends T>, BlockBehaviour.Properties, ? extends B> factory) {
         if (this.defaultBlock == Boolean.FALSE) {
