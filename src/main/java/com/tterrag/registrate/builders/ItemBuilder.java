@@ -74,7 +74,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * <ul>
      * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
      * <li>The default translation (via {@link #defaultLang()})</li>
-     * <li>An {@link CreativeModeTab} set in the properties from the group supplier parameter, if non-null</li>
+     * <li>An {@link CreativeModeTab} set in the properties from the tab supplier parameter, if non-null</li>
      * </ul>
      * 
      * @param <T>
@@ -91,14 +91,14 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            A callback used to actually register the built entry
      * @param factory
      *            Factory to create the item
-     * @param group
+     * @param tab
      *            The {@link CreativeModeTab} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> group) {
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
                 .defaultModel().defaultLang()
-                .transform(ib -> group == null ? ib : ib.group(group));
+                .transform(ib -> tab == null ? ib : ib.tab(tab));
     }
 
     private final NonNullFunction<Item.Properties, T> factory;
@@ -141,8 +141,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
-    public ItemBuilder<T, P> group(NonNullSupplier<? extends CreativeModeTab> group) {
-        return properties(p -> p.tab(group.get()));
+    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        return properties(p -> p.tab(tab.get()));
     }
     
     /**

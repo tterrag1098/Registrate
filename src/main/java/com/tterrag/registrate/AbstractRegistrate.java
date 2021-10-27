@@ -181,7 +181,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @Nullable
     private String currentName;
     @Nullable
-    private NonNullLazyValue<? extends CreativeModeTab> currentGroup;
+    private NonNullLazyValue<? extends CreativeModeTab> currentTab;
     private boolean skipErrors;
     
     /**
@@ -659,33 +659,33 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Set the default item group for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
      * entry.
      * 
-     * @param group
-     *            The group to use for future items
+     * @param tab
+     *            The tab to use for future items
      * @return this {@link AbstractRegistrate}
      */
-    public S itemGroup(NonNullSupplier<? extends CreativeModeTab> group) {
-        this.currentGroup = new NonNullLazyValue<>(group);
+    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        this.currentTab = new NonNullLazyValue<>(tab);
         return self();
     }
 
     /**
-     * Set the default item group for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
      * entry.
      * <p>
-     * Additionally, add a translation for the item group.
+     * Additionally, add a translation for the creative mode tab.
      * 
-     * @param group
-     *            The group to use for future items
+     * @param tab
+     *            The tab to use for future items
      * @param localizedName
-     *            The english name to use for the item group title
+     *            The english name to use for the creative mode tab title
      * @return this {@link AbstractRegistrate}
      */
-    public S itemGroup(NonNullSupplier<? extends CreativeModeTab> group, String localizedName) {
-        this.addDataGenerator(ProviderType.LANG, prov -> prov.add(group.get(), localizedName));
-        return itemGroup(group);
+    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab, String localizedName) {
+        this.addDataGenerator(ProviderType.LANG, prov -> prov.add(tab.get(), localizedName));
+        return creativeModeTab(tab);
     }
     
     /**
@@ -836,8 +836,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         // TODO clean this up when NonNullLazyValue is fixed better
-        NonNullLazyValue<? extends CreativeModeTab> currentGroup = this.currentGroup;
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentGroup == null ? null : currentGroup::get));
+        NonNullLazyValue<? extends CreativeModeTab> currentTab = this.currentTab;
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentTab == null ? null : currentTab::get));
     }
     
     // Blocks

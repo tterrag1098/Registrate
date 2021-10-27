@@ -94,9 +94,9 @@ import net.minecraftforge.registries.RegistryBuilder;
 @Mod("testmod")
 public class TestMod {
     
-    private static class TestItemGroup extends CreativeModeTab {
+    private static class TestCreativeModeTab extends CreativeModeTab {
 
-        public TestItemGroup() {
+        public TestCreativeModeTab() {
             super("testmod");
         }
 
@@ -201,7 +201,7 @@ public class TestMod {
 
     private static class TestCustomRegistryEntry extends ForgeRegistryEntry<TestCustomRegistryEntry> {}
     
-    private final Registrate registrate = Registrate.create("testmod").itemGroup(TestItemGroup::new, "Test Mod");
+    private final Registrate registrate = Registrate.create("testmod").creativeModeTab(TestCreativeModeTab::new, "Test Mod");
     
     private final AtomicBoolean sawCallback = new AtomicBoolean();
     
