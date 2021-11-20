@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.entry.TileEntityEntry;
+import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
@@ -29,25 +29,25 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fmllegacy.RegistryObject;
 
 /**
- * A builder for tile entities, allows for customization of the valid blocks.
+ * A builder for block entities, allows for customization of the valid blocks.
  * 
  * @param <T>
- *            The type of tile entity being built
+ *            The type of block entity being built
  * @param <P>
  *            Parent object type
  */
-public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder<BlockEntityType<?>, BlockEntityType<T>, P, TileEntityBuilder<T, P>> {
+public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder<BlockEntityType<?>, BlockEntityType<T>, P, BlockEntityBuilder<T, P>> {
 
     public interface BlockEntityFactory<T extends BlockEntity> {
 
-        public T create(BlockPos pos, BlockState state, BlockEntityType<T> type);
+        public T create(BlockEntityType<T> type, BlockPos pos, BlockState state);
 
     }
 
     /**
-     * Create a new {@link TileEntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * Create a new {@link BlockEntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
      * <p>
-     * The tile entity will be assigned the following data:
+     * The block entity will be assigned the following data:
      * 
      * @param <T>
      *            The type of the builder
@@ -62,11 +62,11 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
      * @param callback
      *            A callback used to actually register the built entry
      * @param factory
-     *            Factory to create the tile entity
-     * @return A new {@link TileEntityBuilder} with reasonable default data generators.
+     *            Factory to create the block entity
+     * @return A new {@link BlockEntityBuilder} with reasonable default data generators.
      */
-    public static <T extends BlockEntity, P> TileEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
-        return new TileEntityBuilder<>(owner, parent, name, callback, factory);
+    public static <T extends BlockEntity, P> BlockEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
+        return new BlockEntityBuilder<>(owner, parent, name, callback, factory);
     }
 
     private final BlockEntityFactory<T> factory;
@@ -74,47 +74,47 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
     @Nullable
     private NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer;
 
-    protected TileEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
+    protected BlockEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
         super(owner, parent, name, callback, BlockEntityType.class);
         this.factory = factory;
     }
     
     /**
-     * Add a valid block for this tile entity.
+     * Add a valid block for this block entity.
      * 
      * @param block
      *            A supplier for the block to add at registration time
-     * @return this {@link TileEntityBuilder}
+     * @return this {@link BlockEntityBuilder}
      */
-    public TileEntityBuilder<T, P> validBlock(NonNullSupplier<? extends Block> block) {
+    public BlockEntityBuilder<T, P> validBlock(NonNullSupplier<? extends Block> block) {
         validBlocks.add(block);
         return this;
     }
     
     /**
-     * Add valid blocks for this tile entity.
+     * Add valid blocks for this block entity.
      * 
      * @param blocks
      *            An array of suppliers for the block to add at registration time
-     * @return this {@link TileEntityBuilder}
+     * @return this {@link BlockEntityBuilder}
      */
     @SafeVarargs
-    public final TileEntityBuilder<T, P> validBlocks(NonNullSupplier<? extends Block>... blocks) {
+    public final BlockEntityBuilder<T, P> validBlocks(NonNullSupplier<? extends Block>... blocks) {
         Arrays.stream(blocks).forEach(this::validBlock);
         return this;
     }
     
     /**
-     * Register an {@link TileEntityRenderer} for this tile entity.
+     * Register an {@link BlockEntityRenderer} for this block entity.
      * <p>
      * 
-     * @apiNote This requires the {@link Class} of the tile entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed to register the renderer.
+     * @apiNote This requires the {@link Class} of the block entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed to register the renderer.
      * 
      * @param renderer
-     *            A (server safe) supplier to an {@link Function} that will provide this tile entity's renderer given the renderer dispatcher
-     * @return this {@link TileEntityBuilder}
+     *            A (server safe) supplier to an {@link Function} that will provide this block entity's renderer given the renderer dispatcher
+     * @return this {@link BlockEntityBuilder}
      */
-    public TileEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
+    public BlockEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
@@ -135,17 +135,17 @@ public class TileEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder
     protected BlockEntityType<T> createEntry() {
         BlockEntityFactory<T> factory = this.factory;
         Supplier<BlockEntityType<T>> supplier = asSupplier();
-        return BlockEntityType.Builder.<T>of((pos, state) -> factory.create(pos, state, (BlockEntityType<T>) supplier.get()), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
+        return BlockEntityType.Builder.<T>of((pos, state) -> factory.create((BlockEntityType<T>) supplier.get(), pos, state), validBlocks.stream().map(NonNullSupplier::get).toArray(Block[]::new))
                 .build(null);
     }
     
     @Override
     protected RegistryEntry<BlockEntityType<T>> createEntryWrapper(RegistryObject<BlockEntityType<T>> delegate) {
-        return new TileEntityEntry<>(getOwner(), delegate);
+        return new BlockEntityEntry<>(getOwner(), delegate);
     }
     
     @Override
-    public TileEntityEntry<T> register() {
-        return (TileEntityEntry<T>) super.register();
+    public BlockEntityEntry<T> register() {
+        return (BlockEntityEntry<T>) super.register();
     }
 }

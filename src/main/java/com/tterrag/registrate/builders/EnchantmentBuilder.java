@@ -13,7 +13,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
 /**
- * A builder for enchantments, allows for customization of the {@link Enchantment.Rarity enchantment rarity} and {@link EquipmentSlotType equipment slots}, and configuration of data associated with
+ * A builder for enchantments, allows for customization of the {@link Enchantment.Rarity enchantment rarity} and {@link EquipmentSlot equipment slots}, and configuration of data associated with
  * enchantments (lang).
  * 
  * @param <T>
@@ -50,7 +50,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      * @param callback
      *            A callback used to actually register the built entry
      * @param type
-     *            The {@link EnchantmentType type} of the enchantment
+     *            The {@link EnchantmentCategory type} of the enchantment
      * @param factory
      *            Factory to create the enchantment
      * @return A new {@link EnchantmentBuilder} with reasonable default data generators.
@@ -86,7 +86,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
     }
 
     /**
-     * Add the armor {@link EquipmentSlotType slots} as valid slots for this enchantment, i.e. {@code HEAD}, {@code CHEST}, {@code LEGS}, and {@code FEET}.
+     * Add the armor {@link EquipmentSlot slots} as valid slots for this enchantment, i.e. {@code HEAD}, {@code CHEST}, {@code LEGS}, and {@code FEET}.
      * 
      * @return this {@link EnchantmentBuilder}
      */

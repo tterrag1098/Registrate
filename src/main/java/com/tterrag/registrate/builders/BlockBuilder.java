@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.builders.TileEntityBuilder.BlockEntityFactory;
+import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
@@ -168,7 +168,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
      * 
      * @param block
-     *            The block to create the initial properties from (via {@link Block.Properties#from(BlockBehaviour)})
+     *            The block to create the initial properties from (via {@link Block.Properties#copy(BlockBehaviour)})
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
@@ -258,28 +258,28 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
      * 
      * @param <BE>
-     *            The type of the tile entity
+     *            The type of the block entity
      * @param factory
-     *            A factory for the tile entity
+     *            A factory for the block entity
      * @return this {@link BlockBuilder}
      */
-    public <BE extends BlockEntity> BlockBuilder<T, P> simpleTileEntity(BlockEntityFactory<BE> factory) {
-        return tileEntity(factory).build();
+    public <BE extends BlockEntity> BlockBuilder<T, P> simpleBlockEntity(BlockEntityFactory<BE> factory) {
+        return blockEntity(factory).build();
     }
 
     /**
      * Create a {@link BlockEntity} for this block, which is created by the given factory, and assigned this block as its one and only valid block.
      * <p>
-     * The created {@link TileEntityBuilder} is returned for further configuration.
+     * The created {@link BlockEntityBuilder} is returned for further configuration.
      * 
      * @param <BE>
-     *            The type of the tile entity
+     *            The type of the block entity
      * @param factory
-     *            A factory for the tile entity
-     * @return the {@link TileEntityBuilder}
+     *            A factory for the block entity
+     * @return the {@link BlockEntityBuilder}
      */
-    public <BE extends BlockEntity> TileEntityBuilder<BE, BlockBuilder<T, P>> tileEntity(BlockEntityFactory<BE> factory) {
-        return getOwner().<BE, BlockBuilder<T, P>> tileEntity(this, getName(), factory).validBlock(asSupplier());
+    public <BE extends BlockEntity> BlockEntityBuilder<BE, BlockBuilder<T, P>> blockEntity(BlockEntityFactory<BE> factory) {
+        return getOwner().<BE, BlockBuilder<T, P>>blockEntity(this, getName(), factory).validBlock(asSupplier());
     }
     
     /**
@@ -351,7 +351,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign the default loot table, as specified by {@link RegistrateBlockLootTables#registerDropSelfLootTable(Block)}. This is the default, so it is generally not necessary to call, unless for
+     * Assign the default loot table, as specified by {@link RegistrateBlockLootTables#dropSelf(Block)}. This is the default, so it is generally not necessary to call, unless for
      * undoing previous changes.
      * 
      * @return this {@link BlockBuilder}

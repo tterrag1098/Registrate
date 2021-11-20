@@ -15,9 +15,9 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.fmllegacy.network.NetworkHooks;
 
-public class ContainerEntry<T extends AbstractContainerMenu> extends RegistryEntry<MenuType<T>> {
+public class MenuEntry<T extends AbstractContainerMenu> extends RegistryEntry<MenuType<T>> {
 
-    public ContainerEntry(AbstractRegistrate<?> owner, RegistryObject<MenuType<T>> delegate) {
+    public MenuEntry(AbstractRegistrate<?> owner, RegistryObject<MenuType<T>> delegate) {
         super(owner, delegate);
     }
 

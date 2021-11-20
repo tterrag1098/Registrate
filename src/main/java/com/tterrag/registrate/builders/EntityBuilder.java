@@ -33,6 +33,7 @@ import net.minecraft.world.entity.SpawnPlacements.SpawnPredicate;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -73,7 +74,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @param factory
      *            Factory to create the entity
      * @param classification
-     *            The {@link EntityClassification} of the entity
+     *            The {@link MobCategory} of the entity
      * @return A new {@link EntityBuilder} with reasonable default data generators.
      */
     public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory,
@@ -163,7 +164,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
-     * Register a spawn placement for this entity. The entity must extend {@link MobEntity} and allow construction with a {@code null} {@link World}.
+     * Register a spawn placement for this entity. The entity must extend {@link Mob} and allow construction with a {@code null} {@link Level}.
      * <p>
      * Cannot be called more than once per builder.
      * 

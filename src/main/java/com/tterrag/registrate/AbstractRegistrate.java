@@ -34,18 +34,18 @@ import com.google.common.collect.Table;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.builders.BuilderCallback;
-import com.tterrag.registrate.builders.ContainerBuilder;
-import com.tterrag.registrate.builders.ContainerBuilder.ContainerFactory;
-import com.tterrag.registrate.builders.ContainerBuilder.ForgeContainerFactory;
-import com.tterrag.registrate.builders.ContainerBuilder.ScreenFactory;
+import com.tterrag.registrate.builders.MenuBuilder;
+import com.tterrag.registrate.builders.MenuBuilder.MenuFactory;
+import com.tterrag.registrate.builders.MenuBuilder.ForgeMenuFactory;
+import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
 import com.tterrag.registrate.builders.EnchantmentBuilder;
 import com.tterrag.registrate.builders.EnchantmentBuilder.EnchantmentFactory;
 import com.tterrag.registrate.builders.EntityBuilder;
 import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.builders.NoConfigBuilder;
-import com.tterrag.registrate.builders.TileEntityBuilder;
-import com.tterrag.registrate.builders.TileEntityBuilder.BlockEntityFactory;
+import com.tterrag.registrate.builders.BlockEntityBuilder;
+import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
@@ -181,7 +181,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @Nullable
     private String currentName;
     @Nullable
-    private NonNullLazyValue<? extends CreativeModeTab> currentGroup;
+    private NonNullLazyValue<? extends CreativeModeTab> currentTab;
     private boolean skipErrors;
     
     /**
@@ -531,7 +531,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param type
      *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
      * @param id
-     *            ID of the object, which will be converted to a lang key via {@link Util#makeTranslationKey(String, ResourceLocation)}
+     *            ID of the object, which will be converted to a lang key via {@link Util#makeDescriptionId(String, ResourceLocation)}
      * @param localizedName
      *            (English) translation value
      * @return A {@link TranslatableComponent} representing the translated text
@@ -546,7 +546,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param type
      *            Type of the object, this is used as a prefix (e.g. {@code ["block", "mymod:myblock"] -> "block.mymod.myblock"})
      * @param id
-     *            ID of the object, which will be converted to a lang key via {@link Util#makeTranslationKey(String, ResourceLocation)}
+     *            ID of the object, which will be converted to a lang key via {@link Util#makeDescriptionId(String, ResourceLocation)}
      * @param suffix
      *            A suffix which will be appended to the generated key (separated by a dot)
      * @param localizedName
@@ -659,33 +659,33 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Set the default item group for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
      * entry.
      * 
-     * @param group
-     *            The group to use for future items
+     * @param tab
+     *            The tab to use for future items
      * @return this {@link AbstractRegistrate}
      */
-    public S itemGroup(NonNullSupplier<? extends CreativeModeTab> group) {
-        this.currentGroup = new NonNullLazyValue<>(group);
+    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        this.currentTab = new NonNullLazyValue<>(tab);
         return self();
     }
 
     /**
-     * Set the default item group for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
      * entry.
      * <p>
-     * Additionally, add a translation for the item group.
+     * Additionally, add a translation for the creative mode tab.
      * 
-     * @param group
-     *            The group to use for future items
+     * @param tab
+     *            The tab to use for future items
      * @param localizedName
-     *            The english name to use for the item group title
+     *            The english name to use for the creative mode tab title
      * @return this {@link AbstractRegistrate}
      */
-    public S itemGroup(NonNullSupplier<? extends CreativeModeTab> group, String localizedName) {
-        this.addDataGenerator(ProviderType.LANG, prov -> prov.add(group.get(), localizedName));
-        return itemGroup(group);
+    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab, String localizedName) {
+        this.addDataGenerator(ProviderType.LANG, prov -> prov.add(tab.get(), localizedName));
+        return creativeModeTab(tab);
     }
     
     /**
@@ -836,8 +836,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         // TODO clean this up when NonNullLazyValue is fixed better
-        NonNullLazyValue<? extends CreativeModeTab> currentGroup = this.currentGroup;
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentGroup == null ? null : currentGroup::get));
+        NonNullLazyValue<? extends CreativeModeTab> currentTab = this.currentTab;
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentTab == null ? null : currentTab::get));
     }
     
     // Blocks
@@ -892,22 +892,22 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return entry(name, callback -> EntityBuilder.create(this, parent, name, callback, factory, classification));
     }
     
-    // Tile Entities
+    // Block Entities
     
-    public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(BlockEntityFactory<T> factory) {
-        return tileEntity(self(), factory);
+    public <T extends BlockEntity> BlockEntityBuilder<T, S> blockEntity(BlockEntityFactory<T> factory) {
+        return blockEntity(self(), factory);
     }
     
-    public <T extends BlockEntity> TileEntityBuilder<T, S> tileEntity(String name, BlockEntityFactory<T> factory) {
-        return tileEntity(self(), name, factory);
+    public <T extends BlockEntity> BlockEntityBuilder<T, S> blockEntity(String name, BlockEntityFactory<T> factory) {
+        return blockEntity(self(), name, factory);
     }
     
-    public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, BlockEntityFactory<T> factory) {
-        return tileEntity(parent, currentName(), factory);
+    public <T extends BlockEntity, P> BlockEntityBuilder<T, P> blockEntity(P parent, BlockEntityFactory<T> factory) {
+        return blockEntity(parent, currentName(), factory);
     }
     
-    public <T extends BlockEntity, P> TileEntityBuilder<T, P> tileEntity(P parent, String name, BlockEntityFactory<T> factory) {
-        return entry(name, callback -> TileEntityBuilder.create(this, parent, name, callback, factory));
+    public <T extends BlockEntity, P> BlockEntityBuilder<T, P> blockEntity(P parent, String name, BlockEntityFactory<T> factory) {
+        return entry(name, callback -> BlockEntityBuilder.create(this, parent, name, callback, factory));
     }
     
     // Fluids
@@ -1004,38 +1004,38 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory));
     }
     
-    // Container
+    // Menu
     
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> ContainerBuilder<T, SC, S> container(ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return container(currentName(), factory, screenFactory);
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return menu(currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> ContainerBuilder<T, SC, S> container(String name, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return container(self(), name, factory, screenFactory);
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(String name, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return menu(self(), name, factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> ContainerBuilder<T, SC, P> container(P parent, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return container(parent, currentName(), factory, screenFactory);
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return menu(parent, currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> ContainerBuilder<T, SC, P> container(P parent, String name, ContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return entry(name, callback -> new ContainerBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, String name, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return entry(name, callback -> new MenuBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> ContainerBuilder<T, SC, S> container(ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return container(currentName(), factory, screenFactory);
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return menu(currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> ContainerBuilder<T, SC, S> container(String name, ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return container(self(), name, factory, screenFactory);
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(String name, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return menu(self(), name, factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> ContainerBuilder<T, SC, P> container(P parent, ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return container(parent, currentName(), factory, screenFactory);
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return menu(parent, currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> ContainerBuilder<T, SC, P> container(P parent, String name, ForgeContainerFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return entry(name, callback -> new ContainerBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, String name, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return entry(name, callback -> new MenuBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
     }
     
     // Enchantment
