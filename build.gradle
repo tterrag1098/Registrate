@@ -38,7 +38,7 @@ version = "MC${minecraft_version}-${getVersion()}"
 group = "com.tterrag.registrate"
 archivesBaseName = "Registrate"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(16)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
     mappings channel: 'official', version: minecraft_version

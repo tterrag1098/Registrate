@@ -19,8 +19,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.tags.Tag;
 import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.fmllegacy.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.RegistryObject;
 
 /**
  * Base class which most builders should extend, instead of implementing [@link {@link Builder} directly.

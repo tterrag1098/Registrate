@@ -7,7 +7,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.fmllegacy.RegistryObject;
+import net.minecraftforge.registries.RegistryObject;
 
 public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<T>> {
 

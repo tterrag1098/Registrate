@@ -17,9 +17,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.extensions.IForgeContainerType;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fmllegacy.RegistryObject;
+import net.minecraftforge.registries.RegistryObject;
 
 public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<MenuType<?>, MenuType<T>, P, MenuBuilder<T, S, P>> {
     
@@ -55,7 +55,7 @@ public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & Men
     protected @NonnullType MenuType<T> createEntry() {
         ForgeMenuFactory<T> factory = this.factory;
         NonNullSupplier<MenuType<T>> supplier = this.asSupplier();
-        MenuType<T> ret = IForgeContainerType.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
+        MenuType<T> ret = IForgeMenuType.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             ScreenFactory<T, S> screenFactory = this.screenFactory.get();
             MenuScreens.<T, S>register(ret, (type, inv, displayName) -> screenFactory.create(type, inv, displayName));
