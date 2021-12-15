@@ -50,7 +50,6 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.DebugMarkers;
-import com.tterrag.registrate.util.NonNullLazyValue;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
@@ -129,7 +128,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private class Registration<R extends IForgeRegistryEntry<R>, T extends R> {
         ResourceLocation name;
         Class<? super R> type;
-        NonNullLazyValue<? extends T> creator;        
+        NonNullSupplier<? extends T> creator;        
         RegistryEntry<T> delegate;
         
         @Getter(value = AccessLevel.NONE)
@@ -138,7 +137,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         Registration(ResourceLocation name, Class<? super R> type, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
             this.name = name;
             this.type = type;
-            this.creator =  new NonNullLazyValue<>(creator);
+            this.creator =  creator.lazy();
             this.delegate = entryFactory.apply(RegistryObject.of(name, (Class<R>) type, AbstractRegistrate.this.getModid()));
         }
         
@@ -170,7 +169,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final Table<Pair<String, Class<?>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
     
-    private final NonNullLazyValue<Boolean> doDatagen = new NonNullLazyValue<>(DatagenModLoader::isRunningDataGen);
+    private final NonNullSupplier<Boolean> doDatagen = NonNullSupplier.lazy(DatagenModLoader::isRunningDataGen);
 
     /**
      * @return The mod ID that this {@link AbstractRegistrate} is creating objects for
@@ -181,7 +180,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @Nullable
     private String currentName;
     @Nullable
-    private NonNullLazyValue<? extends CreativeModeTab> currentTab;
+    private Supplier<? extends @NonnullType CreativeModeTab> currentTab;
     private boolean skipErrors;
     
     /**
@@ -503,7 +502,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
     
-    private final NonNullLazyValue<List<Pair<String, String>>> extraLang = new NonNullLazyValue<>(() -> {
+    private final NonNullSupplier<List<Pair<String, String>>> extraLang = NonNullSupplier.lazy(() -> {
         final List<Pair<String, String>> ret = new ArrayList<>();
         addDataGenerator(ProviderType.LANG, prov -> ret.forEach(p -> prov.add(p.getKey(), p.getValue())));
         return ret;
@@ -667,7 +666,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @return this {@link AbstractRegistrate}
      */
     public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
-        this.currentTab = new NonNullLazyValue<>(tab);
+        this.currentTab = Suppliers.memoize(tab::get);
         return self();
     }
 
@@ -836,7 +835,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         // TODO clean this up when NonNullLazyValue is fixed better
-        NonNullLazyValue<? extends CreativeModeTab> currentTab = this.currentTab;
+        Supplier<? extends @NonnullType CreativeModeTab> currentTab = this.currentTab;
         return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentTab == null ? null : currentTab::get));
     }
     

@@ -14,7 +14,6 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
-import com.tterrag.registrate.util.NonNullLazyValue;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
@@ -194,7 +193,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<FluidAttributes.Builder> attributesCallback = $ -> {};
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
-    private NonNullLazyValue<? extends ForgeFlowingFluid> source;
+    private NonNullSupplier<? extends ForgeFlowingFluid> source;
     private List<Named<Fluid>> tags = new ArrayList<>();
 
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
@@ -283,7 +282,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      */
     public FluidBuilder<T, P> source(NonNullFunction<ForgeFlowingFluid.Properties, ? extends ForgeFlowingFluid> factory) {
         this.defaultSource = false;
-        this.source = new NonNullLazyValue<>(() -> factory.apply(makeProperties()));
+        this.source = NonNullSupplier.lazy(() -> factory.apply(makeProperties()));
         return this;
     }
 
@@ -386,7 +385,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
         this.defaultBucket = false;
-        NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
+        NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source == null) {
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }
@@ -436,7 +435,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     private ForgeFlowingFluid getSource() {
-        NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
+        NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
         return source.get();
     }
@@ -456,7 +455,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         } else {
             attributes.translationKey(Util.makeDescriptionId("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
         }
-        NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
+        NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         ForgeFlowingFluid.Properties ret = new ForgeFlowingFluid.Properties(source == null ? null : source::get, asSupplier(), attributes);
         properties.accept(ret);
         return ret;
@@ -484,7 +483,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         if (defaultBucket == Boolean.TRUE) {
             bucket().register();
         }
-        NonNullLazyValue<? extends ForgeFlowingFluid> source = this.source;
+        NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
             getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source::get);
         } else {
