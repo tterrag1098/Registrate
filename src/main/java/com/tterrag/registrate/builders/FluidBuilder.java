@@ -26,7 +26,7 @@ import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.Tag;
-import net.minecraft.tags.Tag.Named;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -194,7 +194,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<ForgeFlowingFluid.Properties> properties;
     @Nullable
     private NonNullSupplier<? extends ForgeFlowingFluid> source;
-    private List<Named<Fluid>> tags = new ArrayList<>();
+    private List<TagKey<Fluid>> tags = new ArrayList<>();
 
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
@@ -404,14 +404,14 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Assign {@link Tag.Named}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
+     * Assign {@link TagKey}{@code s} to this fluid and its source fluid. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    public final FluidBuilder<T, P> tag(Tag.Named<Fluid>... tags) {
+    public final FluidBuilder<T, P> tag(TagKey<Fluid>... tags) {
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid> setDataGenerator(ret.sourceName, getRegistryType(), ProviderType.FLUID_TAGS,
@@ -422,14 +422,14 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Remove {@link Tag.Named}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
+     * Remove {@link TagKey}{@code s} from this fluid and its source fluid. Multiple calls will remove additional tags.
      * 
      * @param tags
      *            The tags to remove
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    public final FluidBuilder<T, P> removeTag(Tag.Named<Fluid>... tags) {
+    public final FluidBuilder<T, P> removeTag(TagKey<Fluid>... tags) {
         this.tags.removeAll(Arrays.asList(tags));
         return this.removeTag(ProviderType.FLUID_TAGS, tags);
     }

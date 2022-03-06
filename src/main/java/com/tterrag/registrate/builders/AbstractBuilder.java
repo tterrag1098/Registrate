@@ -18,6 +18,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.common.util.NonNullFunction;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
@@ -51,7 +53,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     @Getter(onMethod_ = {@Override})
     private final Class<? super R> registryType;
     
-    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, Tag.Named<?>> tagsByType = HashMultimap.create();
+    private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, TagKey<?>> tagsByType = HashMultimap.create();
     
     /** A supplier for the entry that will discard the reference to this builder after it is resolved */
     private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
@@ -89,10 +91,10 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, Tag.Named<R>... tags) {
+    public final S tag(ProviderType<? extends RegistrateTagsProvider<R>> type, TagKey<R>... tags) {
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
-                    .map(t -> (Tag.Named<R>) t)
+                    .map(t -> (TagKey<R>) t)
                     .map(prov::tag)
                     .forEach(b -> b.add(asSupplier().get())));
         }
@@ -111,9 +113,9 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final S removeTag(ProviderType<RegistrateTagsProvider<R>> type, Tag.Named<R>... tags) {
+    public final S removeTag(ProviderType<RegistrateTagsProvider<R>> type, TagKey<R>... tags) {
         if (tagsByType.containsKey(type)) {
-            for (Tag.Named<R> tag : tags) {
+            for (TagKey<R> tag : tags) {
                 tagsByType.remove(type, tag);
             }
         }

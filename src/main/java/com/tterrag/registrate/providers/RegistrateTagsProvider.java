@@ -9,6 +9,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
 
@@ -44,8 +45,8 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     }
 
     @Override
-    public TagAppender<T> tag(Tag.Named<T> tag) { return super.tag(tag); }
+    public TagAppender<T> tag(TagKey<T> tag) { return super.tag(tag); }
 
     @Override
-    public Tag.Builder getOrCreateRawBuilder(Tag.Named<T> tag) { return super.getOrCreateRawBuilder(tag); }
+    public Tag.Builder getOrCreateRawBuilder(TagKey<T> tag) { return super.getOrCreateRawBuilder(tag); }
 }
