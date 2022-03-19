@@ -19,8 +19,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.tags.Tag;
-import net.minecraft.tags.Tag.Named;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
@@ -224,14 +223,14 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     /**
-     * Assign {@link Tag.Named}{@code s} to this item. Multiple calls will add additional tags.
+     * Assign {@link TagKey<Item>}{@code s} to this item. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tag to assign
      * @return this {@link ItemBuilder}
      */
     @SafeVarargs
-    public final ItemBuilder<T, P> tag(Named<Item>... tags) {
+    public final ItemBuilder<T, P> tag(TagKey<Item>... tags) {
         return tag(ProviderType.ITEM_TAGS, tags);
     }
     

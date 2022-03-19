@@ -35,6 +35,7 @@ import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -391,14 +392,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign {@link Tag.Named}{@code s} to this block. Multiple calls will add additional tags.
+     * Assign {@link TagKey}{@code s} to this block. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tags to assign
      * @return this {@link BlockBuilder}
      */
     @SafeVarargs
-    public final BlockBuilder<T, P> tag(Tag.Named<Block>... tags) {
+    public final BlockBuilder<T, P> tag(TagKey<Block>... tags) {
         return tag(ProviderType.BLOCK_TAGS, tags);
     }
 
