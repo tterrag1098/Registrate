@@ -1,4 +1,4 @@
-# Registrate [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci.tterrag.com%2Fjob%2FRegistrate%2Fjob%2F1.16%2F)](https://ci.tterrag.com/job/Registrate/job/1.16) [![License](https://img.shields.io/github/license/tterrag1098/Registrate?cacheSeconds=36000)](https://www.tldrlegal.com/l/mpl-2.0) [![Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.tterrag.com%2Fcom%2Ftterrag%2Fregistrate%2FRegistrate%2Fmaven-metadata.xml)](https://maven.tterrag.com/com/tterrag/registrate/Registrate) ![Minecraft Version](https://img.shields.io/badge/minecraft-1.16.5-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
+# Registrate [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci.tterrag.com%2Fjob%2FRegistrate%2Fjob%2F1.18%2F)](https://ci.tterrag.com/job/Registrate/job/1.18) [![License](https://img.shields.io/github/license/tterrag1098/Registrate?cacheSeconds=36000)](https://www.tldrlegal.com/l/mpl-2.0) [![Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.tterrag.com%2Fcom%2Ftterrag%2Fregistrate%2FRegistrate%2Fmaven-metadata.xml)](https://maven.tterrag.com/com/tterrag/registrate/Registrate) ![Minecraft Version](https://img.shields.io/badge/minecraft-1.18.2-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
 
 A powerful wrapper for creating and registering objects in your mod.
 
@@ -20,6 +20,12 @@ public static final Registrate REGISTRATE = Registrate.create(MOD_ID);
 
 Using a constant field is not necessary, it can be passed around and thrown away after registration is setup.
 
+If declared static in your `@Mod` class, you must create the `Registrate` object lazily so it is not created too early during loading. This can be done easily like so:
+
+```java
+public static final NonNullSupplier<Registrate> REGISTRATE = NonNullSupplier.lazy(() -> Registrate.create(MOD_ID));
+```
+
 Next, begin adding objects.
 
 If you have a block class such as
@@ -38,16 +44,13 @@ public class MyBlock extends Block {
 then register it like so,
 
 ```java
-public static final RegistryEntry<MyBlock> MY_BLOCK = REGISTRATE.object("my_block")
-        .block(MyBlock::new)
-        .register();
+public static final RegistryEntry<MyBlock> MY_BLOCK = REGISTRATE.block("my_block", MyBlock::new).register();
 ```
 
 Registrate will create a block, with a default simple blockstate, model, loot table, and lang entry. However, all of these facets can be configured easily to use whatever custom data you may want. Example:
 
 ```java
-public static final RegistryEntry<MyStairsBlock> MY_STAIRS = REGISTRATE.object("my_block")
-        .block(MyStairsBlock::new)
+public static final RegistryEntry<MyStairsBlock> MY_STAIRS = REGISTRATE.block("my_block", MyStairsBlock::new)
             .defaultItem()
             .tag(BlockTags.STAIRS)
             .blockstate(ctx -> ctx.getProvider()
@@ -91,6 +94,14 @@ shadowJar {
 }
 ```
 
+Then, make sure the shadow jar artifact is reobfuscated.
+
+```gradle
+reobf {
+    shadowJar {}
+}
+```
+
 Finally, the dependency itself must be added. First add my maven repository,
 
 ```gradle
@@ -114,6 +125,9 @@ dependencies {
 }
 ```
 
-**Note: Registrate will not function properly on the classpath unless you use Forge 28.1.104+**
-
-To build the jar containing shaded dependencies, use the `shadowJar` task.
+To build the jar containing shaded dependencies, use the `shadowJar` task, or configure the task to run automatically when using `build`.
+ 
+```gradle
+build.dependsOn shadowJar
+build.dependsOn reobfShadowJar
+```
