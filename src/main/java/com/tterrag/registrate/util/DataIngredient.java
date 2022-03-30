@@ -27,7 +27,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * A helper for data generation when using ingredients as input(s) to recipes.<br>
  * It remembers the name of the primary ingredient for use in creating recipe names/criteria.
  * <p>
- * Create an instance of this class with the various factory methods such as {@link #items(ItemLike, ItemLike...)} and {@link #tag(TagKey<Item>)}.
+ * Create an instance of this class with the various factory methods such as {@link #items(ItemLike, ItemLike...)} and {@link #tag(TagKey)}.
  * <p>
  * <strong>This class should not be used for any purpose other than data generation</strong>, it will throw an exception if it is serialized to a packet buffer.
  */
@@ -38,10 +38,12 @@ public final class DataIngredient extends Ingredient {
         IIngredientSerializer<DataIngredient> getSerializer();
 
         void toNetwork(FriendlyByteBuf buffer);
-
+        
+        boolean checkInvalidation();
+        
+        void markValid();
+        
         boolean isVanilla();
-
-        public boolean checkInvalidation();
     }
 
     @Delegate(excludes = Excludes.class)

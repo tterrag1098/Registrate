@@ -284,10 +284,10 @@ public class TestMod {
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .attributes(a -> a.luminosity(15))
             .properties(p -> p.canMultiply())
-//            .noBucket()
-            .bucket()
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
-                .build()
+            .noBucket()
+//            .bucket()
+//                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
+//                .build()
 //            .removeTag(FluidTags.WATER)
             .register();
     

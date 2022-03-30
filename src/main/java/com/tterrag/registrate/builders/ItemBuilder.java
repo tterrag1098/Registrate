@@ -223,7 +223,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     /**
-     * Assign {@link TagKey<Item>}{@code s} to this item. Multiple calls will add additional tags.
+     * Assign {@link TagKey}{@code s} to this item. Multiple calls will add additional tags.
      * 
      * @param tags
      *            The tag to assign

@@ -8,7 +8,6 @@
   "entity.testmod.testentity": "Testentity",
   "entity.testmod.testitem": "Testitem",
   "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",
-  "item.testmod.testfluid_bucket": "Testfluid Bucket",
   "item.testmod.testitem": "Testitem",
   "item.testmod.testitem.testextra": "Magic!",
   "itemGroup.testmod": "Test Mod",

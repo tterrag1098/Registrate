@@ -7,7 +7,7 @@ public class UpdateRecipeProvider {
     
     public static void main(String[] args) throws IOException {
         new MethodGenerator()
-            .exclude("registerRecipes")
+            .exclude("buildCraftingRecipes")
             .generate(Paths.get("src", "main", "java", "com", "tterrag", "registrate", "providers", "RegistrateRecipeProvider.java"));
     }
 }

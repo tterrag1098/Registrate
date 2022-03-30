@@ -94,6 +94,7 @@ import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.NewRegistryEvent;
 import net.minecraftforge.registries.RegistryBuilder;
 import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
@@ -792,11 +793,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @Beta
     @SuppressWarnings("unchecked")
     public <R extends IForgeRegistryEntry<R>> Supplier<IForgeRegistry<R>> makeRegistry(String name, Class<? super R> superType, Supplier<RegistryBuilder<R>> builder) {
-        OneTimeEventReceiver.addModListener(RegistryEvent.NewRegistry.class, $ -> builder.get()
-                .setName(new ResourceLocation(getModid(), name))
-                .setType((Class<R>) superType)
-                .create());
-        return Suppliers.memoize(() -> RegistryManager.ACTIVE.<R>getRegistry(superType));
+        final ResourceLocation registryId = new ResourceLocation(getModid(), name);
+        OneTimeEventReceiver.addModListener(NewRegistryEvent.class, e -> e.create(builder.get()
+                .setName(registryId)
+                .setType((Class<R>) superType)));
+        return Suppliers.memoize(() -> RegistryManager.ACTIVE.<R>getRegistry(registryId));
     }
     
     /* === Builder helpers === */

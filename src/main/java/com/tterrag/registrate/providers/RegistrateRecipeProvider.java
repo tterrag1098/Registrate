@@ -1,6 +1,7 @@
 package com.tterrag.registrate.providers;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -16,18 +17,21 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.advancements.critereon.EnterBlockTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.data.BlockFamily;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.HashCache;
 import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.data.recipes.SingleItemRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.Tag;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCookingSerializer;
 import net.minecraft.world.level.ItemLike;
@@ -299,13 +303,109 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     @Override
     public void saveAdvancement(HashCache p_126014_, JsonObject p_126015_, Path p_126016_) { super.saveAdvancement(p_126014_, p_126015_, p_126016_); }
 
+    public static void oreSmelting(Consumer<FinishedRecipe> p_176592_, List<ItemLike> p_176593_, ItemLike p_176594_, float p_176595_, int p_176596_, String p_176597_) { RecipeProvider.oreSmelting(p_176592_, p_176593_, p_176594_, p_176595_, p_176596_, p_176597_); }
+
+    public static void oreBlasting(Consumer<FinishedRecipe> p_176626_, List<ItemLike> p_176627_, ItemLike p_176628_, float p_176629_, int p_176630_, String p_176631_) { RecipeProvider.oreBlasting(p_176626_, p_176627_, p_176628_, p_176629_, p_176630_, p_176631_); }
+
+    public static void oreCooking(Consumer<FinishedRecipe> p_176534_, SimpleCookingSerializer<?> p_176535_, List<ItemLike> p_176536_, ItemLike p_176537_, float p_176538_, int p_176539_, String p_176540_, String p_176541_) { RecipeProvider.oreCooking(p_176534_, p_176535_, p_176536_, p_176537_, p_176538_, p_176539_, p_176540_, p_176541_); }
+
+    public static void netheriteSmithing(Consumer<FinishedRecipe> p_125995_, Item p_125996_, Item p_125997_) { RecipeProvider.netheriteSmithing(p_125995_, p_125996_, p_125997_); }
+
+    public static void planksFromLog(Consumer<FinishedRecipe> p_206409_, ItemLike p_206410_, TagKey<Item> p_206411_) { RecipeProvider.planksFromLog(p_206409_, p_206410_, p_206411_); }
+
+    public static void planksFromLogs(Consumer<FinishedRecipe> p_206413_, ItemLike p_206414_, TagKey<Item> p_206415_) { RecipeProvider.planksFromLogs(p_206413_, p_206414_, p_206415_); }
+
+    public static void woodFromLogs(Consumer<FinishedRecipe> p_126003_, ItemLike p_126004_, ItemLike p_126005_) { RecipeProvider.woodFromLogs(p_126003_, p_126004_, p_126005_); }
+
+    public static void woodenBoat(Consumer<FinishedRecipe> p_126022_, ItemLike p_126023_, ItemLike p_126024_) { RecipeProvider.woodenBoat(p_126022_, p_126023_, p_126024_); }
+
+    public static RecipeBuilder buttonBuilder(ItemLike p_176659_, Ingredient p_176660_) { return RecipeProvider.buttonBuilder(p_176659_, p_176660_); }
+
+    public static RecipeBuilder doorBuilder(ItemLike p_176671_, Ingredient p_176672_) { return RecipeProvider.doorBuilder(p_176671_, p_176672_); }
+
+    public static RecipeBuilder fenceBuilder(ItemLike p_176679_, Ingredient p_176680_) { return RecipeProvider.fenceBuilder(p_176679_, p_176680_); }
+
+    public static RecipeBuilder fenceGateBuilder(ItemLike p_176685_, Ingredient p_176686_) { return RecipeProvider.fenceGateBuilder(p_176685_, p_176686_); }
+
+    public static void pressurePlate(Consumer<FinishedRecipe> p_176691_, ItemLike p_176692_, ItemLike p_176693_) { RecipeProvider.pressurePlate(p_176691_, p_176692_, p_176693_); }
+
+    public static RecipeBuilder pressurePlateBuilder(ItemLike p_176695_, Ingredient p_176696_) { return RecipeProvider.pressurePlateBuilder(p_176695_, p_176696_); }
+
+    public static void slab(Consumer<FinishedRecipe> p_176701_, ItemLike p_176702_, ItemLike p_176703_) { RecipeProvider.slab(p_176701_, p_176702_, p_176703_); }
+
+    public static RecipeBuilder slabBuilder(ItemLike p_176705_, Ingredient p_176706_) { return RecipeProvider.slabBuilder(p_176705_, p_176706_); }
+
+    public static RecipeBuilder stairBuilder(ItemLike p_176711_, Ingredient p_176712_) { return RecipeProvider.stairBuilder(p_176711_, p_176712_); }
+
+    public static RecipeBuilder trapdoorBuilder(ItemLike p_176721_, Ingredient p_176722_) { return RecipeProvider.trapdoorBuilder(p_176721_, p_176722_); }
+
+    public static RecipeBuilder signBuilder(ItemLike p_176727_, Ingredient p_176728_) { return RecipeProvider.signBuilder(p_176727_, p_176728_); }
+
+    public static void coloredWoolFromWhiteWoolAndDye(Consumer<FinishedRecipe> p_126062_, ItemLike p_126063_, ItemLike p_126064_) { RecipeProvider.coloredWoolFromWhiteWoolAndDye(p_126062_, p_126063_, p_126064_); }
+
+    public static void carpet(Consumer<FinishedRecipe> p_176717_, ItemLike p_176718_, ItemLike p_176719_) { RecipeProvider.carpet(p_176717_, p_176718_, p_176719_); }
+
+    public static void coloredCarpetFromWhiteCarpetAndDye(Consumer<FinishedRecipe> p_126070_, ItemLike p_126071_, ItemLike p_126072_) { RecipeProvider.coloredCarpetFromWhiteCarpetAndDye(p_126070_, p_126071_, p_126072_); }
+
+    public static void bedFromPlanksAndWool(Consumer<FinishedRecipe> p_126074_, ItemLike p_126075_, ItemLike p_126076_) { RecipeProvider.bedFromPlanksAndWool(p_126074_, p_126075_, p_126076_); }
+
+    public static void bedFromWhiteBedAndDye(Consumer<FinishedRecipe> p_126078_, ItemLike p_126079_, ItemLike p_126080_) { RecipeProvider.bedFromWhiteBedAndDye(p_126078_, p_126079_, p_126080_); }
+
+    public static void banner(Consumer<FinishedRecipe> p_126082_, ItemLike p_126083_, ItemLike p_126084_) { RecipeProvider.banner(p_126082_, p_126083_, p_126084_); }
+
+    public static void stainedGlassFromGlassAndDye(Consumer<FinishedRecipe> p_126086_, ItemLike p_126087_, ItemLike p_126088_) { RecipeProvider.stainedGlassFromGlassAndDye(p_126086_, p_126087_, p_126088_); }
+
+    public static void stainedGlassPaneFromStainedGlass(Consumer<FinishedRecipe> p_126090_, ItemLike p_126091_, ItemLike p_126092_) { RecipeProvider.stainedGlassPaneFromStainedGlass(p_126090_, p_126091_, p_126092_); }
+
+    public static void stainedGlassPaneFromGlassPaneAndDye(Consumer<FinishedRecipe> p_126094_, ItemLike p_126095_, ItemLike p_126096_) { RecipeProvider.stainedGlassPaneFromGlassPaneAndDye(p_126094_, p_126095_, p_126096_); }
+
+    public static void coloredTerracottaFromTerracottaAndDye(Consumer<FinishedRecipe> p_126098_, ItemLike p_126099_, ItemLike p_126100_) { RecipeProvider.coloredTerracottaFromTerracottaAndDye(p_126098_, p_126099_, p_126100_); }
+
+    public static void concretePowder(Consumer<FinishedRecipe> p_126102_, ItemLike p_126103_, ItemLike p_126104_) { RecipeProvider.concretePowder(p_126102_, p_126103_, p_126104_); }
+
+    public static void stonecutterResultFromBase(Consumer<FinishedRecipe> p_176736_, ItemLike p_176737_, ItemLike p_176738_) { RecipeProvider.stonecutterResultFromBase(p_176736_, p_176737_, p_176738_); }
+
+    public static void stonecutterResultFromBase(Consumer<FinishedRecipe> p_176547_, ItemLike p_176548_, ItemLike p_176549_, int p_176550_) { RecipeProvider.stonecutterResultFromBase(p_176547_, p_176548_, p_176549_, p_176550_); }
+
+    public static void smeltingResultFromBase(Consumer<FinishedRecipe> p_176740_, ItemLike p_176741_, ItemLike p_176742_) { RecipeProvider.smeltingResultFromBase(p_176740_, p_176741_, p_176742_); }
+
+    public static void nineBlockStorageRecipes(Consumer<FinishedRecipe> p_176744_, ItemLike p_176745_, ItemLike p_176746_) { RecipeProvider.nineBlockStorageRecipes(p_176744_, p_176745_, p_176746_); }
+
+    public static void nineBlockStorageRecipesWithCustomPacking(Consumer<FinishedRecipe> p_176563_, ItemLike p_176564_, ItemLike p_176565_, String p_176566_, String p_176567_) { RecipeProvider.nineBlockStorageRecipesWithCustomPacking(p_176563_, p_176564_, p_176565_, p_176566_, p_176567_); }
+
+    public static void nineBlockStorageRecipesRecipesWithCustomUnpacking(Consumer<FinishedRecipe> p_176617_, ItemLike p_176618_, ItemLike p_176619_, String p_176620_, String p_176621_) { RecipeProvider.nineBlockStorageRecipesRecipesWithCustomUnpacking(p_176617_, p_176618_, p_176619_, p_176620_, p_176621_); }
+
+    public static void cookRecipes(Consumer<FinishedRecipe> p_126007_, String p_126008_, SimpleCookingSerializer<?> p_126009_, int p_126010_) { RecipeProvider.cookRecipes(p_126007_, p_126008_, p_126009_, p_126010_); }
+
+    public static void simpleCookingRecipe(Consumer<FinishedRecipe> p_176584_, String p_176585_, SimpleCookingSerializer<?> p_176586_, int p_176587_, ItemLike p_176588_, ItemLike p_176589_, float p_176590_) { RecipeProvider.simpleCookingRecipe(p_176584_, p_176585_, p_176586_, p_176587_, p_176588_, p_176589_, p_176590_); }
+
+    public static void waxRecipes(Consumer<FinishedRecipe> p_176611_) { RecipeProvider.waxRecipes(p_176611_); }
+
+    public static void generateRecipes(Consumer<FinishedRecipe> p_176581_, BlockFamily p_176582_) { RecipeProvider.generateRecipes(p_176581_, p_176582_); }
+
+    public static Block getBaseBlock(BlockFamily p_176524_, BlockFamily.Variant p_176525_) { return RecipeProvider.getBaseBlock(p_176524_, p_176525_); }
+
     public static EnterBlockTrigger.TriggerInstance insideOf(Block p_125980_) { return RecipeProvider.insideOf(p_125980_); }
+
+    public static InventoryChangeTrigger.TriggerInstance has(MinMaxBounds.Ints p_176521_, ItemLike p_176522_) { return RecipeProvider.has(p_176521_, p_176522_); }
 
     public static InventoryChangeTrigger.TriggerInstance has(ItemLike p_125978_) { return RecipeProvider.has(p_125978_); }
 
-    public static InventoryChangeTrigger.TriggerInstance has(TagKey<Item> p_125976_) { return RecipeProvider.inventoryTrigger(ItemPredicate.Builder.item().of(p_125976_).build()); }
+    public static InventoryChangeTrigger.TriggerInstance has(TagKey<Item> p_206407_) { return RecipeProvider.has(p_206407_); }
 
     public static InventoryChangeTrigger.TriggerInstance inventoryTrigger(ItemPredicate... p_126012_) { return RecipeProvider.inventoryTrigger(p_126012_); }
+
+    public static String getHasName(ItemLike p_176603_) { return RecipeProvider.getHasName(p_176603_); }
+
+    public static String getItemName(ItemLike p_176633_) { return RecipeProvider.getItemName(p_176633_); }
+
+    public static String getSimpleRecipeName(ItemLike p_176645_) { return RecipeProvider.getSimpleRecipeName(p_176645_); }
+
+    public static String getConversionRecipeName(ItemLike p_176518_, ItemLike p_176519_) { return RecipeProvider.getConversionRecipeName(p_176518_, p_176519_); }
+
+    public static String getSmeltingRecipeName(ItemLike p_176657_) { return RecipeProvider.getSmeltingRecipeName(p_176657_); }
+
+    public static String getBlastingRecipeName(ItemLike p_176669_) { return RecipeProvider.getBlastingRecipeName(p_176669_); }
 
     // GENERATED END
 }
