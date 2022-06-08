@@ -1,16 +1,19 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
+import net.minecraft.core.Registry;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
+
+import java.util.Arrays;
+import java.util.EnumSet;
 
 /**
  * A builder for enchantments, allows for customization of the {@link Enchantment.Rarity enchantment rarity} and {@link EquipmentSlot equipment slots}, and configuration of data associated with
@@ -68,7 +71,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
     private final EnchantmentFactory<T> factory;
 
     protected EnchantmentBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
-        super(owner, parent, name, callback, Enchantment.class);
+        super(owner, parent, name, callback, Registry.ENCHANTMENT_REGISTRY, ForgeRegistries.ENCHANTMENTS);
         this.factory = factory;
         this.type = type;
     }
@@ -107,7 +110,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
     }
 
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, IForgeRegistry)}. This is the default, so it is generally not necessary to call, unless for
      * undoing previous changes.
      * 
      * @return this {@link EnchantmentBuilder}

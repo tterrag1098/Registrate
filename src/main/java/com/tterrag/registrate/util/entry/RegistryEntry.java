@@ -1,30 +1,31 @@
 package com.tterrag.registrate.util.entry;
 
+import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonnullType;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Delegate;
+import org.apache.commons.lang3.Validate;
+
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.RegistryObject;
+
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import javax.annotation.Nullable;
-
-import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonnullType;
-
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Delegate;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-import net.minecraftforge.registries.RegistryObject;
-
 /**
- * Wraps a {@link RegistryObject}, providing a cleaner API with null-safe access, and registrate-specific extensions such as {@link #getSibling(Class)}.
+ * Wraps a {@link RegistryObject}, providing a cleaner API with null-safe access, and registrate-specific extensions such as {@link #getSibling(ResourceKey)}.
  *
  * @param <T>
  *            The type of the entry
  */
 @EqualsAndHashCode(of = "delegate")
-public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements NonNullSupplier<T> {
+public class RegistryEntry<T> implements NonNullSupplier<T> {
 
     private static RegistryEntry<?> EMPTY; static {
         try {
@@ -37,13 +38,13 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         }
     }
 
-    public static <T extends IForgeRegistryEntry<? super T>> RegistryEntry<T> empty() {
+    public static <T> RegistryEntry<T> empty() {
         @SuppressWarnings("unchecked")
         RegistryEntry<T> t = (RegistryEntry<T>) EMPTY;
         return t;
     }
 
-    private interface Exclusions<T extends IForgeRegistryEntry<? super T>> {
+    private interface Exclusions<T> {
 
         T get();
 
@@ -75,7 +76,18 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     @SuppressWarnings("unchecked")
     public void updateReference(IForgeRegistry<? super T> registry) {
         RegistryObject<T> delegate = this.delegate;
-        Objects.requireNonNull(delegate, "Registry entry is empty").updateReference((IForgeRegistry<? extends T>) registry);
+        // Objects.requireNonNull(delegate, "Registry entry is empty").updateReference((IForgeRegistry<? extends T>) registry);
+        Validate.notNull(delegate, "Registry entry is empty");
+
+        try
+        {
+            var updateReference = ObfuscationReflectionHelper.findMethod(RegistryObject.class, "updateReference", IForgeRegistry.class);
+            updateReference.invoke(delegate, (IForgeRegistry<? extends T>) registry);
+        }
+        catch(InvocationTargetException | IllegalAccessException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -100,12 +112,12 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     }
     
     @SuppressWarnings("unchecked")
-    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(Class<? super R> registryType) {
-        return this == EMPTY ? empty() : owner.get(getId().getPath(), (Class<R>) registryType);
+    public <R, E extends R> RegistryEntry<E> getSibling(ResourceKey<? super Registry<R>> registryType) {
+        return this == EMPTY ? empty() : owner.get(getId().getPath(), (ResourceKey<Registry<R>>) registryType);
     }
     
-    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(IForgeRegistry<R> registry) {
-        return getSibling(registry.getRegistrySuperType());
+    public <R, E extends R> RegistryEntry<E> getSibling(IForgeRegistry<R> registry) {
+        return getSibling(registry.getRegistryKey());
     }
 
     /**
@@ -125,7 +137,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         return empty();
     }
 
-    public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
+    public <R> boolean is(R entry) {
         return get() == entry;
     }
     

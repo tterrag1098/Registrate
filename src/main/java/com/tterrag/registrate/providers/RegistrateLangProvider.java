@@ -1,22 +1,13 @@
 package com.tterrag.registrate.providers;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
+import org.apache.commons.lang3.StringUtils;
 
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.HashCache;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -24,7 +15,15 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class RegistrateLangProvider extends LanguageProvider implements RegistrateProvider {
     
@@ -73,13 +72,13 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
                 .map(StringUtils::capitalize)
                 .collect(Collectors.joining(" "));
     }
-    
-    public String getAutomaticName(NonNullSupplier<? extends IForgeRegistryEntry<?>> sup) {
-        return toEnglishName(sup.get().getRegistryName().getPath());
+
+    public <T, S extends T> String getAutomaticName(NonNullSupplier<? extends T> sup, IForgeRegistry<S> registry) {
+        return toEnglishName(registry.getKey((S) sup.get()).getPath());
     }
     
     public void addBlock(NonNullSupplier<? extends Block> block) {
-        addBlock(block, getAutomaticName(block));
+        addBlock(block, getAutomaticName(block, ForgeRegistries.BLOCKS));
     }
     
     public void addBlockWithTooltip(NonNullSupplier<? extends Block> block, String tooltip) {
@@ -93,7 +92,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
     
     public void addItem(NonNullSupplier<? extends Item> item) {
-        addItem(item, getAutomaticName(item));
+        addItem(item, getAutomaticName(item, ForgeRegistries.ITEMS));
     }
     
     public void addItemWithTooltip(NonNullSupplier<? extends Item> block, String name, List<@NonnullType String> tooltip) {
@@ -112,11 +111,11 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
     
     public void add(CreativeModeTab tab, String name) {
-        add(((TranslatableComponent)tab.getDisplayName()).getKey(), name);
+        add(((TranslatableContents)tab.getDisplayName()).getKey(), name);
     }
     
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
-        addEntityType(entity, getAutomaticName(entity));
+        addEntityType(entity, getAutomaticName(entity, ForgeRegistries.ENTITIES));
     }
     
     // Automatic en_ud generation
@@ -171,7 +170,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     @Override
-    public void run(HashCache cache) throws IOException {
+    public void run(CachedOutput cache) throws IOException {
         super.run(cache);
         upsideDown.run(cache);
     }

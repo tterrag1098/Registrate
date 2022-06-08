@@ -1,13 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -16,13 +8,10 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.*;
 
 import net.minecraft.Util;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
@@ -37,7 +26,16 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryObject;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * A builder for fluids, allows for customization of the {@link ForgeFlowingFluid.Properties} and {@link FluidAttributes}, and creation of the source variant, fluid block, and bucket item, as well as
@@ -197,7 +195,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
 
     protected FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        super(owner, parent, "flowing_" + name, callback, Fluid.class);
+        super(owner, parent, "flowing_" + name, callback, Registry.FLUID_REGISTRY, ForgeRegistries.FLUIDS);
         this.stillTexture = stillTexture;
         this.sourceName = name;
         this.bucketName = name + "_bucket";
@@ -205,8 +203,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         this.factory = factory;
         
         String bucketName = this.bucketName;
-        this.properties = p -> p.bucket(() -> owner.get(bucketName, Item.class).get())
-                .block(() -> owner.<Block, LiquidBlock>get(name, Block.class).get());
+        this.properties = p -> p.bucket(() -> owner.get(bucketName, Registry.ITEM_REGISTRY).get())
+                .block(() -> owner.<Block, LiquidBlock>get(name, Registry.BLOCK_REGISTRY).get());
     }
     
     /**
@@ -236,7 +234,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, IForgeRegistry)}. This is the default, so it is generally not necessary to call, unless for
      * undoing previous changes.
      * 
      * @return this {@link FluidBuilder}
@@ -326,7 +324,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         this.defaultBlock = false;
         NonNullSupplier<T> supplier = asSupplier();
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
-                .properties(p -> BlockBehaviour.Properties.copy(Blocks.WATER).noDrops())
+                .properties(p -> BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable())
                 .properties(p -> {
                     // TODO is this ok?
                     FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
@@ -441,7 +439,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     
     private ForgeFlowingFluid.Properties makeProperties() {
         FluidAttributes.Builder attributes = this.attributes.get();
-        RegistryEntry<Block> block = getOwner().getOptional(sourceName, Block.class);
+        RegistryEntry<Block> block = getOwner().getOptional(sourceName, Registry.BLOCK_REGISTRY);
         attributesCallback.accept(attributes);
         // Force the translation key after the user callback runs
         // This is done because we need to remove the lang data generator if using the block key,
@@ -484,7 +482,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source::get);
+            getCallback().accept(sourceName, Registry.FLUID_REGISTRY, (FluidBuilder) this, source::get);
         } else {
             throw new IllegalStateException("Fluid must have a source version: " + getName());
         }

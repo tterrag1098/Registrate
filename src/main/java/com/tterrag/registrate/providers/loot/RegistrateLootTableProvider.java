@@ -1,14 +1,5 @@
 package com.tterrag.registrate.providers.loot;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -29,6 +20,11 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class RegistrateLootTableProvider extends LootTableProvider implements RegistrateProvider {
     
@@ -88,7 +84,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     
     @SuppressWarnings("unchecked")
     public <T extends RegistrateLootTables> void addLootAction(LootType<T> type, NonNullConsumer<T> action) {
-        this.specialLootActions.put(type, (Consumer<? super RegistrateLootTables>) action);
+        this.specialLootActions.put(type, (Consumer<RegistrateLootTables>) action);
     }
     
     public void addLootAction(LootContextParamSet set, Consumer<BiConsumer<ResourceLocation, LootTable.Builder>> action) {

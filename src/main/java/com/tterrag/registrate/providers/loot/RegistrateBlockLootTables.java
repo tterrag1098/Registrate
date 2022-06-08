@@ -1,12 +1,9 @@
 package com.tterrag.registrate.providers.loot;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import com.tterrag.registrate.AbstractRegistrate;
-
 import lombok.RequiredArgsConstructor;
+
+import net.minecraft.core.Registry;
 import net.minecraft.data.loot.BlockLoot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
@@ -17,6 +14,10 @@ import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class RegistrateBlockLootTables extends BlockLoot implements RegistrateLootTables {
@@ -31,15 +32,15 @@ public class RegistrateBlockLootTables extends BlockLoot implements RegistrateLo
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return parent.getAll(Block.class).stream().map(Supplier::get).collect(Collectors.toList());
+        return parent.getAll(Registry.BLOCK_REGISTRY).stream().map(Supplier::get).collect(Collectors.toList());
     }
 
     // @formatter:off
     // GENERATED START
 
-    public static <T> T applyExplosionDecay(ItemLike p_124132_, FunctionUserBuilder<T> p_124133_) { return BlockLoot.applyExplosionDecay(p_124132_, p_124133_); }
+    public static <T extends FunctionUserBuilder<T>> T applyExplosionDecay(ItemLike p_124132_, FunctionUserBuilder<T> p_124133_) { return BlockLoot.applyExplosionDecay(p_124132_, p_124133_); }
 
-    public static <T> T applyExplosionCondition(ItemLike p_124135_, ConditionUserBuilder<T> p_124136_) { return BlockLoot.applyExplosionCondition(p_124135_, p_124136_); }
+    public static <T extends ConditionUserBuilder<T>> T applyExplosionCondition(ItemLike p_124135_, ConditionUserBuilder<T> p_124136_) { return BlockLoot.applyExplosionCondition(p_124135_, p_124136_); }
 
     public static LootTable.Builder createSingleItemTable(ItemLike p_124127_) { return BlockLoot.createSingleItemTable(p_124127_); }
 
@@ -93,7 +94,7 @@ public class RegistrateBlockLootTables extends BlockLoot implements RegistrateLo
 
     public static LootTable.Builder createShearsOnlyDrop(ItemLike p_124287_) { return BlockLoot.createShearsOnlyDrop(p_124287_); }
 
-    public static LootTable.Builder createGlowLichenDrops(Block p_176055_) { return BlockLoot.createGlowLichenDrops(p_176055_); }
+    // public static LootTable.Builder createGlowLichenDrops(Block p_176055_) { return BlockLoot.createGlowLichenDrops(p_176055_); }
 
     public static LootTable.Builder createLeavesDrops(Block p_124158_, Block p_124159_, float... p_124160_) { return BlockLoot.createLeavesDrops(p_124158_, p_124159_, p_124160_); }
 

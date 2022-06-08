@@ -1,17 +1,18 @@
 package com.tterrag.registrate.providers.loot;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import com.tterrag.registrate.AbstractRegistrate;
-
 import lombok.RequiredArgsConstructor;
+
+import net.minecraft.core.Registry;
 import net.minecraft.data.loot.EntityLoot;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.storage.loot.LootTable;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class RegistrateEntityLootTables extends EntityLoot implements RegistrateLootTables {
@@ -26,7 +27,7 @@ public class RegistrateEntityLootTables extends EntityLoot implements Registrate
     
     @Override
     protected Iterable<EntityType<?>> getKnownEntities() {
-        return parent.<EntityType<?>>getAll(EntityType.class).stream().map(Supplier::get).collect(Collectors.toList());
+        return parent.<EntityType<?>>getAll(Registry.ENTITY_TYPE_REGISTRY).stream().map(Supplier::get).collect(Collectors.toList());
     }
 
     @Override

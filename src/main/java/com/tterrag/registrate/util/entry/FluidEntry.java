@@ -1,9 +1,5 @@
 package com.tterrag.registrate.util.entry;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.world.item.Item;
@@ -11,8 +7,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
 
@@ -28,8 +26,9 @@ public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
     }
 
     @Override
-    public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
-        return get().isSame((Fluid) entry);
+    public <R> boolean is(R entry)
+    {
+        return entry instanceof Fluid fluid && get().isSame(fluid);
     }
 
     @SuppressWarnings({ "unchecked", "null" })

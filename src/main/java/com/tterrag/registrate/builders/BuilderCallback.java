@@ -5,7 +5,8 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
-import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -33,7 +34,7 @@ public interface BuilderCallback {
      *            A {@link NonNullFunction} which accepts the entry delegate and returns a {@link RegistryEntry} wrapper
      * @return A {@link RegistryEntry} that will supply the registered entry
      */
-    <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
+    <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
 
     /**
      * Accept a built entry, to later be constructed and registered. Uses the default {@link RegistryEntry#RegistryEntry(AbstractRegistrate, RegistryObject) RegistryEntry factory}.
@@ -52,7 +53,7 @@ public interface BuilderCallback {
      *            A {@link NonNullSupplier} that will create the entry
      * @return A {@link RegistryEntry} that will supply the registered entry
      */
-    default <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory) {
+    default <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory) {
         return accept(name, type, builder, factory, delegate -> new RegistryEntry<>(builder.getOwner(), delegate));
     }
 }

@@ -1,14 +1,11 @@
 package com.tterrag.registrate.providers;
 
-import java.nio.file.Path;
-
 import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.TagsProvider;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
@@ -26,9 +23,11 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
         this.name = name;
     }
 
-    protected Path getPath(ResourceLocation id) {
-        return this.generator.getOutputFolder().resolve("data/" + id.getNamespace() + "/tags/" + name + "/" + id.getPath() + ".json");
-    }
+    // this is what super does, no need to override?
+    /*protected Path getPath(ResourceLocation id) {
+        // return this.generator.getOutputFolder().resolve("data/" + id.getNamespace() + "/tags/" + name + "/" + id.getPath() + ".json");
+        return pathProvider.json(id);
+    }*/
 
     public String getName() {
         return "Tags (" + name + ")";
@@ -48,5 +47,5 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     public TagAppender<T> tag(TagKey<T> tag) { return super.tag(tag); }
 
     @Override
-    public Tag.Builder getOrCreateRawBuilder(TagKey<T> tag) { return super.getOrCreateRawBuilder(tag); }
+    public TagBuilder getOrCreateRawBuilder(TagKey<T> tag) { return super.getOrCreateRawBuilder(tag); }
 }

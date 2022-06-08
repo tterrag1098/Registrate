@@ -1,11 +1,5 @@
 package com.tterrag.registrate.util;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.core.BlockPos;
@@ -18,6 +12,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -34,8 +29,18 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * We should be using {@link ForgeSpawnEggItem} but that requires the entity type to be a {@link Mob} entity type
+ * rather than how this one is open to any entity type
+ */
 public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 
     private final NonNullSupplier<EntityType<T>> typeIn;

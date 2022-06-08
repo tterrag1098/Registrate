@@ -1,21 +1,11 @@
 package com.tterrag.registrate.test.mod;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
-import com.tterrag.registrate.util.entry.BlockEntityEntry;
-import com.tterrag.registrate.util.entry.BlockEntry;
-import com.tterrag.registrate.util.entry.EntityEntry;
-import com.tterrag.registrate.util.entry.FluidEntry;
-import com.tterrag.registrate.util.entry.ItemEntry;
-import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.entry.*;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
@@ -30,9 +20,9 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.PigRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
@@ -53,11 +43,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantment.Rarity;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -87,9 +73,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistryEntry;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.RegistryBuilder;
+
+import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mod("testmod")
 public class TestMod {
@@ -131,7 +117,7 @@ public class TestMod {
                     
                     @Override
                     public Component getDisplayName() {
-                        return new TextComponent("Test");
+                        return Component.literal("Test");
                     }
                 });
             }
@@ -199,7 +185,7 @@ public class TestMod {
 //        }
 //    }
 
-    private static class TestCustomRegistryEntry extends ForgeRegistryEntry<TestCustomRegistryEntry> {}
+    // private static class TestCustomRegistryEntry extends ForgeRegistryEntry<TestCustomRegistryEntry> {}
     
     private final Registrate registrate = Registrate.create("testmod").creativeModeTab(TestCreativeModeTab::new, "Test Mod");
     
@@ -236,7 +222,7 @@ public class TestMod {
                             .unlockedBy("has_egg", prov.has(Items.EGG))
                             .save(prov);
                     
-                    prov.food(DataIngredient.items(ctx), Blocks.DIAMOND_BLOCK.delegate, 1f);
+                    prov.food(DataIngredient.items(ctx), Blocks.DIAMOND_BLOCK::asItem, 1f);
                 })
                 .tag(BlockTags.BAMBOO_PLANTABLE_ON, BlockTags.DRAGON_IMMUNE)
                 .tag(BlockTags.WITHER_IMMUNE)
@@ -257,7 +243,7 @@ public class TestMod {
             .simpleItem()
             .register();
     
-    private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Item.class);
+    private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registry.ITEM_REGISTRY);
     private final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(ForgeRegistries.BLOCK_ENTITIES));
     
     @SuppressWarnings("deprecation")
@@ -350,9 +336,9 @@ public class TestMod {
 //            .dimensionTypeCallback(t -> testdimensiontype = t)
 //            .register();
 
-    private final Supplier<IForgeRegistry<TestCustomRegistryEntry>> customregistry = registrate.makeRegistry("custom", TestCustomRegistryEntry.class, () -> new RegistryBuilder<>());
-    private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
-            .simple(TestCustomRegistryEntry.class, TestCustomRegistryEntry::new);
+    // private final Supplier<IForgeRegistry<TestCustomRegistryEntry>> customregistry = registrate.makeRegistry("custom", TestCustomRegistryEntry.class, () -> new RegistryBuilder<>());
+    /*private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
+            .simple(TestCustomRegistryEntry.class, TestCustomRegistryEntry::new);*/
 
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)
@@ -381,9 +367,9 @@ public class TestMod {
     }
     
     private void onCommonSetup(FMLCommonSetupEvent event) {
-        if (!sawCallback.get()) {
+        /*if (!sawCallback.get()) {
             throw new IllegalStateException("Register callback not fired!");
-        }
+        }*/
         
         testblock.asStack();
         testitem.is(Items.SNOWBALL);
