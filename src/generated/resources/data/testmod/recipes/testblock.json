@@ -1,10 +1,5 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "DDD",
-    "DED",
-    "DDD"
-  ],
   "key": {
     "D": {
       "item": "minecraft:diamond"
@@ -13,6 +8,11 @@
       "item": "minecraft:egg"
     }
   },
+  "pattern": [
+    "DDD",
+    "DED",
+    "DDD"
+  ],
   "result": {
     "item": "testmod:testblock"
   }
