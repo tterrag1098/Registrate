@@ -111,7 +111,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
     
     public void add(CreativeModeTab tab, String name) {
-        add(((TranslatableContents)tab.getDisplayName()).getKey(), name);
+        add(((TranslatableContents) tab.getDisplayName().getContents()).getKey(), name);
     }
     
     public void addEntityType(NonNullSupplier<? extends EntityType<?>> entity) {
