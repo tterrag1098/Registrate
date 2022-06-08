@@ -1,7 +1,15 @@
 {
     "pack": {
-        "description": "examplemod resources",
-        "pack_format": 4,
-        "_comment": "A pack_format of 4 requires json lang files. Note: we require v4 pack meta for all mods."
+        "description": "TestMod resources",
+        "pack_format": 9,
+        "forge:resource_pack_format": 9,
+        "forge:data_pack_format": 10,
+        
+        "_comment": [
+            "1.19 uses `pack_format` of 9",
+            "Forge added 2 new markers here for ResourcePacks & DataPacks",
+            "Since these 2 versions dont always match",
+            "The values specified here are pulled right from the 1.19 Forge MDK"
+        ]
     }
 }
