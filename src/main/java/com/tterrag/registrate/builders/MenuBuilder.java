@@ -11,6 +11,7 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -46,7 +47,7 @@ public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & Men
     }
 
     public MenuBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
-        super(owner, parent, name, callback, MenuType.class);
+        super(owner, parent, name, callback, Registry.MENU_REGISTRY);
         this.factory = factory;
         this.screenFactory = screenFactory;
     }

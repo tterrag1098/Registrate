@@ -12,6 +12,8 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -98,14 +100,18 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         RegistryObject<T> delegate = this.delegate;
         return delegate == null ? null : delegate.orElse(null);
     }
-    
-    @SuppressWarnings("unchecked")
-    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(Class<? super R> registryType) {
-        return this == EMPTY ? empty() : owner.get(getId().getPath(), (Class<R>) registryType);
+
+    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(ResourceKey<? extends Registry<R>> registryType) {
+        return this == EMPTY ? empty() : owner.get(getId().getPath(), registryType);
     }
-    
+
+    @Deprecated
+    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(Class<? super R> registryType) {
+        return this == EMPTY ? empty() : owner.<R, E>get(getId().getPath(), registryType);
+    }
+
     public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(IForgeRegistry<R> registry) {
-        return getSibling(registry.getRegistrySuperType());
+        return getSibling(registry.getRegistryKey());
     }
 
     /**
@@ -128,7 +134,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
     public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
         return get() == entry;
     }
-    
+
     @SuppressWarnings("unchecked")
     protected static <E extends RegistryEntry<?>> E cast(Class<? super E> clazz, RegistryEntry<?> entry) {
         if (clazz.isInstance(entry)) {

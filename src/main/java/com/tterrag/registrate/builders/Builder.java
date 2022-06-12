@@ -12,7 +12,10 @@ import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -61,7 +64,13 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      */
     String getName();
     
+    @Deprecated
     Class<? super R> getRegistryType();
+    
+    @SuppressWarnings({ "null", "removal" })
+    default ResourceKey<? extends Registry<R>> getRegistryKey() {
+        return RegistryManager.ACTIVE.<R>getRegistry(getRegistryType()).getRegistryKey();
+    }
 
     /**
      * Get the {@link RegistryEntry} representing the entry built by this builder. Cannot be called before the builder is built.
@@ -72,9 +81,9 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      */
     @Override
     default RegistryEntry<T> get() {
-        return getOwner().<R, T> get(getName(), getRegistryType());
+        return getOwner().<R, T> get(getName(), getRegistryKey());
     }
-
+    
     /**
      * Get the actual entry built by this builder. Cannot be called before registration.
      * 
@@ -112,7 +121,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      */
     @SuppressWarnings("unchecked")
     default <D extends RegistrateProvider> S setData(ProviderType<? extends D> type, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
-        getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this, getRegistryType()), prov));
+        getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this, getRegistryKey()), prov));
         return (S) this;
     }
 
@@ -147,7 +156,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      */
     @SuppressWarnings("unchecked")
     default S onRegister(NonNullConsumer<? super T> callback) {
-        getOwner().<R, T>addRegisterCallback(getName(), getRegistryType(), callback);
+        getOwner().<R, T>addRegisterCallback(getName(), getRegistryKey(), callback);
         return (S) this;
     }
 
@@ -165,7 +174,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      *            the callback to invoke
      * @return this {@link Builder}
      */
-    default <OR extends IForgeRegistryEntry<OR>> S onRegisterAfter(Class<? super OR> dependencyType, NonNullConsumer<? super T> callback) {
+    default <OR extends IForgeRegistryEntry<OR>> S onRegisterAfter(ResourceKey<? extends Registry<OR>> dependencyType, NonNullConsumer<? super T> callback) {
         return onRegister(e -> {
             if (getOwner().<OR>isRegistered(dependencyType)) {
                 callback.accept(e);
@@ -173,6 +182,25 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
                 getOwner().<OR>addRegisterCallback(dependencyType, () -> callback.accept(e));
             }
         });
+    }
+
+    /**
+     * Add a callback to be invoked when this entry is registered, but only after some other registry type has been registered as well. Can be called multiple times to add multiple callbacks.
+     * <p>
+     * Builders which have had this method used on them (or another method which calls this one, such as {@link EntityBuilder#spawnEgg(int, int)}), <strong>must</strong> be registered, via
+     * {@link #register()}, or errors will be thrown when these "dangling" register callbacks are discovered at register time.
+     * 
+     * @param <OR>
+     *            The dependency registry type
+     * @param dependencyType
+     *            the base class for objects of the dependency registry. The callback will be invoked only after this registry has fired its registry events.
+     * @param callback
+     *            the callback to invoke
+     * @return this {@link Builder}
+     */
+    @Deprecated
+    default <OR extends IForgeRegistryEntry<OR>> S onRegisterAfter(Class<? super OR> dependencyType, NonNullConsumer<? super T> callback) {
+        return onRegisterAfter(getOwner().<OR>getRegistryKeyByClass(dependencyType), callback);
     }
 
     /**

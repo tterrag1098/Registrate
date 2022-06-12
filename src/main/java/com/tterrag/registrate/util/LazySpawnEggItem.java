@@ -36,6 +36,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
+@Deprecated
 public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 
     private final NonNullSupplier<EntityType<T>> typeIn;

@@ -32,7 +32,7 @@ public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
         return get().isSame((Fluid) entry);
     }
 
-    @SuppressWarnings({ "unchecked", "null" })
+    @SuppressWarnings("unchecked")
     <S extends ForgeFlowingFluid> S getSource() {
         return (S) get().getSource();
     }

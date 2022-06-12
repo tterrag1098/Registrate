@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
 import lombok.experimental.Delegate;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -33,6 +35,12 @@ public class DataGenContext<R extends IForgeRegistryEntry<R>, E extends R> imple
         return entry.get();
     }
 
+    public static <R extends IForgeRegistryEntry<R>, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder, ResourceKey<? extends Registry<R>> type) {
+        return new DataGenContext<R, E>(NonNullSupplier.of(builder.getOwner().<R, E>get(builder.getName(), type)), builder.getName(),
+                new ResourceLocation(builder.getOwner().getModid(), builder.getName()));
+    }
+
+    @Deprecated
     public static <R extends IForgeRegistryEntry<R>, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder, Class<? super R> clazz) {
         return new DataGenContext<R, E>(NonNullSupplier.of(builder.getOwner().<R, E>get(builder.getName(), clazz)), builder.getName(),
                 new ResourceLocation(builder.getOwner().getModid(), builder.getName()));

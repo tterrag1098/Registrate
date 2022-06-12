@@ -87,7 +87,6 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
         toUnregister.add(Triple.of(bus, listener, event));
     }
 
-    @SuppressWarnings("deprecation")
     private static void onLoadComplete(FMLLoadCompleteEvent event) {
         event.enqueueWork(() -> {
             toUnregister.forEach(t -> {

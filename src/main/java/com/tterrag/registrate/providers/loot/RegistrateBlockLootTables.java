@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.tterrag.registrate.AbstractRegistrate;
 
 import lombok.RequiredArgsConstructor;
+import net.minecraft.core.Registry;
 import net.minecraft.data.loot.BlockLoot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
@@ -31,7 +32,7 @@ public class RegistrateBlockLootTables extends BlockLoot implements RegistrateLo
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return parent.getAll(Block.class).stream().map(Supplier::get).collect(Collectors.toList());
+        return parent.getAll(Registry.BLOCK_REGISTRY).stream().map(Supplier::get).collect(Collectors.toList());
     }
 
     // @formatter:off

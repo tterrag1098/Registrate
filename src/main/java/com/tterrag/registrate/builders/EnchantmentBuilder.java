@@ -8,6 +8,7 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
+import net.minecraft.core.Registry;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -68,7 +69,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
     private final EnchantmentFactory<T> factory;
 
     protected EnchantmentBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
-        super(owner, parent, name, callback, Enchantment.class);
+        super(owner, parent, name, callback, Registry.ENCHANTMENT_REGISTRY);
         this.factory = factory;
         this.type = type;
     }

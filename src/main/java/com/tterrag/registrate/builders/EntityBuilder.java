@@ -10,7 +10,6 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.loot.RegistrateEntityLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
-import com.tterrag.registrate.util.LazySpawnEggItem;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.EntityEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -21,6 +20,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
@@ -37,6 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryObject;
@@ -92,10 +93,8 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
     
-    private @Nullable ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder;
-
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
-        super(owner, parent, name, callback, EntityType.class);
+        super(owner, parent, name, callback, Registry.ENTITY_TYPE_REGISTRY);
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
 
@@ -230,15 +229,11 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The secondary color of the egg
      * @return the {@link ItemBuilder} for the egg item
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
-        ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> ret = getOwner().item(this, getName() + "_spawn_egg", p -> new LazySpawnEggItem<>(asSupplier(), primaryColor, secondaryColor, p)).properties(p -> p.tab(CreativeModeTab.TAB_MISC))
+        return getOwner().item(this, getName() + "_spawn_egg", p -> new ForgeSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) asSupplier(), primaryColor, secondaryColor, p)).properties(p -> p.tab(CreativeModeTab.TAB_MISC))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
-        if (this.spawnEggBuilder == null) { // First call only
-            this.onRegister(this::injectSpawnEggType);
-        }
-        this.spawnEggBuilder = ret;
-        return ret;
     }
 
     /**
@@ -292,13 +287,9 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         builderCallback.accept(builder);
         return builder.build(getName());
     }
-   
-    protected void injectSpawnEggType(EntityType<T> entry) {
-        ItemBuilder<LazySpawnEggItem<T>, EntityBuilder<T, P>> spawnEggBuilder = this.spawnEggBuilder;
-        if (spawnEggBuilder != null) {
-            spawnEggBuilder.getEntry().injectType();
-        }
-    }
+
+    @Deprecated
+    protected void injectSpawnEggType(EntityType<T> entry) {}
 
     @Override
     protected RegistryEntry<EntityType<T>> createEntryWrapper(RegistryObject<EntityType<T>> delegate) {
