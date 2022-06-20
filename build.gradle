@@ -18,7 +18,7 @@ plugins {
     id "io.freefair.lombok" version "6.1.0-m3"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'org.ajoberstar.grgit' version '4.1.0'
-    id "com.palantir.revapi" version "1.7.0"
+//    id "com.palantir.revapi" version "1.7.0"
 }
 
 apply plugin: 'net.minecraftforge.gradle'
@@ -35,21 +35,21 @@ def getVersion = {
     def offset = desc.remove(desc.size() - 1)
     return project.mod_version.replace('x', offset) + (System.getenv("BUILD_NUMBER") == null ? "+${hash}" : '')
 }
-System.out.println(getVersion())
+System.out.println(JavaVersion.current())
 
 version = "MC${minecraft_version}-${getVersion()}"
 group = "com.tterrag.registrate"
 archivesBaseName = "Registrate"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
+/*
 revapi {
     oldGroup = project.group
     oldName = project.archivesBaseName
     oldVersion = 'MC1.18.2-1.0.25'
     tasks.revapiAnalyze.dependsOn reobf
 }
-
+*/
 minecraft {
     mappings channel: 'official', version: minecraft_version
 
