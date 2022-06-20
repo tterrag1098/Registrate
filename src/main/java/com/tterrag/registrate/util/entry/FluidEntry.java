@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
 
 public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
@@ -28,7 +27,7 @@ public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
     }
 
     @Override
-    public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
+    public <R> boolean is(R entry) {
         return get().isSame((Fluid) entry);
     }
 

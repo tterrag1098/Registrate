@@ -21,8 +21,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -41,7 +39,7 @@ import net.minecraftforge.registries.RegistryObject;
  * @see Builder
  */
 @RequiredArgsConstructor
-public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
+public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
 
     @Getter(onMethod_ = {@Override})
     private final AbstractRegistrate<?> owner;
@@ -52,24 +50,12 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     @Getter(AccessLevel.PROTECTED)
     private final BuilderCallback callback;
     @Getter(onMethod_ = {@Override})
-    private final ResourceKey<? extends Registry<R>> registryKey;
+    private final ResourceKey<Registry<R>> registryKey;
     
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, TagKey<?>> tagsByType = HashMultimap.create();
     
     /** A supplier for the entry that will discard the reference to this builder after it is resolved */
     private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
-
-    @Deprecated
-    public AbstractBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Class<? super R> registryType) {
-        this(owner, parent, name, callback, owner.<R>getRegistryKeyByClass(registryType));
-    }
-
-    @SuppressWarnings("null")
-    @Deprecated
-    @Override
-    public Class<? super R> getRegistryType() {
-        return RegistryManager.ACTIVE.getRegistry(registryKey).getRegistrySuperType();
-    }
 
     /**
      * Create the built entry. This method will be lazily resolved at registration time, so it is safe to bake in values from the builder.
@@ -144,7 +130,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
      * @return this {@link Builder}
      */
     public S lang(NonNullFunction<T, String> langKeyProvider) {
-        return lang(langKeyProvider, (p, t) -> p.getAutomaticName(t));
+        return lang(langKeyProvider, (p, t) -> p.<R>getAutomaticName(t, getRegistryKey()));
     }
 
     /**

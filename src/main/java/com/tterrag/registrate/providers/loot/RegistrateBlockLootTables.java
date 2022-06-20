@@ -14,8 +14,6 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
-import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
@@ -37,10 +35,6 @@ public class RegistrateBlockLootTables extends BlockLoot implements RegistrateLo
 
     // @formatter:off
     // GENERATED START
-
-    public static <T> T applyExplosionDecay(ItemLike p_124132_, FunctionUserBuilder<T> p_124133_) { return BlockLoot.applyExplosionDecay(p_124132_, p_124133_); }
-
-    public static <T> T applyExplosionCondition(ItemLike p_124135_, ConditionUserBuilder<T> p_124136_) { return BlockLoot.applyExplosionCondition(p_124135_, p_124136_); }
 
     public static LootTable.Builder createSingleItemTable(ItemLike p_124127_) { return BlockLoot.createSingleItemTable(p_124127_); }
 
@@ -94,11 +88,13 @@ public class RegistrateBlockLootTables extends BlockLoot implements RegistrateLo
 
     public static LootTable.Builder createShearsOnlyDrop(ItemLike p_124287_) { return BlockLoot.createShearsOnlyDrop(p_124287_); }
 
-    public static LootTable.Builder createGlowLichenDrops(Block p_176055_) { return BlockLoot.createGlowLichenDrops(p_176055_); }
+    public static LootTable.Builder createMultifaceBlockDrops(Block p_236228_, LootItemCondition.Builder p_236229_) { return BlockLoot.createMultifaceBlockDrops(p_236228_, p_236229_); }
 
     public static LootTable.Builder createLeavesDrops(Block p_124158_, Block p_124159_, float... p_124160_) { return BlockLoot.createLeavesDrops(p_124158_, p_124159_, p_124160_); }
 
     public static LootTable.Builder createOakLeavesDrops(Block p_124264_, Block p_124265_, float... p_124266_) { return BlockLoot.createOakLeavesDrops(p_124264_, p_124265_, p_124266_); }
+
+    public static LootTable.Builder createMangroveLeavesDrops(Block p_236249_) { return BlockLoot.createMangroveLeavesDrops(p_236249_); }
 
     public static LootTable.Builder createCropDrops(Block p_124143_, Item p_124144_, Item p_124145_, LootItemCondition.Builder p_124146_) { return BlockLoot.createCropDrops(p_124143_, p_124144_, p_124145_, p_124146_); }
 

@@ -14,7 +14,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -33,7 +32,7 @@ import net.minecraftforge.registries.RegistryObject;
  * @param <S>
  *            Self type
  */
-public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<RegistryEntry<T>> {
+public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<RegistryEntry<T>> {
 
     /**
      * Complete the current entry, and return the {@link RegistryEntry} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
@@ -64,13 +63,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      */
     String getName();
     
-    @Deprecated
-    Class<? super R> getRegistryType();
-    
-    @SuppressWarnings({ "null", "removal" })
-    default ResourceKey<? extends Registry<R>> getRegistryKey() {
-        return RegistryManager.ACTIVE.<R>getRegistry(getRegistryType()).getRegistryKey();
-    }
+    ResourceKey<? extends Registry<R>> getRegistryKey();
 
     /**
      * Get the {@link RegistryEntry} representing the entry built by this builder. Cannot be called before the builder is built.
@@ -174,7 +167,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      *            the callback to invoke
      * @return this {@link Builder}
      */
-    default <OR extends IForgeRegistryEntry<OR>> S onRegisterAfter(ResourceKey<? extends Registry<OR>> dependencyType, NonNullConsumer<? super T> callback) {
+    default <OR> S onRegisterAfter(ResourceKey<? extends Registry<OR>> dependencyType, NonNullConsumer<? super T> callback) {
         return onRegister(e -> {
             if (getOwner().<OR>isRegistered(dependencyType)) {
                 callback.accept(e);
@@ -182,25 +175,6 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
                 getOwner().<OR>addRegisterCallback(dependencyType, () -> callback.accept(e));
             }
         });
-    }
-
-    /**
-     * Add a callback to be invoked when this entry is registered, but only after some other registry type has been registered as well. Can be called multiple times to add multiple callbacks.
-     * <p>
-     * Builders which have had this method used on them (or another method which calls this one, such as {@link EntityBuilder#spawnEgg(int, int)}), <strong>must</strong> be registered, via
-     * {@link #register()}, or errors will be thrown when these "dangling" register callbacks are discovered at register time.
-     * 
-     * @param <OR>
-     *            The dependency registry type
-     * @param dependencyType
-     *            the base class for objects of the dependency registry. The callback will be invoked only after this registry has fired its registry events.
-     * @param callback
-     *            the callback to invoke
-     * @return this {@link Builder}
-     */
-    @Deprecated
-    default <OR extends IForgeRegistryEntry<OR>> S onRegisterAfter(Class<? super OR> dependencyType, NonNullConsumer<? super T> callback) {
-        return onRegisterAfter(getOwner().<OR>getRegistryKeyByClass(dependencyType), callback);
     }
 
     /**
@@ -228,7 +202,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return the {@link Builder} returned by the given function
      */
     @SuppressWarnings("unchecked")
-    default <R2 extends IForgeRegistryEntry<R2>, T2 extends R2, P2, S2 extends Builder<R2, T2, P2, S2>> S2 transform(NonNullFunction<S, S2> func) {
+    default <R2, T2 extends R2, P2, S2 extends Builder<R2, T2, P2, S2>> S2 transform(NonNullFunction<S, S2> func) {
         return func.apply((S) this);
     }
 

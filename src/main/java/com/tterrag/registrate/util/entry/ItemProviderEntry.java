@@ -5,10 +5,9 @@ import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
 
-public class ItemProviderEntry<T extends IForgeRegistryEntry<? super T> & ItemLike> extends RegistryEntry<T> {
+public class ItemProviderEntry<T extends ItemLike> extends RegistryEntry<T> {
 
     public ItemProviderEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
         super(owner, delegate);

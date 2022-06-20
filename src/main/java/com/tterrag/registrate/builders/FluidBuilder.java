@@ -327,7 +327,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         this.defaultBlock = false;
         NonNullSupplier<T> supplier = asSupplier();
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier, p))
-                .properties(p -> BlockBehaviour.Properties.copy(Blocks.WATER).noDrops())
+                .properties(p -> BlockBehaviour.Properties.copy(Blocks.WATER).noLootTable())
                 .properties(p -> {
                     // TODO is this ok?
                     FluidAttributes attrs = this.attributes.get().build(Fluids.WATER);
@@ -485,7 +485,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         }
         NonNullSupplier<? extends ForgeFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, Fluid.class, (FluidBuilder) this, source::get);
+            getCallback().accept(sourceName, Registry.FLUID_REGISTRY, (FluidBuilder) this, source::get);
         } else {
             throw new IllegalStateException("Fluid must have a source version: " + getName());
         }

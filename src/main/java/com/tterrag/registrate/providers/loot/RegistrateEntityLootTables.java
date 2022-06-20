@@ -39,10 +39,10 @@ public class RegistrateEntityLootTables extends EntityLoot implements Registrate
     // GENERATED START
 
     @Override
-    public void add(EntityType<?> type, LootTable.Builder table) { super.add(type, table); }
+    public void add(EntityType<?> p_124372_, LootTable.Builder p_124373_) { super.add(p_124372_, p_124373_); }
 
     @Override
-    public void add(ResourceLocation id, LootTable.Builder table) { super.add(id, table); }
+    public void add(ResourceLocation p_124381_, LootTable.Builder p_124382_) { super.add(p_124381_, p_124382_); }
 
     // GENERATED END
 }

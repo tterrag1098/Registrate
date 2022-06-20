@@ -6,7 +6,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -14,7 +14,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 
 public class RegistrateItemTagsProvider extends RegistrateTagsProvider<Item> {
 
-    private final Function<TagKey<Block>, Tag.Builder> builderLookup;
+    private final Function<TagKey<Block>, TagBuilder> builderLookup;
 
     @SuppressWarnings({ "deprecation", "null" })
     public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, DataGenerator generatorIn, ExistingFileHelper existingFileHelper, RegistrateTagsProvider<Block> blockTags) {
@@ -23,8 +23,8 @@ public class RegistrateItemTagsProvider extends RegistrateTagsProvider<Item> {
     }
 
     public void copy(TagKey<Block> p_240521_1_, TagKey<Item> p_240521_2_) {
-        Tag.Builder itag$builder = this.getOrCreateRawBuilder(p_240521_2_);
-        Tag.Builder itag$builder1 = this.builderLookup.apply(p_240521_1_);
-        itag$builder1.getEntries().forEach(itag$builder::add);
+        TagBuilder itag$builder = this.getOrCreateRawBuilder(p_240521_2_);
+        TagBuilder itag$builder1 = this.builderLookup.apply(p_240521_1_);
+        itag$builder1.build().forEach(itag$builder::add);
     }
 }

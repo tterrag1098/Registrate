@@ -18,6 +18,7 @@ import lombok.extern.log4j.Log4j2;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.EventBus;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventListenerHelper;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DeferredWorkQueue;
@@ -81,9 +82,14 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
         }
     }
 
-    private static final List<Triple<IEventBus, Object, Event>> toUnregister = new ArrayList<>();
+    private static final List<Triple<IEventBus, Object, Class<? extends Event>>> toUnregister = new ArrayList<>();
 
+    @Deprecated
     public static synchronized void unregister(IEventBus bus, Object listener, Event event) {
+        unregister(bus, listener, event.getClass());
+    }
+
+    public static synchronized void unregister(IEventBus bus, Object listener, Class<? extends Event> event) {
         toUnregister.add(Triple.of(bus, listener, event));
     }
 
@@ -94,7 +100,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
                 try {
                     final MethodHandle mh = getBusId;
                     if (mh != null) {
-                        t.getRight().getListenerList().getListeners((int) mh.invokeExact((EventBus) t.getLeft()));
+                        EventListenerHelper.getListenerList(t.getRight()).getListeners((int) mh.invokeExact((EventBus) t.getLeft()));
                     }
                 } catch (Throwable ex) {
                     log.warn("Failed to clear listener list of one-time event receiver, so the receiver has leaked. This is not a big deal.", ex);

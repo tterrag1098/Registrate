@@ -33,7 +33,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
@@ -89,7 +88,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
@@ -133,7 +131,7 @@ public class TestMod {
                     
                     @Override
                     public Component getDisplayName() {
-                        return new TextComponent("Test");
+                        return Component.literal("Test");
                     }
                 });
             }
@@ -201,7 +199,7 @@ public class TestMod {
 //        }
 //    }
 
-    private static class TestCustomRegistryEntry extends ForgeRegistryEntry<TestCustomRegistryEntry> {}
+    private static class TestCustomRegistryEntry {}
     
     private final Registrate registrate = Registrate.create("testmod").creativeModeTab(TestCreativeModeTab::new, "Test Mod");
     
@@ -238,7 +236,7 @@ public class TestMod {
                             .unlockedBy("has_egg", prov.has(Items.EGG))
                             .save(prov);
                     
-                    prov.food(DataIngredient.items(ctx), Blocks.DIAMOND_BLOCK.delegate, 1f);
+                    prov.food(DataIngredient.items(ctx), () -> Blocks.DIAMOND_BLOCK, 1f);
                 })
                 .tag(BlockTags.BAMBOO_PLANTABLE_ON, BlockTags.DRAGON_IMMUNE)
                 .tag(BlockTags.WITHER_IMMUNE)
@@ -352,8 +350,7 @@ public class TestMod {
 //            .dimensionTypeCallback(t -> testdimensiontype = t)
 //            .register();
 
-    private final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = ResourceKey.createRegistryKey(new ResourceLocation("testmod", "custom"));
-    private final Supplier<IForgeRegistry<TestCustomRegistryEntry>> customregistry = registrate.makeRegistry("custom", TestCustomRegistryEntry.class, () -> new RegistryBuilder<>());
+    private final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = registrate.makeRegistry("custom", () -> new RegistryBuilder<>());
     private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
             .simple(CUSTOM_REGISTRY, TestCustomRegistryEntry::new);
 

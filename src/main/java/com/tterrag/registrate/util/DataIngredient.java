@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
-import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * A helper for data generation when using ingredients as input(s) to recipes.<br>
@@ -55,7 +55,7 @@ public final class DataIngredient extends Ingredient {
     private DataIngredient(Ingredient parent, ItemLike item) {
         super(Stream.empty());
         this.parent = parent;
-        this.id = item.asItem().getRegistryName();
+        this.id = ForgeRegistries.ITEMS.getKey(item.asItem());
         this.criteriaFactory = prov -> RegistrateRecipeProvider.has(item);
     }
     
@@ -84,12 +84,12 @@ public final class DataIngredient extends Ingredient {
     
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public static <T extends ItemLike & IForgeRegistryEntry<?>> DataIngredient items(NonNullSupplier<? extends T> first, NonNullSupplier<? extends T>... others) {
+    public static <T extends ItemLike> DataIngredient items(NonNullSupplier<? extends T> first, NonNullSupplier<? extends T>... others) {
         return items(first.get(), (T[]) Arrays.stream(others).map(Supplier::get).toArray(ItemLike[]::new));
     }
 
     @SafeVarargs
-    public static <T extends ItemLike & IForgeRegistryEntry<?>> DataIngredient items(T first, T... others) {
+    public static <T extends ItemLike> DataIngredient items(T first, T... others) {
         return ingredient(Ingredient.of(ObjectArrays.concat(first, others)), first);
     }
 

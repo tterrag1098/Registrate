@@ -1,6 +1,7 @@
 package com.tterrag.registrate.util.entry;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -12,11 +13,11 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
+import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -26,7 +27,7 @@ import net.minecraftforge.registries.RegistryObject;
  *            The type of the entry
  */
 @EqualsAndHashCode(of = "delegate")
-public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements NonNullSupplier<T> {
+public class RegistryEntry<T> implements NonNullSupplier<T> {
 
     private static RegistryEntry<?> EMPTY; static {
         try {
@@ -39,13 +40,13 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         }
     }
 
-    public static <T extends IForgeRegistryEntry<? super T>> RegistryEntry<T> empty() {
+    public static <T> RegistryEntry<T> empty() {
         @SuppressWarnings("unchecked")
         RegistryEntry<T> t = (RegistryEntry<T>) EMPTY;
         return t;
     }
 
-    private interface Exclusions<T extends IForgeRegistryEntry<? super T>> {
+    private interface Exclusions<T> {
 
         T get();
 
@@ -68,16 +69,29 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         this.delegate = delegate;
     }
 
+    private static final Method _updateReference = Util.make(() -> {
+        try {
+            var ret = RegistryObject.class.getDeclaredMethod("updateReference", IForgeRegistry.class);
+            ret.setAccessible(true);
+            return ret;
+        } catch (NoSuchMethodException | SecurityException e) {
+            throw new RuntimeException(e);
+        }
+    });
+
     /**
      * Update the underlying entry manually from the given registry.
      * 
      * @param registry
      *            The registry to pull the entry from.
      */
-    @SuppressWarnings("unchecked")
     public void updateReference(IForgeRegistry<? super T> registry) {
         RegistryObject<T> delegate = this.delegate;
-        Objects.requireNonNull(delegate, "Registry entry is empty").updateReference((IForgeRegistry<? extends T>) registry);
+        try {
+            _updateReference.invoke(Objects.requireNonNull(delegate, "Registry entry is empty"), registry);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -101,16 +115,11 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         return delegate == null ? null : delegate.orElse(null);
     }
 
-    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(ResourceKey<? extends Registry<R>> registryType) {
+    public <R, E extends R> RegistryEntry<E> getSibling(ResourceKey<? extends Registry<R>> registryType) {
         return this == EMPTY ? empty() : owner.get(getId().getPath(), registryType);
     }
 
-    @Deprecated
-    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(Class<? super R> registryType) {
-        return this == EMPTY ? empty() : owner.<R, E>get(getId().getPath(), registryType);
-    }
-
-    public <R extends IForgeRegistryEntry<R>, E extends R> RegistryEntry<E> getSibling(IForgeRegistry<R> registry) {
+    public <R, E extends R> RegistryEntry<E> getSibling(IForgeRegistry<R> registry) {
         return getSibling(registry.getRegistryKey());
     }
 
@@ -131,7 +140,7 @@ public class RegistryEntry<T extends IForgeRegistryEntry<? super T>> implements 
         return empty();
     }
 
-    public <R extends IForgeRegistryEntry<? super T>> boolean is(R entry) {
+    public <R> boolean is(R entry) {
         return get() == entry;
     }
 

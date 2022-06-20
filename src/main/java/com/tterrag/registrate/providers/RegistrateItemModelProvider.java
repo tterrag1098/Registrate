@@ -3,6 +3,7 @@ package com.tterrag.registrate.providers;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
+import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ItemLike;
@@ -11,6 +12,7 @@ import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.client.model.generators.ModelFile.UncheckedModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class RegistrateItemModelProvider extends ItemModelProvider implements RegistrateProvider {
     
@@ -37,11 +39,11 @@ public class RegistrateItemModelProvider extends ItemModelProvider implements Re
     }
     
     public String modid(NonNullSupplier<? extends ItemLike> item) {
-        return item.get().asItem().getRegistryName().getNamespace();
+        return ForgeRegistries.ITEMS.getKey(item.get().asItem()).getNamespace();
     }
     
     public String name(NonNullSupplier<? extends ItemLike> item) {
-        return item.get().asItem().getRegistryName().getPath();
+        return ForgeRegistries.ITEMS.getKey(item.get().asItem()).getPath();
     }
     
     public ResourceLocation itemTexture(NonNullSupplier<? extends ItemLike> item) {
