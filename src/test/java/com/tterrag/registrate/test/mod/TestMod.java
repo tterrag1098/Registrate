@@ -34,6 +34,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
@@ -351,9 +352,10 @@ public class TestMod {
 //            .dimensionTypeCallback(t -> testdimensiontype = t)
 //            .register();
 
+    private final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = ResourceKey.createRegistryKey(new ResourceLocation("testmod", "custom"));
     private final Supplier<IForgeRegistry<TestCustomRegistryEntry>> customregistry = registrate.makeRegistry("custom", TestCustomRegistryEntry.class, () -> new RegistryBuilder<>());
     private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
-            .simple(TestCustomRegistryEntry.class, TestCustomRegistryEntry::new);
+            .simple(CUSTOM_REGISTRY, TestCustomRegistryEntry::new);
 
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)
