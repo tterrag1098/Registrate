@@ -28,12 +28,14 @@ apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remappe
 
 boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false')
 def getVersion = {
-    def raw = grgit.describe(longDescr: true, tags:true)
-    def desc = (raw == null ? '0.0-0-unknown' : grgit.describe(longDescr: true, tags:true)).split('-') as List
+    def raw = grgit.describe(commit: 'HEAD', longDescr: true, tags: true)
+    def desc = (raw == null ? '0.0-0-unknown' : grgit.describe(commit: 'HEAD', longDescr: true, tags: true)).split('-') as List
+    System.out.println(desc)
     def hash = desc.remove(desc.size() - 1).substring(1)
     def offset = desc.remove(desc.size() - 1)
     return project.mod_version.replace('x', offset) + (System.getenv("BUILD_NUMBER") == null ? "+${hash}" : '')
 }
+System.out.println(getVersion())
 
 version = "MC${minecraft_version}-${getVersion()}"
 group = "com.tterrag.registrate"
