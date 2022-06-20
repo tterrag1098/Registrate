@@ -49,7 +49,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -178,7 +177,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     public BlockBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get().get()), "Invalid block layer: " + layer);
@@ -190,20 +188,17 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     protected void registerLayers(T entry) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
-                if (renderLayers.size() == 1) {
-                    final RenderType layer = renderLayers.get(0).get().get();
-                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
-                } else if (renderLayers.size() > 1) {
-                    final Set<RenderType> layers = renderLayers.stream()
-                            .map(s -> s.get().get())
-                            .collect(Collectors.toSet());
-                    ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
-                }
-            });
+            if (renderLayers.size() == 1) {
+                final RenderType layer = renderLayers.get(0).get().get();
+                ItemBlockRenderTypes.setRenderLayer(entry, layer);
+            } else if (renderLayers.size() > 1) {
+                final Set<RenderType> layers = renderLayers.stream()
+                        .map(s -> s.get().get())
+                        .collect(Collectors.toSet());
+                ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
+            }
         });
     }
 
