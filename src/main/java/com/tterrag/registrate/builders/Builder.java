@@ -207,8 +207,8 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
     }
 
     /**
-     * Register the entry and return the parent object. The {@link RegistryObject} will be created but not returned. It can be retrieved later with {@link AbstractRegistrate#get(Class)} or
-     * {@link AbstractRegistrate#get(String, Class)}.
+     * Register the entry and return the parent object. The {@link RegistryObject} will be created but not returned. It can be retrieved later with {@link AbstractRegistrate#get(ResourceKey)} or
+     * {@link AbstractRegistrate#get(String, ResourceKey)}.
      * 
      * @return the parent object
      */

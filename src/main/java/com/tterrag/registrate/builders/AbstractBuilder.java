@@ -122,8 +122,8 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     }
 
     /**
-     * Set the lang key for this entry to the default value (specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}). Generally, specific helpers from concrete builders should be used
-     * instead.
+     * Set the lang key for this entry to the default value (specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, ResourceKey)}). Generally, specific helpers from concrete
+     * builders should be used instead.
      * 
      * @param langKeyProvider
      *            A function to get the translation key from the entry

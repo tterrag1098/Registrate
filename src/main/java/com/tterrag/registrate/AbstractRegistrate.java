@@ -491,7 +491,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            ID of the object, which will be converted to a lang key via {@link Util#makeDescriptionId(String, ResourceLocation)}
      * @param localizedName
      *            (English) translation value
-     * @return A {@link TranslatableComponent} representing the translated text
+     * @return A {@link MutableComponent} representing the translated text
      */
     public MutableComponent addLang(String type, ResourceLocation id, String localizedName) {
         return addRawLang(Util.makeDescriptionId(type, id), localizedName);
@@ -508,7 +508,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            A suffix which will be appended to the generated key (separated by a dot)
      * @param localizedName
      *            (English) translation value
-     * @return A {@link TranslatableComponent} representing the translated text
+     * @return A {@link MutableComponent} representing the translated text
      */
     public MutableComponent addLang(String type, ResourceLocation id, String suffix, String localizedName) {
         return addRawLang(Util.makeDescriptionId(type, id) + "." + suffix, localizedName);
@@ -521,7 +521,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The translation key
      * @param value
      *            The (English) translation value
-     * @return A {@link TranslatableComponent} representing the translated text
+     * @return A {@link MutableComponent} representing the translated text
      */
     public MutableComponent addRawLang(String key, String value) {
         if (doDatagen.get()) {
