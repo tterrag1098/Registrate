@@ -1,6 +1,7 @@
 package com.tterrag.registrate.test.mod;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -81,8 +82,10 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.client.IFluidTypeRenderProperties;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -282,13 +285,29 @@ public class TestMod {
     
     private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
-            .attributes(a -> a.luminosity(15))
-            .properties(p -> p.canMultiply())
+            .properties(p -> p.lightLevel(15).canConvertToSource(true))
+            // Custom type
+            .type((props, still, flow) -> new FluidType(props) {
+                // And now you can do custom behaviours.
+                @Override
+                public void initializeClient(Consumer<IFluidTypeRenderProperties> consumer) {
+                    consumer.accept(new IFluidTypeRenderProperties() {
+                        @Override
+                        public ResourceLocation getStillTexture() {
+                            return still;
+                        }
+
+                        @Override
+                        public ResourceLocation getFlowingTexture() {
+                            return flow;
+                        }
+                    });
+                }
+            })
             .noBucket()
 //            .bucket()
 //                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
 //                .build()
-//            .removeTag(FluidTags.WATER)
             .register();
     
     private final RegistryEntry<MenuType<ChestMenu>> testmenu = registrate.object("testmenu")

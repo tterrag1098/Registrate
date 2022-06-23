@@ -7,6 +7,7 @@
   "enchantment.testmod.testenchantment": "Testenchantment",
   "entity.testmod.testentity": "Testentity",
   "entity.testmod.testitem": "Testitem",
+  "fluid_type.testmod.testfluid": "Testfluid",
   "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",
   "item.testmod.testitem": "Testitem",
   "item.testmod.testitem.testextra": "Magic!",
