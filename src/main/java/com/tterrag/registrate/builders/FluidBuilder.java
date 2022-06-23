@@ -8,10 +8,8 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.*;
+import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -422,7 +420,21 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
 
     private FluidType.Properties makeTypeProperties() {
         FluidType.Properties properties = FluidType.Properties.create();
+        RegistryEntry<Block> block = getOwner().getOptional(sourceName, Registry.BLOCK_REGISTRY);
         this.typeProperties.accept(properties);
+
+        // Force the translation key after the user callback runs
+        // This is done because we need to remove the lang data generator if using the block key,
+        // and if it was possible to undo this change, it might result in the user translation getting
+        // silently lost, as there's no good way to check whether the translation key was changed.
+        // TODO improve this?
+        if (block.isPresent()) {
+            properties.descriptionId(block.get().getDescriptionId());
+            setData(ProviderType.LANG, NonNullBiConsumer.noop());
+        } else {
+            properties.descriptionId(Util.makeDescriptionId("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
+        }
+
         return properties;
     }
 
