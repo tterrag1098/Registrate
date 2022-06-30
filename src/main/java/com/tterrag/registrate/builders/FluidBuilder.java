@@ -6,10 +6,13 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
+import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.*;
 import net.minecraft.Util;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -21,9 +24,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.IFluidTypeRenderProperties;
+import net.minecraftforge.fluids.FluidInteractionRegistry;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -31,8 +38,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilder<Fluid, T, P, FluidBuilder<T, P>> {
 
@@ -119,6 +128,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<FluidType.Properties> typeProperties = $ -> {};
 
     private NonNullConsumer<ForgeFlowingFluid.Properties> fluidProperties;
+    private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
 
     private boolean registerType;
 
@@ -229,6 +239,36 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      */
     public FluidBuilder<T, P> lang(String name) {
         return lang(f -> f.getFluidType().getDescriptionId(), name);
+    }
+
+    @SuppressWarnings("deprecation")
+    public FluidBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get().get()), "Invalid block layer: " + layer);
+        });
+        if (this.renderLayers.isEmpty()) {
+            onRegister(this::registerLayers);
+        }
+        this.renderLayers.add(layer);
+        return this;
+    }
+
+    @SuppressWarnings("deprecation")
+    protected void registerLayers(T entry) {
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+                if (renderLayers.size() == 1) {
+                    final RenderType layer = renderLayers.get(0).get().get();
+                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
+                } else if (renderLayers.size() > 1) {
+                    final Set<RenderType> layers = renderLayers.stream()
+                        .map(s -> s.get().get())
+                        .collect(Collectors.toSet());
+                    ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
+                    ItemBlockRenderTypes.setRenderLayer(getSource(), layers::contains);
+                }
+            });
+        });
     }
 
     /**
