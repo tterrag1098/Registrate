@@ -260,6 +260,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
                 if (renderLayers.size() == 1) {
                     final RenderType layer = renderLayers.get(0).get().get();
                     ItemBlockRenderTypes.setRenderLayer(entry, layer);
+                    ItemBlockRenderTypes.setRenderLayer(getSource(), layer);
                 } else if (renderLayers.size() > 1) {
                     final Set<RenderType> layers = renderLayers.stream()
                         .map(s -> s.get().get())
