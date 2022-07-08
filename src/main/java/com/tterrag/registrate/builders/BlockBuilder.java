@@ -3,11 +3,14 @@ package com.tterrag.registrate.builders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
@@ -29,8 +32,10 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.block.BlockColor;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
@@ -38,6 +43,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -96,6 +102,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
+    private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
 
     @Nullable
     private NonNullSupplier<Supplier<BlockColor>> colorHandler;
@@ -171,6 +178,38 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
         initialProperties = () -> BlockBehaviour.Properties.copy(block.get());
         return this;
+    }
+
+    /**
+     * @deprecated Set your render type in your model's JSON ({@link net.minecraftforge.client.model.generators.ModelBuilder#renderType(ResourceLocation)}) or override {@link net.minecraft.client.resources.model.BakedModel#getRenderTypes(BlockState, net.minecraft.util.RandomSource, net.minecraftforge.client.model.data.ModelData)}
+     */
+    @Deprecated(forRemoval = true)
+    public BlockBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get().get()), "Invalid block layer: " + layer);
+        });
+        if (this.renderLayers.isEmpty()) {
+            onRegister(this::registerLayers);
+        }
+        this.renderLayers.add(layer);
+        return this;
+    }
+
+    @SuppressWarnings("deprecation")
+    protected void registerLayers(T entry) {
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+            OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+                if (renderLayers.size() == 1) {
+                    final RenderType layer = renderLayers.get(0).get().get();
+                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
+                } else if (renderLayers.size() > 1) {
+                    final Set<RenderType> layers = renderLayers.stream()
+                            .map(s -> s.get().get())
+                            .collect(Collectors.toSet());
+                    ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
+                }
+            });
+        });
     }
 
     /**
