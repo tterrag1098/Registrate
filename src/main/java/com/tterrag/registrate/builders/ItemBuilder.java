@@ -24,7 +24,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -161,10 +161,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
     
     protected void registerItemColor() {
-        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Item.class, e -> {
+        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Item.class, e -> {
             NonNullSupplier<Supplier<ItemColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
-                e.getItemColors().register(colorHandler.get().get(), getEntry());
+                e.register(colorHandler.get().get(), getEntry());
             }
         });
     }

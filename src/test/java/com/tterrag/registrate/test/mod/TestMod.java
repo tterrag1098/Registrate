@@ -82,7 +82,7 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.client.IFluidTypeRenderProperties;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.fluids.FluidType;
@@ -91,7 +91,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
 @Mod("testmod")
@@ -286,12 +285,13 @@ public class TestMod {
     private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
+            .renderLayer(RenderType::translucent)
             // Custom type
             .type((props, still, flow) -> new FluidType(props) {
                 // And now you can do custom behaviours.
                 @Override
-                public void initializeClient(Consumer<IFluidTypeRenderProperties> consumer) {
-                    consumer.accept(new IFluidTypeRenderProperties() {
+                public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+                    consumer.accept(new IClientFluidTypeExtensions() {
                         @Override
                         public ResourceLocation getStillTexture() {
                             return still;

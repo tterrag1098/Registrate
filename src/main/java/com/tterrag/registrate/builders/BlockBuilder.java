@@ -3,14 +3,11 @@ package com.tterrag.registrate.builders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
@@ -32,7 +29,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
@@ -46,7 +42,7 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -100,8 +96,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
-    private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
-    
+
     @Nullable
     private NonNullSupplier<Supplier<BlockColor>> colorHandler;
 
@@ -176,35 +171,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
         initialProperties = () -> BlockBehaviour.Properties.copy(block.get());
         return this;
-    }
-
-    @SuppressWarnings("deprecation")
-    public BlockBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get().get()), "Invalid block layer: " + layer);
-        });
-        if (this.renderLayers.isEmpty()) {
-            onRegister(this::registerLayers);
-        }
-        this.renderLayers.add(layer);
-        return this;
-    }
-
-    @SuppressWarnings("deprecation")
-    protected void registerLayers(T entry) {
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
-                if (renderLayers.size() == 1) {
-                    final RenderType layer = renderLayers.get(0).get().get();
-                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
-                } else if (renderLayers.size() > 1) {
-                    final Set<RenderType> layers = renderLayers.stream()
-                            .map(s -> s.get().get())
-                            .collect(Collectors.toSet());
-                    ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
-                }
-            });
-        });
     }
 
     /**
@@ -305,10 +271,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     protected void registerBlockColor() {
-        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Block.class, e -> {
+        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Block.class, e -> {
             NonNullSupplier<Supplier<BlockColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
-                e.getBlockColors().register(colorHandler.get().get(), getEntry());
+                e.register(colorHandler.get().get(), getEntry());
             }
         });
     }

@@ -25,8 +25,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.IFluidTypeRenderProperties;
-import net.minecraftforge.fluids.FluidInteractionRegistry;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.DistExecutor;
@@ -38,10 +37,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilder<Fluid, T, P, FluidBuilder<T, P>> {
 
@@ -128,13 +125,14 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullConsumer<FluidType.Properties> typeProperties = $ -> {};
 
     private NonNullConsumer<ForgeFlowingFluid.Properties> fluidProperties;
-    private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
+
+    private @Nullable Supplier<RenderType> layer = null;
 
     private boolean registerType;
 
     @Nullable
     private NonNullSupplier<? extends ForgeFlowingFluid> source;
-    private List<TagKey<Fluid>> tags = new ArrayList<>();
+    private final List<TagKey<Fluid>> tags = new ArrayList<>();
 
     public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         super(owner, parent, "flowing_" + name, callback, Registry.FLUID_REGISTRY);
@@ -221,7 +219,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier)}. This is the default, so it is generally not necessary to call, unless for
+     * Assign the default translation, as specified by {@link RegistrateLangProvider#toEnglishName(String)}. This is the default, so it is generally not necessary to call, unless for
      * undoing previous changes.
      *
      * @return this {@link FluidBuilder}
@@ -242,14 +240,15 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     @SuppressWarnings("deprecation")
-    public FluidBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
+    public FluidBuilder<T, P> renderLayer(Supplier<RenderType> layer) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get().get()), "Invalid block layer: " + layer);
+            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get()), "Invalid block layer: " + layer);
         });
-        if (this.renderLayers.isEmpty()) {
+
+        if (this.layer == null) {
             onRegister(this::registerLayers);
         }
-        this.renderLayers.add(layer);
+        this.layer = layer;
         return this;
     }
 
@@ -257,16 +256,10 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     protected void registerLayers(T entry) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
-                if (renderLayers.size() == 1) {
-                    final RenderType layer = renderLayers.get(0).get().get();
+                if (this.layer != null) {
+                    RenderType layer = this.layer.get();
                     ItemBlockRenderTypes.setRenderLayer(entry, layer);
                     ItemBlockRenderTypes.setRenderLayer(getSource(), layer);
-                } else if (renderLayers.size() > 1) {
-                    final Set<RenderType> layers = renderLayers.stream()
-                        .map(s -> s.get().get())
-                        .collect(Collectors.toSet());
-                    ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
-                    ItemBlockRenderTypes.setRenderLayer(getSource(), layers::contains);
                 }
             });
         });
@@ -535,8 +528,8 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private static FluidType defaultFluidType(FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return new FluidType(properties) {
             @Override
-            public void initializeClient(Consumer<IFluidTypeRenderProperties> consumer) {
-                consumer.accept(new IFluidTypeRenderProperties() {
+            public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+                consumer.accept(new IClientFluidTypeExtensions() {
                     @Override
                     public ResourceLocation getStillTexture() {
                         return stillTexture;
