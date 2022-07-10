@@ -17,12 +17,15 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -39,7 +42,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -414,4 +419,171 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
     public BlockEntry<T> register() {
         return (BlockEntry<T>) super.register();
     }
+
+    /*
+        The following methods exist as shortcuts into Block Properties
+            Stops you needing to have long chains inside `properties()`
+            or having multiple `properties()` calls
+
+            ```
+            builder.properties(props -> props
+                .requiresCorrectToolForDrops()
+                .strength(3.5F)
+                .lightLevel(litBlockEmission(13)
+            )
+            ```
+
+            becomes
+
+            ```
+            builder.requiresCorrectToolForDrops()
+                .strength(3.5F)
+                .lightLevel(litBlockEmission(13)
+            ```
+     */
+    // region: Block Properties Wrappers
+    public final BlockBuilder<O, T, P> noCollission()
+    {
+        return properties(BlockBehaviour.Properties::noCollission);
+    }
+
+    public final BlockBuilder<O, T, P> noOcclusion()
+    {
+        return properties(BlockBehaviour.Properties::noOcclusion);
+    }
+
+    public final BlockBuilder<O, T, P> friction(float friction)
+    {
+        return properties(properties -> properties.friction(friction));
+    }
+
+    public final BlockBuilder<O, T, P> speedFactor(float speedFactor)
+    {
+        return properties(properties -> properties.speedFactor(speedFactor));
+    }
+
+    public final BlockBuilder<O, T, P> jumpFactor(float jumpFactor)
+    {
+        return properties(properties -> properties.jumpFactor(jumpFactor));
+    }
+
+    public final BlockBuilder<O, T, P> sound(SoundType soundType)
+    {
+        return properties(properties -> properties.sound(soundType));
+    }
+
+    public final BlockBuilder<O, T, P> lightLevel(ToIntFunction<BlockState> lightEmission)
+    {
+        return properties(properties -> properties.lightLevel(lightEmission));
+    }
+
+    public final BlockBuilder<O, T, P> strength(float destroyTime, float explosionResistance)
+    {
+        return properties(properties -> properties.strength(destroyTime, explosionResistance));
+    }
+
+    public final BlockBuilder<O, T, P> instabreak()
+    {
+        return properties(BlockBehaviour.Properties::instabreak);
+    }
+
+    public final BlockBuilder<O, T, P> strength(float strength)
+    {
+        return properties(properties -> properties.strength(strength));
+    }
+
+    public final BlockBuilder<O, T, P> randomTicks()
+    {
+        return properties(BlockBehaviour.Properties::randomTicks);
+    }
+
+    public final BlockBuilder<O, T, P> dynamicShape()
+    {
+        return properties(BlockBehaviour.Properties::dynamicShape);
+    }
+
+    public final BlockBuilder<O, T, P> noLootTable()
+    {
+        return properties(BlockBehaviour.Properties::noLootTable);
+    }
+
+    /**
+     * @deprecated Exists purely for legacy & vanilla block reasons, should never be used with custom modded blocks. Modded should use {@link #lootFrom(Supplier)}
+     */
+    @Deprecated
+    public final BlockBuilder<O, T, P> dropsLike(Block block)
+    {
+        return properties(properties -> properties.dropsLike(block));
+    }
+
+    public final BlockBuilder<O, T, P> lootFrom(Supplier<? extends Block> block)
+    {
+        return properties(properties -> properties.lootFrom(block));
+    }
+
+    public final BlockBuilder<O, T, P> air()
+    {
+        return properties(BlockBehaviour.Properties::air);
+    }
+
+    public final BlockBuilder<O, T, P> isValidSpawn(BlockBehaviour.StateArgumentPredicate<EntityType<?>> predicate)
+    {
+        return properties(properties -> properties.isValidSpawn(predicate));
+    }
+
+    public final BlockBuilder<O, T, P> isRedstoneConductor(BlockBehaviour.StatePredicate predicate)
+    {
+        return properties(properties -> properties.isRedstoneConductor(predicate));
+    }
+
+    public final BlockBuilder<O, T, P> isSuffocating(BlockBehaviour.StatePredicate predicate)
+    {
+        return properties(properties -> properties.isSuffocating(predicate));
+    }
+
+    public final BlockBuilder<O, T, P> isViewBlocking(BlockBehaviour.StatePredicate predicate)
+    {
+        return properties(properties -> properties.isViewBlocking(predicate));
+    }
+
+    public final BlockBuilder<O, T, P> hasPostProcess(BlockBehaviour.StatePredicate predicate)
+    {
+        return properties(properties -> properties.hasPostProcess(predicate));
+    }
+
+    public final BlockBuilder<O, T, P> emissiveRendering(BlockBehaviour.StatePredicate predicate)
+    {
+        return properties(properties -> properties.emissiveRendering(predicate));
+    }
+
+    public final BlockBuilder<O, T, P> requiresCorrectToolForDrops()
+    {
+        return properties(BlockBehaviour.Properties::requiresCorrectToolForDrops);
+    }
+
+    public final BlockBuilder<O, T, P> color(MaterialColor materialColor)
+    {
+        return properties(properties -> properties.color(materialColor));
+    }
+
+    public final BlockBuilder<O, T, P> destroyTime(float destroyTime)
+    {
+        return properties(properties -> properties.destroyTime(destroyTime));
+    }
+
+    public final BlockBuilder<O, T, P> explosionResistance(float explosionResistance)
+    {
+        return properties(properties -> properties.explosionResistance(explosionResistance));
+    }
+
+    public final BlockBuilder<O, T, P> offsetType(BlockBehaviour.OffsetType offsetType)
+    {
+        return properties(properties -> properties.offsetType(offsetType));
+    }
+
+    public final BlockBuilder<O, T, P> offsetType(Function<BlockState, BlockBehaviour.OffsetType> offsetType)
+    {
+        return properties(properties -> properties.offsetType(offsetType));
+    }
+    // endregion
 }

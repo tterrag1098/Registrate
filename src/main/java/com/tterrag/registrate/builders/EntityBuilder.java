@@ -25,15 +25,19 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -294,4 +298,98 @@ public class EntityBuilder<O extends AbstractRegistrate<O>, T extends Entity, P>
     public EntityEntry<T> register() {
         return (EntityEntry<T>) super.register();
     }
+
+    /*
+        The following methods exist as shortcuts into EntityType.Builder
+            Stops you needing to have long chains inside `properties()`
+            or having multiple `properties()` calls
+
+            ```
+            builder.properties(props -> props
+                .sized(0.3125F, 0.3125F)
+                .clientTrackingRange(4)
+                .updateInterval(10)
+            )
+            ```
+
+            becomes
+
+            ```
+            builder.sized(0.3125F, 0.3125F)
+                .clientTrackingRange(4)
+                .updateInterval(10)
+            ```
+     */
+    // region: EntityType Builder Properties Wrappers
+    public final EntityBuilder<O, T, P> sized(float width, float height)
+    {
+        return properties(properties -> properties.sized(width, height));
+    }
+
+    public final EntityBuilder<O, T, P> noSummon()
+    {
+        return properties(EntityType.Builder::noSummon);
+    }
+
+    public final EntityBuilder<O, T, P> noSave()
+    {
+        return properties(EntityType.Builder::noSave);
+    }
+
+    public final EntityBuilder<O, T, P> fireImmune()
+    {
+        return properties(EntityType.Builder::fireImmune);
+    }
+
+    /**
+     * @deprecated Exists purely for legacy & vanilla block reasons, should never be used with custom modded blocks. Modded should use {@link #immuneTo(Supplier[])}
+     */
+    @Deprecated
+    public final EntityBuilder<O, T, P> immuneTo(Block... blocks)
+    {
+        return properties(properties -> properties.immuneTo(blocks));
+    }
+
+    public final EntityBuilder<O, T, P> immuneTo(Supplier<? extends Block>... blocks)
+    {
+        // convert from Supplier[] to Block[] (call #get on all suppliers) when the entity type builder is being constructed (inside the lambda)
+        // doing so outside the lambda, maybe too early and could cause issue during game initialization
+        return properties(properties -> properties.immuneTo(Arrays.stream(blocks).map(Supplier::get).toArray(Block[]::new)));
+    }
+
+    public final EntityBuilder<O, T, P> canSpawnFarFromPlayer()
+    {
+        return properties(EntityType.Builder::canSpawnFarFromPlayer);
+    }
+
+    public final EntityBuilder<O, T, P> clientTrackingRange(int clientTrackingRange)
+    {
+        return properties(properties -> properties.clientTrackingRange(clientTrackingRange));
+    }
+
+    public final EntityBuilder<O, T, P> updateInterval(int updateInterval)
+    {
+        return properties(properties -> properties.updateInterval(updateInterval));
+    }
+
+    public final EntityBuilder<O, T, P> setUpdateInterval(int interval)
+    {
+        return properties(properties -> properties.setUpdateInterval(interval));
+    }
+
+    public final EntityBuilder<O, T, P> setTrackingRange(int range)
+    {
+        return properties(properties -> properties.setTrackingRange(range));
+    }
+
+    public final EntityBuilder<O, T, P> setShouldReceiveVelocityUpdates(boolean value)
+    {
+        return properties(properties -> properties.setShouldReceiveVelocityUpdates(value));
+    }
+
+    public final EntityBuilder<O, T, P> setCustomClientFactory(BiFunction<PlayMessages.SpawnEntity, Level, T> customClientFactory)
+    {
+        return properties(properties -> properties.setCustomClientFactory(customClientFactory));
+    }
+    // endregion
 }
