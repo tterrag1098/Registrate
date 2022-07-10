@@ -1,21 +1,11 @@
 package com.tterrag.registrate.test.mod;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
-import com.tterrag.registrate.util.entry.BlockEntityEntry;
-import com.tterrag.registrate.util.entry.BlockEntry;
-import com.tterrag.registrate.util.entry.EntityEntry;
-import com.tterrag.registrate.util.entry.FluidEntry;
-import com.tterrag.registrate.util.entry.ItemEntry;
-import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.entry.*;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
@@ -54,11 +44,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantment.Rarity;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -88,8 +74,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
+
+import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mod("testmod")
 public class TestMod {
@@ -322,7 +310,7 @@ public class TestMod {
 //            .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
 //            .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
 //            .register();
-//    
+//
 //    private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
 //            .biome(TestBiome::new)
 //            .properties(b -> b.category(Category.DESERT)
@@ -341,7 +329,7 @@ public class TestMod {
 //            .copyCarvers(() -> Biomes.DESERT)
 //            .copySpawns(() -> Biomes.DESERT)
 //            .register();
-//    
+//
 //    private @Nullable DimensionType testdimensiontype;
 //    private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
 //            .dimension(OverworldDimension::new)
@@ -354,11 +342,11 @@ public class TestMod {
     private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
             .simple(CUSTOM_REGISTRY, TestCustomRegistryEntry::new);
 
-//    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
+//    private final BlockBuilder<Registrate, Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)
 //            .addLayer(() -> RenderType::getTranslucent);
     
-    private static <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
+    private static <T extends Block, P> @NonnullType BlockBuilder<Registrate, T, P> applyDiamondDrop(BlockBuilder<Registrate, T, P> builder) {
         return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
     }
 

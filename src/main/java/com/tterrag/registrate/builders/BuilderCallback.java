@@ -13,7 +13,7 @@ import net.minecraftforge.registries.RegistryObject;
  * A callback passed to {@link Builder builders} from the owning {@link AbstractRegistrate} which will add a registration for the built entry that lazily creates and registers it.
  */
 @FunctionalInterface
-public interface BuilderCallback {
+public interface BuilderCallback<O extends AbstractRegistrate<O>> {
 
     /**
      * Accept a built entry, to later be constructed and registered.
@@ -34,7 +34,7 @@ public interface BuilderCallback {
      *            A {@link NonNullFunction} which accepts the entry delegate and returns a {@link RegistryEntry} wrapper
      * @return A {@link RegistryEntry} that will supply the registered entry
      */
-    <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
+    <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
 
     /**
      * Accept a built entry, to later be constructed and registered. Uses the default {@link RegistryEntry#RegistryEntry(AbstractRegistrate, RegistryObject) RegistryEntry factory}.
@@ -53,7 +53,7 @@ public interface BuilderCallback {
      *            A {@link NonNullSupplier} that will create the entry
      * @return A {@link RegistryEntry} that will supply the registered entry
      */
-    default <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory) {
+    default <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory) {
         return accept(name, type, builder, factory, delegate -> new RegistryEntry<>(builder.getOwner(), delegate));
     }
 }

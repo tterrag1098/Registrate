@@ -1,15 +1,7 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.DataGenContext;
-import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.providers.RegistrateItemModelProvider;
-import com.tterrag.registrate.providers.RegistrateLangProvider;
-import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.providers.*;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -28,6 +20,9 @@ import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryObject;
 
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
+
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
  * 
@@ -36,7 +31,7 @@ import net.minecraftforge.registries.RegistryObject;
  * @param <P>
  *            Parent object type
  */
-public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, ItemBuilder<T, P>> {
+public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> extends AbstractBuilder<O, Item, T, P, ItemBuilder<O, T, P>> {
 
     /**
      * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
@@ -63,7 +58,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            Factory to create the item
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+    public static <O extends AbstractRegistrate<O>, T extends Item, P> ItemBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<Item.Properties, T> factory) {
         return create(owner, parent, name, callback, factory, null);
     }
     
@@ -95,7 +90,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The {@link CreativeModeTab} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab) {
+    public static <O extends AbstractRegistrate<O>, T extends Item, P> ItemBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
                 .defaultModel().defaultLang()
                 .transform(ib -> tab == null ? ib : ib.tab(tab));
@@ -109,7 +104,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
     
-    protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+    protected ItemBuilder(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Registry.ITEM_REGISTRY);
         this.factory = factory;
     }
@@ -124,7 +119,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The action to perform on the properties
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> properties(NonNullUnaryOperator<Item.Properties> func) {
+    public ItemBuilder<O, T, P> properties(NonNullUnaryOperator<Item.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
         return this;
     }
@@ -136,12 +131,12 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            A supplier to to create the initial properties
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> initialProperties(NonNullSupplier<Item.Properties> properties) {
+    public ItemBuilder<O, T, P> initialProperties(NonNullSupplier<Item.Properties> properties) {
         initialProperties = properties;
         return this;
     }
 
-    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
+    public ItemBuilder<O, T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
         return properties(p -> p.tab(tab.get()));
     }
     
@@ -152,7 +147,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The color handler to register for this item
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> color(NonNullSupplier<Supplier<ItemColor>> colorHandler) {
+    public ItemBuilder<O, T, P> color(NonNullSupplier<Supplier<ItemColor>> colorHandler) {
         if (this.colorHandler == null) {
             DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerItemColor);
         }
@@ -174,7 +169,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * 
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> defaultModel() {
+    public ItemBuilder<O, T, P> defaultModel() {
         return model((ctx, prov) -> prov.generated(ctx::getEntry));
     }
 
@@ -186,7 +181,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
-    public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> cons) {
+    public ItemBuilder<O, T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
     }
     
@@ -196,7 +191,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * 
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> defaultLang() {
+    public ItemBuilder<O, T, P> defaultLang() {
         return lang(Item::getDescriptionId);
     }
     
@@ -207,7 +202,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            A localized English name
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> lang(String name) {
+    public ItemBuilder<O, T, P> lang(String name) {
         return lang(Item::getDescriptionId, name);
     }
 
@@ -219,7 +214,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
-    public ItemBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
+    public ItemBuilder<O, T, P> recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
         return setData(ProviderType.RECIPE, cons);
     }
     
@@ -231,7 +226,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     @SafeVarargs
-    public final ItemBuilder<T, P> tag(TagKey<Item>... tags) {
+    public final ItemBuilder<O, T, P> tag(TagKey<Item>... tags) {
         return tag(ProviderType.ITEM_TAGS, tags);
     }
     

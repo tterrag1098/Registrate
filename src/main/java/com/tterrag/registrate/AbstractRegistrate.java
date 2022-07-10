@@ -1,68 +1,30 @@
 package com.tterrag.registrate;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.message.Message;
-
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
-import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.builders.BlockEntityBuilder;
+import com.google.common.collect.*;
+import com.tterrag.registrate.builders.*;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
-import com.tterrag.registrate.builders.Builder;
-import com.tterrag.registrate.builders.BuilderCallback;
-import com.tterrag.registrate.builders.EnchantmentBuilder;
 import com.tterrag.registrate.builders.EnchantmentBuilder.EnchantmentFactory;
-import com.tterrag.registrate.builders.EntityBuilder;
-import com.tterrag.registrate.builders.FluidBuilder;
-import com.tterrag.registrate.builders.ItemBuilder;
-import com.tterrag.registrate.builders.MenuBuilder;
 import com.tterrag.registrate.builders.MenuBuilder.ForgeMenuFactory;
 import com.tterrag.registrate.builders.MenuBuilder.MenuFactory;
 import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
-import com.tterrag.registrate.builders.NoConfigBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import com.tterrag.registrate.util.nullness.NonnullType;
-
+import com.tterrag.registrate.util.nullness.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.message.Message;
+
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -92,11 +54,17 @@ import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.NewRegistryEvent;
-import net.minecraftforge.registries.RegisterEvent;
-import net.minecraftforge.registries.RegistryBuilder;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.*;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * Manages all registrations and data generators for a mod.
@@ -425,7 +393,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
-    public <P extends RegistrateProvider, R> S setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
+    public <P extends RegistrateProvider, R> S setDataGenerator(Builder<S, R, ?, ?, ?> builder, ProviderType<P> type, NonNullConsumer<? extends P> cons) {
         return this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryKey(), type, cons);
     }
 
@@ -689,7 +657,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The {@link Function function} to apply
      * @return the resultant {@link Builder}
      */
-    public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 transform(NonNullFunction<S, S2> func) {
+    public <R, T extends R, P, S2 extends Builder<S, R, T, P, S2>> S2 transform(NonNullFunction<S, S2> func) {
         return func.apply(self());
     }
     
@@ -710,7 +678,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
-    public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 entry(NonNullBiFunction<String, BuilderCallback, S2> factory) {
+    public <R, T extends R, P, S2 extends Builder<S, R, T, P, S2>> S2 entry(NonNullBiFunction<String, BuilderCallback<S>, S2> factory) {
         return entry(currentName(), callback -> factory.apply(currentName(), callback));
     }
 
@@ -731,11 +699,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
-    public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 entry(String name, NonNullFunction<BuilderCallback, S2> factory) {
+    public <R, T extends R, P, S2 extends Builder<S, R, T, P, S2>> S2 entry(String name, NonNullFunction<BuilderCallback<S>, S2> factory) {
         return factory.apply(this::accept);
     }
 
-    protected <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
+    protected <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<S, R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
         Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, creator, entryFactory);
         log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.location());
         registerCallbacks.removeAll(Pair.of(name, type)).forEach(callback -> {
@@ -771,242 +739,242 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <R, T extends R, P> RegistryEntry<T> simple(P parent, String name, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
-        return entry(name, callback -> new NoConfigBuilder<R, T, P>(this, parent, name, callback, registryType, factory)).register();
+        return entry(name, callback -> new NoConfigBuilder<S, R, T, P>(self(), parent, name, callback, registryType, factory)).register();
     }
 
     // Items
     
-    public <T extends Item> ItemBuilder<T, S> item(NonNullFunction<Item.Properties, T> factory) {
+    public <T extends Item> ItemBuilder<S, T, S> item(NonNullFunction<Item.Properties, T> factory) {
         return item(self(), factory);
     }
     
-    public <T extends Item> ItemBuilder<T, S> item(String name, NonNullFunction<Item.Properties, T> factory) {
+    public <T extends Item> ItemBuilder<S, T, S> item(String name, NonNullFunction<Item.Properties, T> factory) {
         return item(self(), name, factory);
     }
     
-    public <T extends Item, P> ItemBuilder<T, P> item(P parent, NonNullFunction<Item.Properties, T> factory) {
+    public <T extends Item, P> ItemBuilder<S, T, P> item(P parent, NonNullFunction<Item.Properties, T> factory) {
         return item(parent, currentName(), factory);
     }
     
-    public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
+    public <T extends Item, P> ItemBuilder<S, T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         // TODO clean this up when NonNullLazyValue is fixed better
         Supplier<? extends @NonnullType CreativeModeTab> currentTab = this.currentTab;
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentTab == null ? null : currentTab::get));
+        return entry(name, callback -> ItemBuilder.create(self(), parent, name, callback, factory, currentTab == null ? null : currentTab::get));
     }
     
     // Blocks
     
-    public <T extends Block> BlockBuilder<T, S> block(NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<S, T, S> block(NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(self(), factory);
     }
     
-    public <T extends Block> BlockBuilder<T, S> block(String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<S, T, S> block(String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(self(), name, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block, P> BlockBuilder<S, T, P> block(P parent, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(parent, currentName(), factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block, P> BlockBuilder<S, T, P> block(P parent, String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(parent, name, Material.STONE, factory);
     }
     
-    public <T extends Block> BlockBuilder<T, S> block(Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<S, T, S> block(Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(self(), material, factory);
     }
     
-    public <T extends Block> BlockBuilder<T, S> block(String name, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block> BlockBuilder<S, T, S> block(String name, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(self(), name, material, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block, P> BlockBuilder<S, T, P> block(P parent, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(parent, currentName(), material, factory);
     }
     
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory, material));
+    public <T extends Block, P> BlockBuilder<S, T, P> block(P parent, String name, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+        return entry(name, callback -> BlockBuilder.create(self(), parent, name, callback, factory, material));
     }
     
     // Entities
     
-    public <T extends Entity> EntityBuilder<T, S> entity(EntityFactory<T> factory, MobCategory classification) {
+    public <T extends Entity> EntityBuilder<S, T, S> entity(EntityFactory<T> factory, MobCategory classification) {
         return entity(self(), factory, classification);
     }
     
-    public <T extends Entity> EntityBuilder<T, S> entity(String name, EntityFactory<T> factory, MobCategory classification) {
+    public <T extends Entity> EntityBuilder<S, T, S> entity(String name, EntityFactory<T> factory, MobCategory classification) {
         return entity(self(), name, factory, classification);
     }
     
-    public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, EntityFactory<T> factory, MobCategory classification) {
+    public <T extends Entity, P> EntityBuilder<S, T, P> entity(P parent, EntityFactory<T> factory, MobCategory classification) {
         return entity(parent, currentName(), factory, classification);
     }
     
-    public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, String name, EntityFactory<T> factory, MobCategory classification) {
-        return entry(name, callback -> EntityBuilder.create(this, parent, name, callback, factory, classification));
+    public <T extends Entity, P> EntityBuilder<S, T, P> entity(P parent, String name, EntityFactory<T> factory, MobCategory classification) {
+        return entry(name, callback -> EntityBuilder.create(self(), parent, name, callback, factory, classification));
     }
     
     // Block Entities
     
-    public <T extends BlockEntity> BlockEntityBuilder<T, S> blockEntity(BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity> BlockEntityBuilder<S, T, S> blockEntity(BlockEntityFactory<T> factory) {
         return blockEntity(self(), factory);
     }
     
-    public <T extends BlockEntity> BlockEntityBuilder<T, S> blockEntity(String name, BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity> BlockEntityBuilder<S, T, S> blockEntity(String name, BlockEntityFactory<T> factory) {
         return blockEntity(self(), name, factory);
     }
     
-    public <T extends BlockEntity, P> BlockEntityBuilder<T, P> blockEntity(P parent, BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity, P> BlockEntityBuilder<S, T, P> blockEntity(P parent, BlockEntityFactory<T> factory) {
         return blockEntity(parent, currentName(), factory);
     }
     
-    public <T extends BlockEntity, P> BlockEntityBuilder<T, P> blockEntity(P parent, String name, BlockEntityFactory<T> factory) {
-        return entry(name, callback -> BlockEntityBuilder.create(this, parent, name, callback, factory));
+    public <T extends BlockEntity, P> BlockEntityBuilder<S, T, P> blockEntity(P parent, String name, BlockEntityFactory<T> factory) {
+        return entry(name, callback -> BlockEntityBuilder.create(self(), parent, name, callback, factory));
     }
     
     // Fluids
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid() {
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid() {
         return fluid(self());
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return fluid(self(), stillTexture, flowingTexture);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(self(), stillTexture, flowingTexture, attributesFactory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(self(), stillTexture, flowingTexture, factory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(self(), stillTexture, flowingTexture, attributesFactory, factory);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(String name) {
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name) {
         return fluid(self(), name);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return fluid(self(), name, stillTexture, flowingTexture);
     }
     
-    public FluidBuilder<ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, attributesFactory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(self(), name, stillTexture, flowingTexture, factory);
     }
     
-    public <T extends ForgeFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(self(), name, stillTexture, flowingTexture, attributesFactory, factory);
     }
         
-    public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent) {
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent) {
         return fluid(parent, currentName());
     }
     
-    public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return fluid(parent, currentName(), stillTexture, flowingTexture);
     }
     
-    public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory);
     }
     
-    public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, factory);
     }
     
-    public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory, factory);
     }
     
-    public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name) {
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name) {
         return fluid(parent, name, new ResourceLocation(getModid(), "block/" + currentName() + "_still"), new ResourceLocation(getModid(), "block/" + currentName() + "_flow"));
     }
 
-    public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture));
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture));
     }
     
-    public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, attributesFactory));
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, attributesFactory));
     }
     
-    public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, factory));
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, factory));
     }
     
-    public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+    public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory));
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory));
     }
     
     // Menu
     
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<S, T, SC, S> menu(MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return menu(currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(String name, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<S, T, SC, S> menu(String name, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return menu(self(), name, factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<S, T, SC, P> menu(P parent, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return menu(parent, currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, String name, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return entry(name, callback -> new MenuBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<S, T, SC, P> menu(P parent, String name, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return entry(name, callback -> new MenuBuilder<S, T, SC, P>(self(), parent, name, callback, factory, screenFactory));
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<S, T, SC, S> menu(ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return menu(currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<T, SC, S> menu(String name, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>> MenuBuilder<S, T, SC, S> menu(String name, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return menu(self(), name, factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<S, T, SC, P> menu(P parent, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
         return menu(parent, currentName(), factory, screenFactory);
     }
 
-    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<T, SC, P> menu(P parent, String name, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
-        return entry(name, callback -> new MenuBuilder<T, SC, P>(this, parent, name, callback, factory, screenFactory));
+    public <T extends AbstractContainerMenu, SC extends Screen & MenuAccess<T>, P> MenuBuilder<S, T, SC, P> menu(P parent, String name, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, SC>> screenFactory) {
+        return entry(name, callback -> new MenuBuilder<S, T, SC, P>(self(), parent, name, callback, factory, screenFactory));
     }
     
     // Enchantment
     
-    public <T extends Enchantment> EnchantmentBuilder<T, S> enchantment(EnchantmentCategory type, EnchantmentFactory<T> factory) {
+    public <T extends Enchantment> EnchantmentBuilder<S, T, S> enchantment(EnchantmentCategory type, EnchantmentFactory<T> factory) {
         return enchantment(self(), type, factory);
     }
     
-    public <T extends Enchantment> EnchantmentBuilder<T, S> enchantment(String name, EnchantmentCategory type, EnchantmentFactory<T> factory) {
+    public <T extends Enchantment> EnchantmentBuilder<S, T, S> enchantment(String name, EnchantmentCategory type, EnchantmentFactory<T> factory) {
         return enchantment(self(), name, type, factory);
     }
     
-    public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, EnchantmentCategory type, EnchantmentFactory<T> factory) {
+    public <T extends Enchantment, P> EnchantmentBuilder<S, T, P> enchantment(P parent, EnchantmentCategory type, EnchantmentFactory<T> factory) {
         return enchantment(parent, currentName(), type, factory);
     }
     
-    public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, String name, EnchantmentCategory type, EnchantmentFactory<T> factory) {
-        return entry(name, callback -> EnchantmentBuilder.create(this, parent, name, callback, type, factory));
+    public <T extends Enchantment, P> EnchantmentBuilder<S, T, P> enchantment(P parent, String name, EnchantmentCategory type, EnchantmentFactory<T> factory) {
+        return entry(name, callback -> EnchantmentBuilder.create(self(), parent, name, callback, type, factory));
     }
 }

@@ -1,9 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -23,12 +19,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.SpawnPlacements.SpawnPredicate;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.CreativeModeTab;
@@ -42,6 +33,9 @@ import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryObject;
 
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
+
 /**
  * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
  * 
@@ -50,7 +44,7 @@ import net.minecraftforge.registries.RegistryObject;
  * @param <P>
  *            Parent object type
  */
-public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, EntityBuilder<T, P>> {
+public class EntityBuilder<O extends AbstractRegistrate<O>, T extends Entity, P> extends AbstractBuilder<O, EntityType<?>, EntityType<T>, P, EntityBuilder<O, T, P>> {
 
     /**
      * Create a new {@link EntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
@@ -78,7 +72,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The {@link MobCategory} of the entity
      * @return A new {@link EntityBuilder} with reasonable default data generators.
      */
-    public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory,
+    public static <O extends AbstractRegistrate<O>, T extends Entity, P> EntityBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, EntityType.EntityFactory<T> factory,
             MobCategory classification) {
         return new EntityBuilder<>(owner, parent, name, callback, factory, classification)
                 .defaultLang();
@@ -93,7 +87,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
     
-    protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
+    protected EntityBuilder(O owner, P parent, String name, BuilderCallback<O> callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
         super(owner, parent, name, callback, Registry.ENTITY_TYPE_REGISTRY);
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
@@ -106,7 +100,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The action to perform on the properties
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> properties(NonNullConsumer<EntityType.Builder<T>> cons) {
+    public EntityBuilder<O, T, P> properties(NonNullConsumer<EntityType.Builder<T>> cons) {
         builderCallback = builderCallback.andThen(cons);
         return this;
     }
@@ -119,7 +113,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            A (server safe) supplier to an {@link EntityRendererProvider} that will provide this entity's renderer
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer) {
+    public EntityBuilder<O, T, P> renderer(NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
@@ -153,7 +147,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *             When called more than once
      */
     @SuppressWarnings("unchecked")
-    public EntityBuilder<T, P> attributes(Supplier<AttributeSupplier.Builder> attributes) {
+    public EntityBuilder<O, T, P> attributes(Supplier<AttributeSupplier.Builder> attributes) {
         if (attributesConfigured) {
             throw new IllegalStateException("Cannot configure attributes more than once");
         }
@@ -178,7 +172,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *             When called more than once
      */
     @SuppressWarnings("unchecked")
-    public EntityBuilder<T, P> spawnPlacement(SpawnPlacements.Type type, Heightmap.Types heightmap, SpawnPredicate<T> predicate) {
+    public EntityBuilder<O, T, P> spawnPlacement(SpawnPlacements.Type type, Heightmap.Types heightmap, SpawnPredicate<T> predicate) {
         if (spawnConfigured) {
             throw new IllegalStateException("Cannot configure spawn placement more than once");
         }
@@ -212,7 +206,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @return this {@link EntityBuilder}
      */
     @Deprecated
-    public EntityBuilder<T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
+    public EntityBuilder<O, T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
         return spawnEgg(primaryColor, secondaryColor).build();
     }
 
@@ -231,7 +225,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Deprecated
-    public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
+    public ItemBuilder<O, ? extends SpawnEggItem, EntityBuilder<O, T, P>> spawnEgg(int primaryColor, int secondaryColor) {
         return getOwner().item(this, getName() + "_spawn_egg", p -> new ForgeSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) asSupplier(), primaryColor, secondaryColor, p)).properties(p -> p.tab(CreativeModeTab.TAB_MISC))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
     }
@@ -242,7 +236,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * 
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> defaultLang() {
+    public EntityBuilder<O, T, P> defaultLang() {
         return lang(EntityType::getDescriptionId);
     }
 
@@ -253,7 +247,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            A localized English name
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> lang(String name) {
+    public EntityBuilder<O, T, P> lang(String name) {
         return lang(EntityType::getDescriptionId, name);
     }
 
@@ -265,7 +259,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The callback which will be invoked during entity loot table creation.
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> loot(NonNullBiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
+    public EntityBuilder<O, T, P> loot(NonNullBiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
         return setData(ProviderType.LOOT, (ctx, prov) -> prov.addLootAction(LootType.ENTITY, tb -> cons.accept(tb, ctx.getEntry())));
     }
 
@@ -277,7 +271,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @return this {@link EntityBuilder}
      */
     @SafeVarargs
-    public final EntityBuilder<T, P> tag(TagKey<EntityType<?>>... tags) {
+    public final EntityBuilder<O, T, P> tag(TagKey<EntityType<?>>... tags) {
         return tag(ProviderType.ENTITY_TAGS, tags);
     }
 
