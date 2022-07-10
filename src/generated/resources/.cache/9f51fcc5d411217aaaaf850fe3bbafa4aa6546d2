@@ -1,11 +1,11 @@
-// 1.19	2022-06-23T01:25:04.453344	Registrate Provider for testmod [Recipes, Advancements, Loot tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
+// 1.19	2022-07-10T13:04:59.963492	Registrate Provider for testmod [Recipes, Advancements, Loot tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
 353e0134b90278ff49840165bed05cb48e7fff1b assets/testmod/blockstates/magic_item_model.json
 bc6ecd9ef8452b21567c005ab9c626c54a1beeaa assets/testmod/blockstates/testblock.json
 069fa0cc9495cbad97a129b3e39bd0bdf0599b28 assets/testmod/blockstates/testfluid.json
 5a6966380a9641fb31f35fe8fc9964e5015c318b assets/testmod/lang/en_ud.json
 8b69c8e0e7b41eae83a4b85609d070c9ac02b079 assets/testmod/lang/en_us.json
 b3c7ac87f735c9813d09ee46f1d26c844c06353c assets/testmod/models/block/subfolder/magic_item_model.json
-e6b1a73e2228a3216085e31392b29703b4c7cda9 assets/testmod/models/block/testblock.json
+226ecfcb53fb775aa96f550dcc41bc44c026127f assets/testmod/models/block/testblock.json
 c73682ddea9998e48415b962e3c3b1d2dcc6157a assets/testmod/models/block/testfluid.json
 35c5c8cdd34da12756a7651f2da42ce019a5684a assets/testmod/models/item/magic_item_model.json
 e7327feaec0ea15c7f4f5cc4e012f4ff08284df8 assets/testmod/models/item/testblock.json

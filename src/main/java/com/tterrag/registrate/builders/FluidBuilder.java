@@ -65,10 +65,90 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * @param flowingTexture
      *            The texture to use for flowing fluids
      * @return A new {@link FluidBuilder} with reasonable default data generators.
-     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullFunction)
+     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, FluidTypeFactory, NonNullFunction)
      */
     public static <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, ForgeFlowingFluid.Flowing::new);
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, FluidBuilder::defaultFluidType, ForgeFlowingFluid.Flowing::new);
+    }
+
+    /**
+     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default fluid class ({@link ForgeFlowingFluid.Flowing}).
+     *
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param stillTexture
+     *            The texture to use for still fluids
+     * @param typeFactory
+     *            A factory that creates the fluid type
+     * @param flowingTexture
+     *            The texture to use for flowing fluids
+     * @return A new {@link FluidBuilder} with reasonable default data generators.
+     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, FluidTypeFactory, NonNullFunction)
+     */
+    public static <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory) {
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, typeFactory, ForgeFlowingFluid.Flowing::new);
+    }
+
+    /**
+     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default fluid class ({@link ForgeFlowingFluid.Flowing}).
+     *
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param stillTexture
+     *            The texture to use for still fluids
+     * @param fluidType
+     *            An existing and registered fluid type.
+     * @param flowingTexture
+     *            The texture to use for flowing fluids
+     * @return A new {@link FluidBuilder} with reasonable default data generators.
+     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, FluidTypeFactory, NonNullFunction)
+     */
+    public static <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType) {
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, fluidType, ForgeFlowingFluid.Flowing::new);
+    }
+
+    /**
+     * Create a new {@link FluidBuilder} and configure data. The created builder will use a default ({@link FluidType}) and fluid class ({@link ForgeFlowingFluid.Flowing}).
+     *
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param stillTexture
+     *            The texture to use for still fluids
+     * @param flowingTexture
+     *            The texture to use for flowing fluids
+     * @param fluidFactory
+     *            A factory that creates the flowing fluid
+     * @return A new {@link FluidBuilder} with reasonable default data generators.
+     */
+    public static <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+        NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, FluidBuilder::defaultFluidType, fluidFactory);
     }
 
     /**
@@ -78,7 +158,6 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      * <ul>
      * <li>The default translation (via {@link #defaultLang()})</li>
      * <li>A default {@link ForgeFlowingFluid.Source source fluid} (via {@link #defaultSource})</li>
-     * <li>A default {@link FluidType} (via {@link #defaultType()})</li>
      * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture (via {@link #defaultBlock()})</li>
      * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid (via {@link #defaultBucket()})</li>
      * </ul>
@@ -99,28 +178,69 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
      *            The texture to use for still fluids
      * @param flowingTexture
      *            The texture to use for flowing fluids
-     * @param factory
+     * @param typeFactory
+     *            A factory that creates the fluid type
+     * @param fluidFactory
      *            A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
-        FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, factory)
-            .defaultLang().defaultSource().defaultBlock().defaultBucket().defaultType();
+        FluidTypeFactory typeFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
+        FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, typeFactory, fluidFactory)
+            .defaultLang().defaultSource().defaultBlock().defaultBucket();
+        return ret;
+    }
 
+    /**
+     * Create a new {@link FluidBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The fluid will be assigned the following data:
+     * <ul>
+     * <li>The default translation (via {@link #defaultLang()})</li>
+     * <li>A default {@link ForgeFlowingFluid.Source source fluid} (via {@link #defaultSource})</li>
+     * <li>A default block for the fluid, with its own default blockstate and model that configure the particle texture (via {@link #defaultBlock()})</li>
+     * <li>A default bucket item, that uses a simple generated item model with a texture of the same name as this fluid (via {@link #defaultBucket()})</li>
+     * </ul>
+     *
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param stillTexture
+     *            The texture to use for still fluids
+     * @param flowingTexture
+     *            The texture to use for flowing fluids
+     * @param fluidType
+     *            An existing and registered fluid type
+     * @param fluidFactory
+     *            A factory that creates the flowing fluid
+     * @return A new {@link FluidBuilder} with reasonable default data generators.
+     */
+    public static <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+        NonNullSupplier<FluidType> fluidType, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
+        FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, fluidType, fluidFactory)
+                .defaultLang().defaultSource().defaultBlock().defaultBucket();
         return ret;
     }
 
     private final String sourceName, bucketName;
 
     private final ResourceLocation stillTexture, flowingTexture;
-    private final NonNullFunction<ForgeFlowingFluid.Properties, T> factory;
+    private final NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory;
 
     @Nullable
-    private NonNullSupplier<FluidType> fluidType;
+    private final NonNullSupplier<FluidType> fluidType;
 
     @Nullable
-    private Boolean defaultSource, defaultBlock, defaultBucket, defaultType;
+    private Boolean defaultSource, defaultBlock, defaultBucket;
 
     private NonNullConsumer<FluidType.Properties> typeProperties = $ -> {};
 
@@ -134,17 +254,34 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     private NonNullSupplier<? extends ForgeFlowingFluid> source;
     private final List<TagKey<Fluid>> tags = new ArrayList<>();
 
-    public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+    public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
         super(owner, parent, "flowing_" + name, callback, Registry.FLUID_REGISTRY);
         this.sourceName = name;
         this.bucketName = name + "_bucket";
         this.stillTexture = stillTexture;
         this.flowingTexture = flowingTexture;
-        this.factory = factory;
+        this.fluidFactory = fluidFactory;
+        this.fluidType = NonNullSupplier.lazy(() -> typeFactory.create(makeTypeProperties(), this.stillTexture, this.flowingTexture));
+        this.registerType = true;
 
         String bucketName = this.bucketName;
         this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, Registry.ITEM_REGISTRY).get())
             .block(() -> owner.<Block, LiquidBlock>get(name, Registry.BLOCK_REGISTRY).get());
+    }
+
+    public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
+        super(owner, parent, "flowing_" + name, callback, Registry.FLUID_REGISTRY);
+        this.sourceName = name;
+        this.bucketName = name + "_bucket";
+        this.stillTexture = stillTexture;
+        this.flowingTexture = flowingTexture;
+        this.fluidFactory = fluidFactory;
+        this.fluidType = fluidType;
+        this.registerType = false; // Don't register if we have a fluid from outside.
+
+        String bucketName = this.bucketName;
+        this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, Registry.ITEM_REGISTRY).get())
+                .block(() -> owner.<Block, LiquidBlock>get(name, Registry.BLOCK_REGISTRY).get());
     }
 
     /**
@@ -174,51 +311,6 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     /**
-     * Create a standard {@link FluidType} for this fluid which will be built and registered along with this fluid.
-     *
-     * @return this {@link FluidBuilder}
-     * @see #type(FluidTypeFactory)
-     * @see #type(NonNullSupplier)
-     * @throws IllegalStateException
-     *             If {@link #source(NonNullFunction)} has been called before this method
-     */
-    public FluidBuilder<T, P> defaultType() {
-        if (this.defaultType != null) {
-            throw new IllegalStateException("Cannot set a default type after a custom type has been created");
-        }
-        this.defaultType = true;
-        return this;
-    }
-
-    /**
-     * Create a {@link FluidTypeFactory} for this fluid, which is created by the given factory, and which will be built and registered along with this fluid.
-     *
-     * @param factory
-     *            A factory for the fluid type, which accepts the properties and texture resources and returns a new fluid type
-     * @return this {@link FluidBuilder}
-     */
-    public FluidBuilder<T, P> type(FluidTypeFactory factory) {
-        this.defaultType = false;
-        this.registerType = true;
-        this.fluidType = NonNullSupplier.lazy(() -> factory.create(makeTypeProperties(), this.stillTexture, this.flowingTexture));
-        return this;
-    }
-
-    /**
-     * Use an existing {@link FluidTypeFactory} for this fluid.
-     *
-     * @param type
-     *            The fluid type to use
-     * @return this {@link FluidBuilder}
-     */
-    public FluidBuilder<T, P> type(NonNullSupplier<FluidType> type) {
-        this.defaultType = false;
-        this.registerType = false; // TODO: should this be a thing?
-        this.fluidType = type;
-        return this;
-    }
-
-    /**
      * Assign the default translation, as specified by {@link RegistrateLangProvider#toEnglishName(String)}. This is the default, so it is generally not necessary to call, unless for
      * undoing previous changes.
      *
@@ -240,20 +332,20 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     }
 
     @SuppressWarnings("deprecation")
-    public FluidBuilder<T, P> renderLayer(Supplier<RenderType> layer) {
+    public FluidBuilder<T, P> renderType(Supplier<RenderType> layer) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get()), "Invalid block layer: " + layer);
+            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get()), "Invalid render type: " + layer);
         });
 
         if (this.layer == null) {
-            onRegister(this::registerLayers);
+            onRegister(this::registerRenderType);
         }
         this.layer = layer;
         return this;
     }
 
     @SuppressWarnings("deprecation")
-    protected void registerLayers(T entry) {
+    protected void registerRenderType(T entry) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
                 if (this.layer != null) {
@@ -474,7 +566,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
 
     @Override
     protected T createEntry() {
-        return factory.apply(makeProperties());
+        return fluidFactory.apply(makeProperties());
     }
 
     /**
@@ -485,10 +577,6 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public FluidEntry<T> register() {
-        if (defaultType == Boolean.TRUE) {
-            type(FluidBuilder::defaultFluidType);
-        }
-
         // Check the fluid has a type.
         if (this.fluidType != null) {
             // Register the type.
