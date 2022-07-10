@@ -1,6 +1,8 @@
 package com.tterrag.registrate.builders;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.factory.MenuFactory;
+import com.tterrag.registrate.builders.factory.MenuScreenFactory;
 import com.tterrag.registrate.util.entry.MenuEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -10,9 +12,6 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.core.Registry;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,33 +19,16 @@ import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryObject;
 
-import javax.annotation.Nullable;
-
 public class MenuBuilder<O extends AbstractRegistrate<O>, T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<O, MenuType<?>, MenuType<T>, P, MenuBuilder<O, T, S, P>> {
     
-    public interface MenuFactory<T extends AbstractContainerMenu> {
-        
-        T create(MenuType<T> type, int windowId, Inventory inv);
+    private final MenuFactory.WithBuffer<T> factory;
+    private final NonNullSupplier<MenuScreenFactory<T, S>> screenFactory;
+
+    public MenuBuilder(O owner, P parent, String name, BuilderCallback<O> callback, MenuFactory<T> factory, NonNullSupplier<MenuScreenFactory<T, S>> screenFactory) {
+        this(owner, parent, name, callback, MenuFactory.withIgnoredBuffer(factory), screenFactory);
     }
 
-    public interface ForgeMenuFactory<T extends AbstractContainerMenu> {
-
-        T create(MenuType<T> type, int windowId, Inventory inv, @Nullable FriendlyByteBuf buffer);
-    }
-    
-    public interface ScreenFactory<M extends AbstractContainerMenu, T extends Screen & MenuAccess<M>> {
-        
-        T create(M menu, Inventory inv, Component displayName);
-    }
-    
-    private final ForgeMenuFactory<T> factory;
-    private final NonNullSupplier<ScreenFactory<T, S>> screenFactory;
-
-    public MenuBuilder(O owner, P parent, String name, BuilderCallback<O> callback, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
-        this(owner, parent, name, callback, (type, windowId, inv, $) -> factory.create(type, windowId, inv), screenFactory);
-    }
-
-    public MenuBuilder(O owner, P parent, String name, BuilderCallback<O> callback, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
+    public MenuBuilder(O owner, P parent, String name, BuilderCallback<O> callback, MenuFactory.WithBuffer<T> factory, NonNullSupplier<MenuScreenFactory<T, S>> screenFactory) {
         super(owner, parent, name, callback, Registry.MENU_REGISTRY);
         this.factory = factory;
         this.screenFactory = screenFactory;
@@ -54,11 +36,11 @@ public class MenuBuilder<O extends AbstractRegistrate<O>, T extends AbstractCont
 
     @Override
     protected @NonnullType MenuType<T> createEntry() {
-        ForgeMenuFactory<T> factory = this.factory;
+        MenuFactory.WithBuffer<T> factory = this.factory;
         NonNullSupplier<MenuType<T>> supplier = this.asSupplier();
         MenuType<T> ret = IForgeMenuType.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            ScreenFactory<T, S> screenFactory = this.screenFactory.get();
+            MenuScreenFactory<T, S> screenFactory = this.screenFactory.get();
             MenuScreens.<T, S>register(ret, (type, inv, displayName) -> screenFactory.create(type, inv, displayName));
         });
         return ret;

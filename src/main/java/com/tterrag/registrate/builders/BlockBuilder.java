@@ -3,14 +3,19 @@ package com.tterrag.registrate.builders;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
+import com.tterrag.registrate.builders.factory.BlockEntityFactory;
+import com.tterrag.registrate.builders.factory.BlockFactory;
+import com.tterrag.registrate.builders.factory.BlockItemFactory;
 import com.tterrag.registrate.providers.*;
 import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.*;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -86,12 +91,12 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
      *            The {@link Material} to use for the initial {@link Block.Properties} object
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
-    public static <O extends AbstractRegistrate<O>, T extends Block, P> BlockBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<BlockBehaviour.Properties, T> factory, Material material) {
+    public static <O extends AbstractRegistrate<O>, T extends Block, P> BlockBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, BlockFactory<T> factory, Material material) {
         return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of(material))
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
 
-    private final NonNullFunction<BlockBehaviour.Properties, T> factory;
+    private final BlockFactory<T> factory;
     
     private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
@@ -100,7 +105,7 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
     @Nullable
     private NonNullSupplier<Supplier<BlockColor>> colorHandler;
 
-    protected BlockBuilder(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<BlockBehaviour.Properties, T> factory, NonNullSupplier<BlockBehaviour.Properties> initialProperties) {
+    protected BlockBuilder(O owner, P parent, String name, BuilderCallback<O> callback, BlockFactory<T> factory, NonNullSupplier<BlockBehaviour.Properties> initialProperties) {
         super(owner, parent, name, callback, Registry.BLOCK_REGISTRY);
         this.factory = factory;
         this.initialProperties = initialProperties;
@@ -222,7 +227,7 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public ItemBuilder<O, BlockItem, BlockBuilder<O, T, P>> item() {
-        return item(BlockItem::new);
+        return item(BlockItemFactory.blockItem());
     }
 
     /**
@@ -236,8 +241,8 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
      *            A factory for the item, which accepts the block object and properties and returns a new item
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
-    public <I extends Item> ItemBuilder<O, I, BlockBuilder<O, T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<O, T, P>> item(this, getName(), p -> factory.apply(getEntry(), p))
+    public <I extends Item> ItemBuilder<O, I, BlockBuilder<O, T, P>> item(BlockItemFactory<? super T, ? extends I> factory) {
+        return getOwner().<I, BlockBuilder<O, T, P>> item(this, getName(), p -> factory.create(getEntry(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
                 .model((ctx, prov) -> {
                     Optional<String> model = getOwner().getDataProvider(ProviderType.BLOCKSTATE)
@@ -407,7 +412,7 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
     protected T createEntry() {
         @Nonnull BlockBehaviour.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
-        return factory.apply(properties);
+        return factory.create(properties);
     }
     
     @Override
