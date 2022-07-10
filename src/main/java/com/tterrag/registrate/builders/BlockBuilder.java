@@ -243,7 +243,7 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
      */
     public <I extends Item> ItemBuilder<O, I, BlockBuilder<O, T, P>> item(BlockItemFactory<? super T, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<O, T, P>> item(this, getName(), p -> factory.create(getEntry(), p))
-                .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
+                .clearData(ProviderType.LANG)
                 .model((ctx, prov) -> {
                     Optional<String> model = getOwner().getDataProvider(ProviderType.BLOCKSTATE)
                             .flatMap(p -> p.getExistingVariantBuilder(getEntry()))
