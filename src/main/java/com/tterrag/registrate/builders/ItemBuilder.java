@@ -1,6 +1,7 @@
 package com.tterrag.registrate.builders;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.factory.ItemFactory;
 import com.tterrag.registrate.providers.*;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
@@ -61,7 +62,7 @@ public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> ext
      *            Factory to create the item
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <O extends AbstractRegistrate<O>, T extends Item, P> ItemBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<Item.Properties, T> factory) {
+    public static <O extends AbstractRegistrate<O>, T extends Item, P> ItemBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, ItemFactory<T> factory) {
         return create(owner, parent, name, callback, factory, null);
     }
     
@@ -93,13 +94,13 @@ public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> ext
      *            The {@link CreativeModeTab} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <O extends AbstractRegistrate<O>, T extends Item, P> ItemBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab) {
+    public static <O extends AbstractRegistrate<O>, T extends Item, P> ItemBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, ItemFactory<T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
                 .defaultModel().defaultLang()
                 .transform(ib -> tab == null ? ib : ib.tab(tab));
     }
 
-    private final NonNullFunction<Item.Properties, T> factory;
+    private final ItemFactory<T> factory;
     
     private NonNullSupplier<Item.Properties> initialProperties = Item.Properties::new;
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
@@ -107,7 +108,7 @@ public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> ext
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
     
-    protected ItemBuilder(O owner, P parent, String name, BuilderCallback<O> callback, NonNullFunction<Item.Properties, T> factory) {
+    protected ItemBuilder(O owner, P parent, String name, BuilderCallback<O> callback, ItemFactory<T> factory) {
         super(owner, parent, name, callback, Registry.ITEM_REGISTRY);
         this.factory = factory;
     }
@@ -237,7 +238,7 @@ public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> ext
     protected T createEntry() {
         Item.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
-        return factory.apply(properties);
+        return factory.create(properties);
     }
     
     @Override

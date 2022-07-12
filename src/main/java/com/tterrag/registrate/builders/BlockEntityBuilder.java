@@ -1,6 +1,7 @@
 package com.tterrag.registrate.builders;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.factory.BlockEntityFactory;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -10,12 +11,10 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -37,12 +36,6 @@ import java.util.function.Supplier;
  *            Parent object type
  */
 public class BlockEntityBuilder<O extends AbstractRegistrate<O>, T extends BlockEntity, P> extends AbstractBuilder<O, BlockEntityType<?>, BlockEntityType<T>, P, BlockEntityBuilder<O, T, P>> {
-
-    public interface BlockEntityFactory<T extends BlockEntity> {
-
-        public T create(BlockEntityType<T> type, BlockPos pos, BlockState state);
-
-    }
 
     /**
      * Create a new {@link BlockEntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.

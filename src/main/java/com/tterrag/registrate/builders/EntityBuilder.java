@@ -1,6 +1,7 @@
 package com.tterrag.registrate.builders;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.factory.EntityTypeFactory;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
@@ -76,7 +77,7 @@ public class EntityBuilder<O extends AbstractRegistrate<O>, T extends Entity, P>
      *            The {@link MobCategory} of the entity
      * @return A new {@link EntityBuilder} with reasonable default data generators.
      */
-    public static <O extends AbstractRegistrate<O>, T extends Entity, P> EntityBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, EntityType.EntityFactory<T> factory,
+    public static <O extends AbstractRegistrate<O>, T extends Entity, P> EntityBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, EntityTypeFactory<T> factory,
             MobCategory classification) {
         return new EntityBuilder<>(owner, parent, name, callback, factory, classification)
                 .defaultLang();
@@ -91,7 +92,7 @@ public class EntityBuilder<O extends AbstractRegistrate<O>, T extends Entity, P>
     
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
     
-    protected EntityBuilder(O owner, P parent, String name, BuilderCallback<O> callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
+    protected EntityBuilder(O owner, P parent, String name, BuilderCallback<O> callback, EntityTypeFactory<T> factory, MobCategory classification) {
         super(owner, parent, name, callback, Registry.ENTITY_TYPE_REGISTRY);
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }

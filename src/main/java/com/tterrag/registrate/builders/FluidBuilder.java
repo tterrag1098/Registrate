@@ -3,6 +3,7 @@ package com.tterrag.registrate.builders;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.factory.FluidFactory;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
@@ -71,7 +72,7 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
      * @param flowingTexture
      *            The texture to use for flowing fluids
      * @return A new {@link FluidBuilder} with reasonable default data generators.
-     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, NonNullFunction)
+     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, FluidFactory)
      */
     public static <O extends AbstractRegistrate<O>, P> FluidBuilder<O, ForgeFlowingFluid.Flowing, P> create(O owner, P parent, String name, BuilderCallback<O> callback, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return create(owner, parent, name, callback, stillTexture, flowingTexture, (NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes>) null);
@@ -97,11 +98,11 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
      * @param attributesFactory
      *            A factory that creates the fluid attributes instance
      * @return A new {@link FluidBuilder} with reasonable default data generators.
-     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, NonNullFunction)
+     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, FluidFactory)
      */
     public static <O extends AbstractRegistrate<O>, P> FluidBuilder<O, ForgeFlowingFluid.Flowing, P> create(O owner, P parent, String name, BuilderCallback<O> callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
             @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, ForgeFlowingFluid.Flowing::new);
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, FluidFactory.FLOWING);
     }
     
     /**
@@ -126,10 +127,10 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
      * @param factory
      *            A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
-     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, NonNullFunction)
+     * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, NonNullBiFunction, FluidFactory)
      */
     public static <O extends AbstractRegistrate<O>, T extends ForgeFlowingFluid, P> FluidBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            FluidFactory<T> factory) {
         return create(owner, parent, name, callback, stillTexture, flowingTexture, null, factory);
     }
     
@@ -168,7 +169,7 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <O extends AbstractRegistrate<O>, T extends ForgeFlowingFluid, P> FluidBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            @Nullable NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, FluidFactory<T> factory) {
         FluidBuilder<O, T, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory)
                 .defaultLang().defaultSource().defaultBlock().defaultBucket()
                 .tag(FluidTags.WATER);
@@ -180,7 +181,7 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
     private final String sourceName;
     private final String bucketName;
     private final NonNullSupplier<FluidAttributes.Builder> attributes;
-    private final NonNullFunction<ForgeFlowingFluid.Properties, T> factory;
+    private final FluidFactory<T> factory;
 
     @Nullable
     private Boolean defaultSource, defaultBlock, defaultBucket;
@@ -192,7 +193,7 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
     private List<TagKey<Fluid>> tags = new ArrayList<>();
 
     protected FluidBuilder(O owner, P parent, String name, BuilderCallback<O> callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> factory) {
+            @Nullable BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, FluidFactory<T> factory) {
         super(owner, parent, "flowing_" + name, callback, Registry.FLUID_REGISTRY);
         this.stillTexture = stillTexture;
         this.sourceName = name;
@@ -458,7 +459,7 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
 
     @Override
     protected T createEntry() {
-        return factory.apply(makeProperties());
+        return factory.create(makeProperties());
     }
 
     /**

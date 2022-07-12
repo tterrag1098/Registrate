@@ -1,6 +1,7 @@
 package com.tterrag.registrate.builders;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.builders.factory.EnchantmentFactory;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -23,12 +24,6 @@ import java.util.EnumSet;
  *            Parent object type
  */
 public class EnchantmentBuilder<O extends AbstractRegistrate<O>, T extends Enchantment, P> extends AbstractBuilder<O, Enchantment, T, P, EnchantmentBuilder<O, T, P>> {
-
-    @FunctionalInterface
-    public interface EnchantmentFactory<T extends Enchantment> {
-        
-        T create(Enchantment.Rarity rarity, EnchantmentCategory type, EquipmentSlot... slots);
-    }
 
     /**
      * Create a new {@link EnchantmentBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
