@@ -128,6 +128,20 @@ public interface Builder<O extends AbstractRegistrate<O>, R extends IForgeRegist
     }
 
     /**
+     * Clear the data provider callback for this entry for the given provider type
+     *
+     * @param <D>
+     *            The type of provider
+     * @param type
+     *            The {@link ProviderType} for the desired provider
+     * @return this builder
+     */
+    default <D extends RegistrateProvider> S clearData(ProviderType<? extends D> type)
+    {
+        return setData(type, NonNullBiConsumer.noop());
+    }
+
+    /**
      * Add a data provider callback which will be invoked when the provider of the given type executes.
      * <p>
      * Calling this multiple times for the same type will <em>not</em> overwrite an existing callback.

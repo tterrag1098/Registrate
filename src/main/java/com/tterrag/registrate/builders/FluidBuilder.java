@@ -9,7 +9,10 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateTagsProvider;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.*;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullConsumer;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
@@ -447,7 +450,7 @@ public class FluidBuilder<O extends AbstractRegistrate<O>, T extends ForgeFlowin
         // TODO improve this?
         if (block.isPresent()) {
             attributes.translationKey(block.get().getDescriptionId());
-            setData(ProviderType.LANG, NonNullBiConsumer.noop());
+            clearData(ProviderType.LANG);
         } else {
             attributes.translationKey(Util.makeDescriptionId("fluid", new ResourceLocation(getOwner().getModid(), sourceName)));
         }
