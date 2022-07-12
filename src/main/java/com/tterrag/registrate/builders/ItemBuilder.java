@@ -13,8 +13,11 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -246,4 +249,91 @@ public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> ext
     public ItemEntry<T> register() {
         return (ItemEntry<T>) super.register();
     }
+
+    /*
+        The following methods exist as shortcuts into Item Properties
+            Stops you needing to have long chains inside `properties()`
+            or having multiple `properties()` calls
+
+            ```
+            builder.properties(props -> props
+                .stacksTo(1)
+                .tab(CreativeModeTab.TAB_MISC)
+            )
+            ```
+
+            becomes
+
+            ```
+            builder.stacksTo(1).tab(CreativeModeTab.TAB_MISC)
+            ```
+     */
+    // region: Item Properties Wrappers
+    public final ItemBuilder<O, T, P> food(FoodProperties food)
+    {
+        return properties(properties -> properties.food(food));
+    }
+
+    public final ItemBuilder<O, T, P> stacksTo(int maxStackSize)
+    {
+        return properties(properties -> properties.stacksTo(maxStackSize));
+    }
+
+    public final ItemBuilder<O, T, P> defaultDurability(int durability)
+    {
+        return properties(properties -> properties.defaultDurability(durability));
+    }
+
+    public final ItemBuilder<O, T, P> durability(int durability)
+    {
+        return properties(properties -> properties.durability(durability));
+    }
+
+    /**
+     * @deprecated Exists purely for legacy & vanilla item reasons, should never be used with custom modded items. Modded should use {@link #craftRemainder(Supplier)}
+     */
+    @Deprecated
+    public final ItemBuilder<O, T, P> craftRemainder(Item item)
+    {
+        return properties(properties -> properties.craftRemainder(item));
+    }
+
+    /**
+     * @deprecated Exists purely for legacy & vanilla item reasons, should never be used with custom modded items. Modded should use {@link #craftRemainder(Supplier)}
+     */
+    @Deprecated
+    public final ItemBuilder<O, T, P> craftRemainder(ItemLike item)
+    {
+        return properties(properties -> properties.craftRemainder(item.asItem()));
+    }
+
+    public final ItemBuilder<O, T, P> craftRemainder(Supplier<? extends ItemLike> item)
+    {
+        return properties(properties -> properties.craftRemainder(item.get().asItem()));
+    }
+
+    /**
+     * @deprecated Exists purely for legacy & vanilla creative mode tab reasons, should never be used with custom modded creative mode tabs. Modded should use {@link #tab(NonNullSupplier)}
+     */
+    @Deprecated
+    public final ItemBuilder<O, T, P> tab(CreativeModeTab tab)
+    {
+        return properties(properties -> properties.tab(tab));
+    }
+
+    public final ItemBuilder<O, T, P> rarity(Rarity rarity)
+    {
+        return properties(properties -> properties.rarity(rarity));
+    }
+
+    public final ItemBuilder<O, T, P> fireResistant()
+    {
+        return properties(Item.Properties::fireResistant);
+    }
+
+    public final ItemBuilder<O, T, P> setNoRepair()
+    {
+        return properties(Item.Properties::setNoRepair);
+    }
+    // endregion
 }
