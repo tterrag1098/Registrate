@@ -1,10 +1,5 @@
 package com.tterrag.registrate.providers;
 
-import java.util.Map;
-
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
 import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
@@ -13,10 +8,18 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.core.Registry;
+import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
+
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Map;
 
 /**
  * Represents a type of data that can be generated, and specifies a factory for the provider.
@@ -43,6 +46,9 @@ public interface ProviderType<T extends RegistrateProvider> {
     public static final ProviderType<RegistrateTagsProvider<Fluid>> FLUID_TAGS = register("tags/fluid", type -> (p, e) -> new RegistrateTagsProvider<Fluid>(p, type, "fluids", e.getGenerator(), Registry.FLUID, e.getExistingFileHelper()));
     public static final ProviderType<RegistrateTagsProvider<EntityType<?>>> ENTITY_TAGS = register("tags/entity", type -> (p, e) -> new RegistrateTagsProvider<EntityType<?>>(p, type, "entity_types", e.getGenerator(), Registry.ENTITY_TYPE, e.getExistingFileHelper()));
 
+    ProviderType<RegistrateTagsProvider<Biome>> BIOME_TAGS = register("tags/worldgen/biome", type -> (p, e) -> new RegistrateTagsProvider<Biome>(p, type, "worldgen/biome", e.getGenerator(), BuiltinRegistries.BIOME, e.getExistingFileHelper()));
+    ProviderType<RegistrateTagsProvider<ConfiguredStructureFeature<?, ?>>> CONFIGURED_STRUCTURE_FEATURE_TAGS = register("tags/worldgen/configured_structure_feature", type -> (p, e) -> new RegistrateTagsProvider<ConfiguredStructureFeature<?, ?>>(p, type, "worldgen/configured_structure_feature", e.getGenerator(), BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE, e.getExistingFileHelper()));
+    ProviderType<RegistrateTagsProvider<GameEvent>> GAME_EVENT_TAGS = register("tags/game_events", type -> (p, e) -> new RegistrateTagsProvider<GameEvent>(p, type, "game_events", e.getGenerator(), Registry.GAME_EVENT, e.getExistingFileHelper()));
     // CLIENT DATA
     public static final ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = register("blockstate", (p, e) -> new RegistrateBlockstateProvider(p, e.getGenerator(), e.getExistingFileHelper()));
     public static final ProviderType<RegistrateItemModelProvider> ITEM_MODEL = register("item_model", (p, e, existing) -> new RegistrateItemModelProvider(p, e.getGenerator(), ((RegistrateBlockstateProvider)existing.get(BLOCKSTATE)).getExistingFileHelper()));
