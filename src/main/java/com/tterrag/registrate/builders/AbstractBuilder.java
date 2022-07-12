@@ -1,7 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Arrays;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -13,10 +11,10 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -25,11 +23,15 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.Arrays;
+
 /**
  * Base class which most builders should extend, instead of implementing [@link {@link Builder} directly.
  * <p>
  * Provides the most basic functionality, and some utility methods that remove the need to pass the registry class.
  *
+ * @param <O>
+ *            The type of Registrate owning the builder & compiled object.
  * @param <R>
  *            Type of the registry for the current object. This is the concrete base class that all registry entries must extend, and the type used for the forge registry itself.
  * @param <T>
@@ -41,16 +43,16 @@ import net.minecraftforge.registries.RegistryObject;
  * @see Builder
  */
 @RequiredArgsConstructor
-public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends AbstractBuilder<R, T, P, S>> implements Builder<R, T, P, S> {
+public abstract class AbstractBuilder<O extends AbstractRegistrate<O>, R extends IForgeRegistryEntry<R>, T extends R, P, S extends AbstractBuilder<O, R, T, P, S>> implements Builder<O, R, T, P, S> {
 
     @Getter(onMethod_ = {@Override})
-    private final AbstractRegistrate<?> owner;
+    private final O owner;
     @Getter(onMethod_ = {@Override})
     private final P parent;
     @Getter(onMethod_ = {@Override})
     private final String name;
     @Getter(AccessLevel.PROTECTED)
-    private final BuilderCallback callback;
+    private final BuilderCallback<O> callback;
     @Getter(onMethod_ = {@Override})
     private final ResourceKey<? extends Registry<R>> registryKey;
     
@@ -60,7 +62,7 @@ public abstract class AbstractBuilder<R extends IForgeRegistryEntry<R>, T extend
     private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
 
     @Deprecated
-    public AbstractBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Class<? super R> registryType) {
+    public AbstractBuilder(O owner, P parent, String name, BuilderCallback<O> callback, Class<? super R> registryType) {
         this(owner, parent, name, callback, owner.<R>getRegistryKeyByClass(registryType));
     }
 

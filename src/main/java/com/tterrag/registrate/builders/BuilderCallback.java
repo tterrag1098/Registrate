@@ -15,7 +15,7 @@ import net.minecraftforge.registries.RegistryObject;
  * A callback passed to {@link Builder builders} from the owning {@link AbstractRegistrate} which will add a registration for the built entry that lazily creates and registers it.
  */
 @FunctionalInterface
-public interface BuilderCallback {
+public interface BuilderCallback<O extends AbstractRegistrate<O>> {
 
     /**
      * Accept a built entry, to later be constructed and registered.
@@ -37,10 +37,10 @@ public interface BuilderCallback {
      * @return A {@link RegistryEntry} that will supply the registered entry
      */
     @Deprecated
-    <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
+    <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
 
     @SuppressWarnings("null")
-    default <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
+    default <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
         return accept(name, RegistryManager.ACTIVE.<R>getRegistry(type).getRegistrySuperType(), builder, factory, entryFactory);
     }
 
@@ -61,21 +61,21 @@ public interface BuilderCallback {
      *            A {@link NonNullSupplier} that will create the entry
      * @return A {@link RegistryEntry} that will supply the registered entry
      */
-    default <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory) {
+    default <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory) {
         return accept(name, type, builder, factory, delegate -> new RegistryEntry<>(builder.getOwner(), delegate));
     }
 
     @FunctionalInterface
-    public interface NewBuilderCallback extends BuilderCallback {
+    public interface NewBuilderCallback<O extends AbstractRegistrate<O>> extends BuilderCallback<O> {
 
         @SuppressWarnings("null")
         @Deprecated
         @Override
-        default <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
+        default <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, Class<? super R> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
             return accept(name, RegistryManager.ACTIVE.<R>getRegistry(type).getRegistryKey(), builder, factory, entryFactory);
         }
 
         @Override
-        <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
+        <R extends IForgeRegistryEntry<R>, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
     }
 }

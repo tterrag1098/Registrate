@@ -1,7 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Function;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -18,12 +16,16 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.function.Function;
+
 /**
  * A Builder creates registry entries. A Builder instance has a constant name which will be used for the resultant object, they cannot be reused for different names. It holds a parent object that will
  * be returned from some final methods.
  * <p>
  * When a builder is completed via {@link #register()} or {@link #build()}, the object will be lazily registered (through the owning {@link AbstractRegistrate} object).
- * 
+ *
+ * @param <O>
+ *            The type of Registrate owning the builder & compiled object.
  * @param <R>
  *            Type of the registry for the current object. This is the concrete base class that all registry entries must extend, and the type used for the forge registry itself.
  * @param <T>
@@ -33,7 +35,7 @@ import net.minecraftforge.registries.RegistryObject;
  * @param <S>
  *            Self type
  */
-public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<RegistryEntry<T>> {
+public interface Builder<O extends AbstractRegistrate<O>, R extends IForgeRegistryEntry<R>, T extends R, P, S extends Builder<O, R, T, P, S>> extends NonNullSupplier<RegistryEntry<T>> {
 
     /**
      * Complete the current entry, and return the {@link RegistryEntry} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
@@ -48,7 +50,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * 
      * @return the owner {@link AbstractRegistrate}
      */
-    AbstractRegistrate<?> getOwner();
+    O getOwner();
 
     /**
      * The parent object.
@@ -228,7 +230,7 @@ public interface Builder<R extends IForgeRegistryEntry<R>, T extends R, P, S ext
      * @return the {@link Builder} returned by the given function
      */
     @SuppressWarnings("unchecked")
-    default <R2 extends IForgeRegistryEntry<R2>, T2 extends R2, P2, S2 extends Builder<R2, T2, P2, S2>> S2 transform(NonNullFunction<S, S2> func) {
+    default <O2 extends AbstractRegistrate<O2>, R2 extends IForgeRegistryEntry<R2>, T2 extends R2, P2, S2 extends Builder<O2, R2, T2, P2, S2>> S2 transform(NonNullFunction<S, S2> func) {
         return func.apply((S) this);
     }
 

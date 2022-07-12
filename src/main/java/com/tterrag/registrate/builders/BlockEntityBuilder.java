@@ -1,13 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
@@ -29,6 +21,13 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.registries.RegistryObject;
 
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 /**
  * A builder for block entities, allows for customization of the valid blocks.
  * 
@@ -37,7 +36,7 @@ import net.minecraftforge.registries.RegistryObject;
  * @param <P>
  *            Parent object type
  */
-public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder<BlockEntityType<?>, BlockEntityType<T>, P, BlockEntityBuilder<T, P>> {
+public class BlockEntityBuilder<O extends AbstractRegistrate<O>, T extends BlockEntity, P> extends AbstractBuilder<O, BlockEntityType<?>, BlockEntityType<T>, P, BlockEntityBuilder<O, T, P>> {
 
     public interface BlockEntityFactory<T extends BlockEntity> {
 
@@ -66,7 +65,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      *            Factory to create the block entity
      * @return A new {@link BlockEntityBuilder} with reasonable default data generators.
      */
-    public static <T extends BlockEntity, P> BlockEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
+    public static <O extends AbstractRegistrate<O>, T extends BlockEntity, P> BlockEntityBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, BlockEntityFactory<T> factory) {
         return new BlockEntityBuilder<>(owner, parent, name, callback, factory);
     }
 
@@ -75,7 +74,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     @Nullable
     private NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer;
 
-    protected BlockEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
+    protected BlockEntityBuilder(O owner, P parent, String name, BuilderCallback<O> callback, BlockEntityFactory<T> factory) {
         super(owner, parent, name, callback, Registry.BLOCK_ENTITY_TYPE_REGISTRY);
         this.factory = factory;
     }
@@ -87,7 +86,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      *            A supplier for the block to add at registration time
      * @return this {@link BlockEntityBuilder}
      */
-    public BlockEntityBuilder<T, P> validBlock(NonNullSupplier<? extends Block> block) {
+    public BlockEntityBuilder<O, T, P> validBlock(NonNullSupplier<? extends Block> block) {
         validBlocks.add(block);
         return this;
     }
@@ -100,7 +99,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      * @return this {@link BlockEntityBuilder}
      */
     @SafeVarargs
-    public final BlockEntityBuilder<T, P> validBlocks(NonNullSupplier<? extends Block>... blocks) {
+    public final BlockEntityBuilder<O, T, P> validBlocks(NonNullSupplier<? extends Block>... blocks) {
         Arrays.stream(blocks).forEach(this::validBlock);
         return this;
     }
@@ -115,7 +114,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      *            A (server safe) supplier to an {@link Function} that will provide this block entity's renderer given the renderer dispatcher
      * @return this {@link BlockEntityBuilder}
      */
-    public BlockEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
+    public BlockEntityBuilder<O, T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
             DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }

@@ -1,8 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -13,6 +10,9 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+
 /**
  * A builder for enchantments, allows for customization of the {@link Enchantment.Rarity enchantment rarity} and {@link EquipmentSlot equipment slots}, and configuration of data associated with
  * enchantments (lang).
@@ -22,7 +22,7 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
  * @param <P>
  *            Parent object type
  */
-public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilder<Enchantment, T, P, EnchantmentBuilder<T, P>> {
+public class EnchantmentBuilder<O extends AbstractRegistrate<O>, T extends Enchantment, P> extends AbstractBuilder<O, Enchantment, T, P, EnchantmentBuilder<O, T, P>> {
 
     @FunctionalInterface
     public interface EnchantmentFactory<T extends Enchantment> {
@@ -56,7 +56,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      *            Factory to create the enchantment
      * @return A new {@link EnchantmentBuilder} with reasonable default data generators.
      */
-    public static <T extends Enchantment, P> EnchantmentBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
+    public static <O extends AbstractRegistrate<O>, T extends Enchantment, P> EnchantmentBuilder<O, T, P> create(O owner, P parent, String name, BuilderCallback<O> callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
         return new EnchantmentBuilder<>(owner, parent, name, callback, type, factory)
                 .defaultLang();
     }
@@ -68,7 +68,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
 
     private final EnchantmentFactory<T> factory;
 
-    protected EnchantmentBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
+    protected EnchantmentBuilder(O owner, P parent, String name, BuilderCallback<O> callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
         super(owner, parent, name, callback, Registry.ENCHANTMENT_REGISTRY);
         this.factory = factory;
         this.type = type;
@@ -81,7 +81,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      *            The rarity to assign
      * @return this {@link EnchantmentBuilder}
      */
-    public EnchantmentBuilder<T, P> rarity(Enchantment.Rarity rarity) {
+    public EnchantmentBuilder<O, T, P> rarity(Enchantment.Rarity rarity) {
         this.rarity = rarity;
         return this;
     }
@@ -91,7 +91,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      * 
      * @return this {@link EnchantmentBuilder}
      */
-    public EnchantmentBuilder<T, P> addArmorSlots() {
+    public EnchantmentBuilder<O, T, P> addArmorSlots() {
         return addSlots(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
     }
 
@@ -102,7 +102,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      *            The slots to add
      * @return this {@link EnchantmentBuilder}
      */
-    public EnchantmentBuilder<T, P> addSlots(EquipmentSlot... slots) {
+    public EnchantmentBuilder<O, T, P> addSlots(EquipmentSlot... slots) {
         this.slots.addAll(Arrays.asList(slots));
         return this;
     }
@@ -113,7 +113,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      * 
      * @return this {@link EnchantmentBuilder}
      */
-    public EnchantmentBuilder<T, P> defaultLang() {
+    public EnchantmentBuilder<O, T, P> defaultLang() {
         return lang(Enchantment::getDescriptionId);
     }
 
@@ -124,7 +124,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
      *            A localized English name
      * @return this {@link EnchantmentBuilder}
      */
-    public EnchantmentBuilder<T, P> lang(String name) {
+    public EnchantmentBuilder<O, T, P> lang(String name) {
         return lang(Enchantment::getDescriptionId, name);
     }
 

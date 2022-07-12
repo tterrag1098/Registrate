@@ -8,17 +8,17 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-public class NoConfigBuilder<R extends IForgeRegistryEntry<R>, T extends R, P> extends AbstractBuilder<R, T, P, NoConfigBuilder<R, T, P>> {
+public class NoConfigBuilder<O extends AbstractRegistrate<O>, R extends IForgeRegistryEntry<R>, T extends R, P> extends AbstractBuilder<O, R, T, P, NoConfigBuilder<O, R, T, P>> {
     
     private final NonNullSupplier<T> factory;
 
-    public NoConfigBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceKey<? extends Registry<R>> registryType, NonNullSupplier<T> factory) {
+    public NoConfigBuilder(O owner, P parent, String name, BuilderCallback<O> callback, ResourceKey<? extends Registry<R>> registryType, NonNullSupplier<T> factory) {
         super(owner, parent, name, callback, registryType);
         this.factory = factory;
     }
 
     @Deprecated
-    public NoConfigBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, Class<? super R> registryType, NonNullSupplier<T> factory) {
+    public NoConfigBuilder(O owner, P parent, String name, BuilderCallback<O> callback, Class<? super R> registryType, NonNullSupplier<T> factory) {
         super(owner, parent, name, callback, registryType);
         this.factory = factory;
     }

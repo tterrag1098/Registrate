@@ -1,13 +1,14 @@
 package com.tterrag.registrate.providers;
 
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.Builder;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
 import lombok.experimental.Delegate;
+
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -35,13 +36,13 @@ public class DataGenContext<R extends IForgeRegistryEntry<R>, E extends R> imple
         return entry.get();
     }
 
-    public static <R extends IForgeRegistryEntry<R>, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder, ResourceKey<? extends Registry<R>> type) {
+    public static <O extends AbstractRegistrate<O>, R extends IForgeRegistryEntry<R>, E extends R> DataGenContext<R, E> from(Builder<O, R, E, ?, ?> builder, ResourceKey<? extends Registry<R>> type) {
         return new DataGenContext<R, E>(NonNullSupplier.of(builder.getOwner().<R, E>get(builder.getName(), type)), builder.getName(),
                 new ResourceLocation(builder.getOwner().getModid(), builder.getName()));
     }
 
     @Deprecated
-    public static <R extends IForgeRegistryEntry<R>, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder, Class<? super R> clazz) {
+    public static <O extends AbstractRegistrate<O>, R extends IForgeRegistryEntry<R>, E extends R> DataGenContext<R, E> from(Builder<O, R, E, ?, ?> builder, Class<? super R> clazz) {
         return new DataGenContext<R, E>(NonNullSupplier.of(builder.getOwner().<R, E>get(builder.getName(), clazz)), builder.getName(),
                 new ResourceLocation(builder.getOwner().getModid(), builder.getName()));
     }

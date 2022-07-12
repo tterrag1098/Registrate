@@ -1,7 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.entry.MenuEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -22,7 +20,9 @@ import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.RegistryObject;
 
-public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<MenuType<?>, MenuType<T>, P, MenuBuilder<T, S, P>> {
+import javax.annotation.Nullable;
+
+public class MenuBuilder<O extends AbstractRegistrate<O>, T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<O, MenuType<?>, MenuType<T>, P, MenuBuilder<O, T, S, P>> {
     
     public interface MenuFactory<T extends AbstractContainerMenu> {
         
@@ -42,11 +42,11 @@ public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & Men
     private final ForgeMenuFactory<T> factory;
     private final NonNullSupplier<ScreenFactory<T, S>> screenFactory;
 
-    public MenuBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
+    public MenuBuilder(O owner, P parent, String name, BuilderCallback<O> callback, MenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
         this(owner, parent, name, callback, (type, windowId, inv, $) -> factory.create(type, windowId, inv), screenFactory);
     }
 
-    public MenuBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
+    public MenuBuilder(O owner, P parent, String name, BuilderCallback<O> callback, ForgeMenuFactory<T> factory, NonNullSupplier<ScreenFactory<T, S>> screenFactory) {
         super(owner, parent, name, callback, Registry.MENU_REGISTRY);
         this.factory = factory;
         this.screenFactory = screenFactory;
