@@ -8,10 +8,10 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
-import net.minecraft.core.Registry;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * A builder for enchantments, allows for customization of the {@link Enchantment.Rarity enchantment rarity} and {@link EquipmentSlot equipment slots}, and configuration of data associated with
@@ -69,7 +69,7 @@ public class EnchantmentBuilder<T extends Enchantment, P> extends AbstractBuilde
     private final EnchantmentFactory<T> factory;
 
     protected EnchantmentBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
-        super(owner, parent, name, callback, Registry.ENCHANTMENT_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.ENCHANTMENTS);
         this.factory = factory;
         this.type = type;
     }

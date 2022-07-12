@@ -38,10 +38,10 @@ public class MenuEntry<T extends AbstractContainerMenu> extends RegistryEntry<Me
     }
 
     public void open(ServerPlayer player, Component displayName, MenuConstructor provider) {
-        NetworkHooks.openGui(player, new SimpleMenuProvider(provider, displayName));
+        NetworkHooks.openScreen(player, new SimpleMenuProvider(provider, displayName));
     }
 
     public void open(ServerPlayer player, Component displayName, MenuConstructor provider, Consumer<FriendlyByteBuf> extraData) {
-        NetworkHooks.openGui(player, new SimpleMenuProvider(provider, displayName), extraData);
+        NetworkHooks.openScreen(player, new SimpleMenuProvider(provider, displayName), extraData);
     }
 }

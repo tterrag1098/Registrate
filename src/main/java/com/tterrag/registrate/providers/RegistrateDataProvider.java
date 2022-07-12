@@ -19,8 +19,8 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 
 @Log4j2
 public class RegistrateDataProvider implements DataProvider {
