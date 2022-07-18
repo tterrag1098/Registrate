@@ -20,7 +20,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
@@ -40,6 +39,7 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -94,7 +94,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
     
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
-        super(owner, parent, name, callback, Registry.ENTITY_TYPE_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.ENTITY_TYPES);
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
 

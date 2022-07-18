@@ -1,3 +1,4 @@
 {
-  "parent": "minecraft:block/glass"
+  "parent": "minecraft:block/glass",
+  "render_type": "minecraft:cutout"
 }
