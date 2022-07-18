@@ -1,17 +1,17 @@
 package com.tterrag.registrate.util.entry;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
 
@@ -32,17 +32,21 @@ public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
     }
 
     @SuppressWarnings("unchecked")
-    <S extends ForgeFlowingFluid> S getSource() {
+    public <S extends ForgeFlowingFluid> S getSource() {
         return (S) get().getSource();
     }
 
+    public FluidType getType() {
+        return get().getFluidType();
+    }
+
     @SuppressWarnings({ "unchecked", "null" })
-    <B extends Block> Optional<B> getBlock() {
+    public <B extends Block> Optional<B> getBlock() {
         return (Optional<B>) Optional.ofNullable(block).map(RegistryEntry::get);
     }
 
     @SuppressWarnings({ "unchecked", "null" })
-    <I extends Item> Optional<I> getBucket() {
+    public <I extends Item> Optional<I> getBucket() {
         return Optional.ofNullable((I) get().getBucket());
     }
 }

@@ -17,7 +17,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.*;
@@ -34,6 +33,7 @@ import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.network.PlayMessages;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
@@ -93,7 +93,7 @@ public class EntityBuilder<O extends AbstractRegistrate<O>, T extends Entity, P>
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
     
     protected EntityBuilder(O owner, P parent, String name, BuilderCallback<O> callback, EntityTypeFactory<T> factory, MobCategory classification) {
-        super(owner, parent, name, callback, Registry.ENTITY_TYPE_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.ENTITY_TYPES);
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
 
@@ -299,6 +299,7 @@ public class EntityBuilder<O extends AbstractRegistrate<O>, T extends Entity, P>
     public EntityEntry<T> register() {
         return (EntityEntry<T>) super.register();
     }
+
 
     /*
         The following methods exist as shortcuts into EntityType.Builder

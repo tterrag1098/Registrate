@@ -11,12 +11,12 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
-import net.minecraft.core.Registry;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 public class MenuBuilder<O extends AbstractRegistrate<O>, T extends AbstractContainerMenu, S extends Screen & MenuAccess<T>,  P> extends AbstractBuilder<O, MenuType<?>, MenuType<T>, P, MenuBuilder<O, T, S, P>> {
@@ -29,7 +29,7 @@ public class MenuBuilder<O extends AbstractRegistrate<O>, T extends AbstractCont
     }
 
     public MenuBuilder(O owner, P parent, String name, BuilderCallback<O> callback, MenuFactory.WithBuffer<T> factory, NonNullSupplier<MenuScreenFactory<T, S>> screenFactory) {
-        super(owner, parent, name, callback, Registry.MENU_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.MENU_TYPES);
         this.factory = factory;
         this.screenFactory = screenFactory;
     }

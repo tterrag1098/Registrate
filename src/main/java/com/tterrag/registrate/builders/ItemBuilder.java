@@ -12,7 +12,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTab;
@@ -20,8 +19,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
@@ -109,7 +109,7 @@ public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> ext
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
     
     protected ItemBuilder(O owner, P parent, String name, BuilderCallback<O> callback, ItemFactory<T> factory) {
-        super(owner, parent, name, callback, Registry.ITEM_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
         this.factory = factory;
     }
 
@@ -160,10 +160,10 @@ public class ItemBuilder<O extends AbstractRegistrate<O>, T extends Item, P> ext
     }
     
     protected void registerItemColor() {
-        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Item.class, e -> {
+        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Item.class, e -> {
             NonNullSupplier<Supplier<ItemColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
-                e.getItemColors().register(colorHandler.get().get(), getEntry());
+                e.register(colorHandler.get().get(), getEntry());
             }
         });
     }

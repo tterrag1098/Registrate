@@ -20,7 +20,7 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
@@ -35,10 +35,11 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ColorHandlerEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
@@ -101,12 +102,12 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
     private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
     private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
-    
+
     @Nullable
     private NonNullSupplier<Supplier<BlockColor>> colorHandler;
 
     protected BlockBuilder(O owner, P parent, String name, BuilderCallback<O> callback, BlockFactory<T> factory, NonNullSupplier<BlockBehaviour.Properties> initialProperties) {
-        super(owner, parent, name, callback, Registry.BLOCK_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.BLOCKS);
         this.factory = factory;
         this.initialProperties = initialProperties;
     }
@@ -178,7 +179,10 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
         return this;
     }
 
-    @SuppressWarnings("deprecation")
+    /**
+     * @deprecated Set your render type in your model's JSON ({@link net.minecraftforge.client.model.generators.ModelBuilder#renderType(ResourceLocation)}) or override {@link net.minecraft.client.resources.model.BakedModel#getRenderTypes(BlockState, net.minecraft.util.RandomSource, net.minecraftforge.client.model.data.ModelData)}
+     */
+    @Deprecated(forRemoval = true)
     public BlockBuilder<O, T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
             Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get().get()), "Invalid block layer: " + layer);
@@ -305,10 +309,10 @@ public class BlockBuilder<O extends AbstractRegistrate<O>, T extends Block, P> e
     }
     
     protected void registerBlockColor() {
-        OneTimeEventReceiver.addModListener(ColorHandlerEvent.Block.class, e -> {
+        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Block.class, e -> {
             NonNullSupplier<Supplier<BlockColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
-                e.getBlockColors().register(colorHandler.get().get(), getEntry());
+                e.register(colorHandler.get().get(), getEntry());
             }
         });
     }

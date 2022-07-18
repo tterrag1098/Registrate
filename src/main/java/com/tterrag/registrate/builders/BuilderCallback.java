@@ -36,6 +36,7 @@ public interface BuilderCallback<O extends AbstractRegistrate<O>> {
      */
     <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<O, R, T, ?, ?> builder, NonNullSupplier<? extends T> factory, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory);
 
+
     /**
      * Accept a built entry, to later be constructed and registered. Uses the default {@link RegistryEntry#RegistryEntry(AbstractRegistrate, RegistryObject) RegistryEntry factory}.
      * 

@@ -11,13 +11,13 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
@@ -29,9 +29,7 @@ import java.util.function.Supplier;
 
 /**
  * A builder for block entities, allows for customization of the valid blocks.
- *
- * @param <O>
- *            The type of Registrate owning the builder & compiled object.
+ * 
  * @param <T>
  *            The type of block entity being built
  * @param <P>
@@ -70,7 +68,7 @@ public class BlockEntityBuilder<O extends AbstractRegistrate<O>, T extends Block
     private NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer;
 
     protected BlockEntityBuilder(O owner, P parent, String name, BuilderCallback<O> callback, BlockEntityFactory<T> factory) {
-        super(owner, parent, name, callback, Registry.BLOCK_ENTITY_TYPE_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.BLOCK_ENTITY_TYPES);
         this.factory = factory;
     }
     

@@ -38,16 +38,15 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Material;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.data.loading.DatagenModLoader;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fluids.FluidAttributes;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.forge.event.lifecycle.GatherDataEvent;
 import net.minecraftforge.registries.*;
 
 import javax.annotation.Nonnull;
@@ -831,93 +830,157 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid() {
         return fluid(self());
     }
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(FluidTypeFactory typeFactory) {
+        return fluid(self(), typeFactory);
+    }
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(NonNullSupplier<FluidType> fluidType) {
+        return fluid(self(), fluidType);
+    }
     
     public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return fluid(self(), stillTexture, flowingTexture);
     }
-    
-    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return fluid(self(), stillTexture, flowingTexture, attributesFactory);
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory) {
+        return fluid(self(), stillTexture, flowingTexture, typeFactory);
+    }
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType) {
+        return fluid(self(), stillTexture, flowingTexture, fluidType);
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            FluidFactory<T> factory) {
-        return fluid(self(), stillTexture, flowingTexture, factory);
+            FluidFactory<T> fluidFactory) {
+        return fluid(self(), stillTexture, flowingTexture, fluidFactory);
     }
-    
+
     public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, FluidFactory<T> factory) {
-        return fluid(self(), stillTexture, flowingTexture, attributesFactory, factory);
+        FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
+        return fluid(self(), stillTexture, flowingTexture, typeFactory, fluidFactory);
+    }
+
+    public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
+        NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
+        return fluid(self(), stillTexture, flowingTexture, fluidType, fluidFactory);
     }
     
     public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name) {
         return fluid(self(), name);
     }
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, FluidTypeFactory typeFactory) {
+        return fluid(self(), name, typeFactory);
+    }
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, NonNullSupplier<FluidType> fluidType) {
+        return fluid(self(), name, fluidType);
+    }
     
     public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return fluid(self(), name, stillTexture, flowingTexture);
     }
-    
-    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return fluid(self(), name, stillTexture, flowingTexture, attributesFactory);
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory) {
+        return fluid(self(), name, stillTexture, flowingTexture, typeFactory);
+    }
+
+    public FluidBuilder<S, ForgeFlowingFluid.Flowing, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType) {
+        return fluid(self(), name, stillTexture, flowingTexture, fluidType);
     }
     
     public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            FluidFactory<T> factory) {
-        return fluid(self(), name, stillTexture, flowingTexture, factory);
+            FluidFactory<T> fluidFactory) {
+        return fluid(self(), name, stillTexture, flowingTexture, fluidFactory);
     }
-    
+
     public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, FluidFactory<T> factory) {
-        return fluid(self(), name, stillTexture, flowingTexture, attributesFactory, factory);
+        FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
+        return fluid(self(), name, stillTexture, flowingTexture, typeFactory, fluidFactory);
+    }
+
+    public <T extends ForgeFlowingFluid> FluidBuilder<S, T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+        NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
+        return fluid(self(), name, stillTexture, flowingTexture, fluidType, fluidFactory);
     }
         
     public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent) {
         return fluid(parent, currentName());
     }
+
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, FluidTypeFactory typeFactory) {
+        return fluid(parent, currentName(), typeFactory);
+    }
+
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, NonNullSupplier<FluidType> fluidType) {
+        return fluid(parent, currentName(), fluidType);
+    }
     
     public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return fluid(parent, currentName(), stillTexture, flowingTexture);
     }
-    
-    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory);
+
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory) {
+        return fluid(parent, currentName(), stillTexture, flowingTexture, typeFactory);
+    }
+
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType) {
+        return fluid(parent, currentName(), stillTexture, flowingTexture, fluidType);
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            FluidFactory<T> factory) {
-        return fluid(parent, currentName(), stillTexture, flowingTexture, factory);
+            FluidFactory<T> fluidFactory) {
+        return fluid(parent, currentName(), stillTexture, flowingTexture, fluidFactory);
     }
-    
+
     public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, FluidFactory<T> factory) {
-        return fluid(parent, currentName(), stillTexture, flowingTexture, attributesFactory, factory);
+        FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
+        return fluid(parent, currentName(), stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
-    
+
+    public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+        NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
+        return fluid(parent, currentName(), stillTexture, flowingTexture, fluidType, fluidFactory);
+    }
+
     public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name) {
         return fluid(parent, name, new ResourceLocation(getModid(), "block/" + currentName() + "_still"), new ResourceLocation(getModid(), "block/" + currentName() + "_flow"));
+    }
+    
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, FluidTypeFactory typeFactory) {
+        return fluid(parent, name, new ResourceLocation(getModid(), "block/" + currentName() + "_still"), new ResourceLocation(getModid(), "block/" + currentName() + "_flow"), typeFactory);
+    }
+
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, NonNullSupplier<FluidType> fluidType) {
+        return fluid(parent, name, new ResourceLocation(getModid(), "block/" + currentName() + "_still"), new ResourceLocation(getModid(), "block/" + currentName() + "_flow"), fluidType);
     }
 
     public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
         return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture));
     }
     
-    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory) {
-        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, attributesFactory));
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory) {
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, typeFactory));
+    }
+
+    public <P> FluidBuilder<S, ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType) {
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, fluidType));
+    }
+
+    public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
+            FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, fluidFactory));
     }
     
     public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            FluidFactory<T> factory) {
-        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, factory));
+        FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, typeFactory, fluidFactory));
     }
-    
+
     public <T extends ForgeFlowingFluid, P> FluidBuilder<S, T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullBiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory, FluidFactory<T> factory) {
-        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, attributesFactory, factory));
+        NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(self(), parent, name, callback, stillTexture, flowingTexture, fluidType, fluidFactory));
     }
     
     // Menu

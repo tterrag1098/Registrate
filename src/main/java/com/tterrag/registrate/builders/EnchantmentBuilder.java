@@ -6,10 +6,10 @@ import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
-import net.minecraft.core.Registry;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -64,7 +64,7 @@ public class EnchantmentBuilder<O extends AbstractRegistrate<O>, T extends Encha
     private final EnchantmentFactory<T> factory;
 
     protected EnchantmentBuilder(O owner, P parent, String name, BuilderCallback<O> callback, EnchantmentCategory type, EnchantmentFactory<T> factory) {
-        super(owner, parent, name, callback, Registry.ENCHANTMENT_REGISTRY);
+        super(owner, parent, name, callback, ForgeRegistries.Keys.ENCHANTMENTS);
         this.factory = factory;
         this.type = type;
     }

@@ -159,6 +159,7 @@ javadoc {
 
 publishing {
     tasks.publish.dependsOn 'build'
+    tasks.publishToMavenLocal.dependsOn 'build'
     publications {
         mavenJava(MavenPublication) {
             artifact jar

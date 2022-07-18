@@ -1,7 +1,5 @@
 package com.tterrag.registrate.util.entry;
 
-import java.util.function.Consumer;
-
 import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.network.FriendlyByteBuf;
@@ -14,6 +12,8 @@ import net.minecraft.world.inventory.MenuConstructor;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.RegistryObject;
+
+import java.util.function.Consumer;
 
 public class MenuEntry<T extends AbstractContainerMenu> extends RegistryEntry<MenuType<T>> {
 
@@ -38,10 +38,10 @@ public class MenuEntry<T extends AbstractContainerMenu> extends RegistryEntry<Me
     }
 
     public void open(ServerPlayer player, Component displayName, MenuConstructor provider) {
-        NetworkHooks.openGui(player, new SimpleMenuProvider(provider, displayName));
+        NetworkHooks.openScreen(player, new SimpleMenuProvider(provider, displayName));
     }
 
     public void open(ServerPlayer player, Component displayName, MenuConstructor provider, Consumer<FriendlyByteBuf> extraData) {
-        NetworkHooks.openGui(player, new SimpleMenuProvider(provider, displayName), extraData);
+        NetworkHooks.openScreen(player, new SimpleMenuProvider(provider, displayName), extraData);
     }
 }

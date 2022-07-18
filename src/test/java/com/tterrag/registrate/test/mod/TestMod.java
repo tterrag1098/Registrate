@@ -67,8 +67,10 @@ import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -78,6 +80,7 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @Mod("testmod")
 public class TestMod {
@@ -212,9 +215,8 @@ public class TestMod {
     private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
                 .properties(p -> p.noOcclusion())
-                .addLayer(() -> RenderType::cutout)
                 .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                                prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass"))))
+                                prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass")).renderType(prov.mcLoc("cutout"))))
                 .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
                     ShapedRecipeBuilder.shaped(ctx.getEntry())
@@ -246,7 +248,7 @@ public class TestMod {
             .register();
     
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registry.ITEM_REGISTRY);
-    private final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(ForgeRegistries.BLOCK_ENTITIES));
+    private final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(ForgeRegistries.BLOCK_ENTITY_TYPES));
     
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
@@ -269,14 +271,29 @@ public class TestMod {
             .register();
     
     private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
-            .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"))
-            .attributes(a -> a.luminosity(15))
-            .properties(p -> p.canMultiply())
+            .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"), (props, still, flow) -> new FluidType(props) {
+                // And now you can do custom behaviours.
+                @Override
+                public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
+                    consumer.accept(new IClientFluidTypeExtensions() {
+                        @Override
+                        public ResourceLocation getStillTexture() {
+                            return still;
+                        }
+
+                        @Override
+                        public ResourceLocation getFlowingTexture() {
+                            return flow;
+                        }
+                    });
+                }
+            })
+            .properties(p -> p.lightLevel(15).canConvertToSource(true))
+            .renderType(RenderType::translucent)
             .noBucket()
 //            .bucket()
 //                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
 //                .build()
-//            .removeTag(FluidTags.WATER)
             .register();
     
     private final RegistryEntry<MenuType<ChestMenu>> testmenu = registrate.object("testmenu")
@@ -310,7 +327,7 @@ public class TestMod {
 //            .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
 //            .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
 //            .register();
-//
+//    
 //    private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
 //            .biome(TestBiome::new)
 //            .properties(b -> b.category(Category.DESERT)
@@ -329,7 +346,7 @@ public class TestMod {
 //            .copyCarvers(() -> Biomes.DESERT)
 //            .copySpawns(() -> Biomes.DESERT)
 //            .register();
-//
+//    
 //    private @Nullable DimensionType testdimensiontype;
 //    private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
 //            .dimension(OverworldDimension::new)
