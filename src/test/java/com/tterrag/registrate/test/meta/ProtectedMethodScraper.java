@@ -26,6 +26,7 @@ public class ProtectedMethodScraper {
 
         String className;
         boolean isStatic;
+        String generics;
         String type;
         String name;
         String[] paramTypes;
@@ -39,7 +40,7 @@ public class ProtectedMethodScraper {
                 }
             }
             String type = this.type.equals(repl.getKey()) ? repl.getValue() : this.type;
-            return new Header(this.className, this.isStatic, type, this.name, newParamTypes, this.paramNames);
+            return new Header(this.className, this.isStatic, this.generics, type, this.name, newParamTypes, this.paramNames);
         }
 
         public String printStubMethod() {
@@ -47,7 +48,11 @@ public class ProtectedMethodScraper {
             if (!isStatic) {
                 base.append("@Override\n");
             }
-            base.append("public ").append(isStatic ? "static " : "").append(type).append(" ").append(name).append("(");
+            base.append("public ").append(isStatic ? "static " : "");
+            if (generics != null) {
+                base.append(generics).append(" ");
+            }
+            base.append(type).append(" ").append(name).append("(");
             for (int i = 0; i < paramTypes.length; i++) {
                 if (i > 0) {
                     base.append(", ");
@@ -64,16 +69,18 @@ public class ProtectedMethodScraper {
             return base.toString();
         }
 
-        private static final Pattern HEADER_PATTERN = Pattern.compile("^\\s+protected\\s(static)?\\s?((?:<[^>]+>\\s)?\\S+)\\s(\\S+)\\((.+)\\)\\s\\{$");
+        //                                                                                           Match generics up to three levels deep -- java does not support recursive patterns
+        private static final Pattern HEADER_PATTERN = Pattern.compile("^\\s*protected\\s+(?:(static)\\s)?\\s*(<[^<>]+(?:<[^<>]+(?:<[^<>]+>[^<>]*)*>[^<>]*)*>)?\\s*(\\S+)\\s+(\\S+)\\((.+)\\)\\s\\{$");
         private static final Pattern PARAM_PATTERN = Pattern.compile("([a-zA-Z_][\\w.$]+(?:<.+>)?)\\s+(\\S+)");
 
         public static Optional<Header> parse(String className, String code) {
             Matcher h = HEADER_PATTERN.matcher(code);
             if (h.matches()) {
                 boolean isStatic = h.group(1) != null;
-                String type = h.group(2);
-                String name = h.group(3);
-                String params = h.group(4);
+                String generics = h.group(2);
+                String type = h.group(3);
+                String name = h.group(4);
+                String params = h.group(5);
                 String[] paramList = params.split(",");
                 String[] paramTypes = new String[paramList.length];
                 String[] paramNames = new String[paramList.length];
@@ -87,7 +94,7 @@ public class ProtectedMethodScraper {
                         return Optional.empty();
                     }
                 }
-                return Optional.of(new Header(className, isStatic, type, name, paramTypes, paramNames));
+                return Optional.of(new Header(className, isStatic, generics, type, name, paramTypes, paramNames));
             }
             return Optional.empty();
         }

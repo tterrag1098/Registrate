@@ -14,6 +14,8 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
+import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 
@@ -35,6 +37,10 @@ public class RegistrateBlockLootTables extends BlockLoot implements RegistrateLo
 
     // @formatter:off
     // GENERATED START
+
+    public static <T extends FunctionUserBuilder<T>> T applyExplosionDecay(ItemLike p_236222_, FunctionUserBuilder<T> p_236223_) { return BlockLoot.applyExplosionDecay(p_236222_, p_236223_); }
+
+    public static <T extends ConditionUserBuilder<T>> T applyExplosionCondition(ItemLike p_236225_, ConditionUserBuilder<T> p_236226_) { return BlockLoot.applyExplosionCondition(p_236225_, p_236226_); }
 
     public static LootTable.Builder createSingleItemTable(ItemLike p_124127_) { return BlockLoot.createSingleItemTable(p_124127_); }
 

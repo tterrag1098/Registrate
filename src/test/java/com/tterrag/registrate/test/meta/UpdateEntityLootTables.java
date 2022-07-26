@@ -7,7 +7,7 @@ public class UpdateEntityLootTables {
     
     public static void main(String[] args) throws IOException {
         new MethodGenerator()
-            .exclude("isNonLiving")
+            .exclude("isNonLiving").exclude("getKnownEntities")
             .generate(Paths.get("src", "main", "java", "com", "tterrag", "registrate", "providers", "loot", "RegistrateEntityLootTables.java"));
     }
 }
