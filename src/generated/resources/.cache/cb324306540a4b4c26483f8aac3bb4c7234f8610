@@ -1,9 +1,9 @@
-// 1.19	2022-07-10T13:04:59.963492	Registrate Provider for testmod [Recipes, Advancements, Loot tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
+// 1.19.3	2022-12-08T12:16:14.912836	Registrate Provider for testmod [Recipes, Advancements, Loot Tables, Tags (blocks), Tags (items), Tags (fluids), Tags (entity_types), Blockstates, Item models, Lang (en_us/en_ud)]
 353e0134b90278ff49840165bed05cb48e7fff1b assets/testmod/blockstates/magic_item_model.json
 bc6ecd9ef8452b21567c005ab9c626c54a1beeaa assets/testmod/blockstates/testblock.json
 069fa0cc9495cbad97a129b3e39bd0bdf0599b28 assets/testmod/blockstates/testfluid.json
-5a6966380a9641fb31f35fe8fc9964e5015c318b assets/testmod/lang/en_ud.json
-8b69c8e0e7b41eae83a4b85609d070c9ac02b079 assets/testmod/lang/en_us.json
+f4f6f7a08c62eff04e50c442a135e9a418c2f9b0 assets/testmod/lang/en_ud.json
+c0592807d88153c22d5e304451417596bd3342e1 assets/testmod/lang/en_us.json
 b3c7ac87f735c9813d09ee46f1d26c844c06353c assets/testmod/models/block/subfolder/magic_item_model.json
 226ecfcb53fb775aa96f550dcc41bc44c026127f assets/testmod/models/block/testblock.json
 c73682ddea9998e48415b962e3c3b1d2dcc6157a assets/testmod/models/block/testfluid.json
@@ -16,16 +16,16 @@ fb63fdeef603a7edf02010fc963c89e2d41931b6 assets/testmod/models/item/testitem.jso
 6cde7304ac9429b0ea7e01078b4846b1cac6a0c8 data/minecraft/tags/blocks/wither_immune.json
 ed4dc1c2e1c580f129c041ffd8fcfae1424366a2 data/minecraft/tags/entity_types/raiders.json
 e9cec2088093803c7eb2f88bd11693cd261a8e41 data/minecraft/tags/items/beds.json
-6f59e226b42f2355554c495192d9c8a6d1908233 data/testmod/advancements/recipes/building_blocks/diamond_block_from_testblock_campfire.json
-94e422b2e38eb9270652db4d73f1daeb6e80db0b data/testmod/advancements/recipes/building_blocks/diamond_block_from_testblock_smelting.json
-78e08d17bbdd813c55a67144fbab0f2cdf3c4d4c data/testmod/advancements/recipes/building_blocks/diamond_block_from_testblock_smoking.json
-02cc1ee3832cda84820fc684e968c72e057aaf6f data/testmod/advancements/recipes/testmod/testblock.json
+6f59e226b42f2355554c495192d9c8a6d1908233 data/testmod/advancements/recipes/misc/diamond_block_from_testblock_campfire.json
+94e422b2e38eb9270652db4d73f1daeb6e80db0b data/testmod/advancements/recipes/misc/diamond_block_from_testblock_smelting.json
+78e08d17bbdd813c55a67144fbab0f2cdf3c4d4c data/testmod/advancements/recipes/misc/diamond_block_from_testblock_smoking.json
+02cc1ee3832cda84820fc684e968c72e057aaf6f data/testmod/advancements/recipes/misc/testblock.json
 5a4c32cef097232c64807d2ef542cfb4d26f8ae8 data/testmod/advancements/root.json
 6505b0a7d20f914197bbdd40f1e503a612fa56d6 data/testmod/loot_tables/blocks/magic_item_model.json
 d5e580e33cb3676aa1894ed5e8d61f648e8b3707 data/testmod/loot_tables/blocks/testblock.json
 2cb4efd4880fca468777b27fca79a616d46406ec data/testmod/loot_tables/entities/testentity.json
 ef017fe8afbc1e704a7cfb4818ece7ba018f9c91 data/testmod/loot_tables/entities/testitem.json
-d55bc3c85e8b5abd4d7a30a73091b5bf88ba1a7b data/testmod/recipes/diamond_block_from_testblock_campfire.json
-664e66ce409d405ef204a1272584626b0f91287a data/testmod/recipes/diamond_block_from_testblock_smelting.json
-f356a7b966dc956be64864d7b6634d1972af19bc data/testmod/recipes/diamond_block_from_testblock_smoking.json
-d02dc90621eab47d863886f0719b5fdd7e43d7cb data/testmod/recipes/testblock.json
+c91d14245f5fd5864ec4059ed227ea4536ab2920 data/testmod/recipes/diamond_block_from_testblock_campfire.json
+412a25e0577438ea314c4d4a4ce4f9f5d2801e6f data/testmod/recipes/diamond_block_from_testblock_smelting.json
+c22d4a34962b7dfe162e9ab2ad431b235b57905c data/testmod/recipes/diamond_block_from_testblock_smoking.json
+2c27e23727ef2d3dadce3c71cdab5fa75c6cd146 data/testmod/recipes/testblock.json

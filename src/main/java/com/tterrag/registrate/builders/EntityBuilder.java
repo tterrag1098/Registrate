@@ -1,9 +1,5 @@
 package com.tterrag.registrate.builders;
 
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
@@ -22,15 +18,9 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.SpawnPlacements.SpawnPredicate;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -42,9 +32,12 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
+
 /**
  * A builder for entities, allows for customization of the {@link EntityType.Builder}, easy creation of spawn egg items, and configuration of data associated with entities (loot tables, etc.).
- * 
+ *
  * @param <T>
  *            The type of entity being built
  * @param <P>
@@ -59,7 +52,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * <ul>
      * <li>The default translation (via {@link #defaultLang()})</li>
      * </ul>
-     * 
+     *
      * @param <T>
      *            The type of the builder
      * @param <P>
@@ -85,14 +78,14 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     private final NonNullSupplier<EntityType.Builder<T>> builder;
-    
+
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
-    
+
     @Nullable
     private NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer;
-    
+
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
-    
+
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ENTITY_TYPES);
         this.builder = () -> EntityType.Builder.of(factory, classification);
@@ -114,7 +107,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     /**
      * Register an {@link EntityRenderer} for this entity.
      * <p>
-     * 
+     *
      * @param renderer
      *            A (server safe) supplier to an {@link EntityRendererProvider} that will provide this entity's renderer
      * @return this {@link EntityBuilder}
@@ -126,7 +119,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         this.renderer = renderer;
         return this;
     }
-    
+
     protected void registerRenderer() {
         OneTimeEventReceiver.addModListener(EntityRenderersEvent.RegisterRenderers.class, evt -> {
             var renderer = this.renderer;
@@ -145,7 +138,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * Register a attributes for this entity. The entity must extend {@link LivingEntity}.
      * <p>
      * Cannot be called more than once per builder.
-     * 
+     *
      * @param attributes
      *            A supplier to the attributes for this entity, usually of the form {@code EntityClass::createAttributes}
      * @return this {@link EntityBuilder}
@@ -166,7 +159,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * Register a spawn placement for this entity. The entity must extend {@link Mob} and allow construction with a {@code null} {@link Level}.
      * <p>
      * Cannot be called more than once per builder.
-     * 
+     *
      * @param type
      *            The type of placement to use
      * @param heightmap
@@ -200,11 +193,11 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     /**
      * Create a spawn egg item for this entity using the given colors, not allowing for any extra configuration.
-     * 
+     *
      * @deprecated This does not work properly, see <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
      *             <p>
      *             As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
-     * 
+     *
      * @param primaryColor
      *            The primary color of the egg
      * @param secondaryColor
@@ -218,11 +211,11 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     /**
      * Create a spawn egg item for this entity using the given colors, and return the builder for further configuration.
-     * 
+     *
      * @deprecated This does not work properly, see <a href="https://github.com/MinecraftForge/MinecraftForge/pull/6299">this issue</a>.
      *             <p>
      *             As a temporary measure, uses a custom egg class that imperfectly emulates the functionality
-     * 
+     *
      * @param primaryColor
      *            The primary color of the egg
      * @param secondaryColor
@@ -232,14 +225,14 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
-        return getOwner().item(this, getName() + "_spawn_egg", p -> new ForgeSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) asSupplier(), primaryColor, secondaryColor, p)).properties(p -> p.tab(CreativeModeTab.TAB_MISC))
+        return getOwner().item(this, getName() + "_spawn_egg", p -> new ForgeSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) asSupplier(), primaryColor, secondaryColor, p))
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
     }
 
     /**
      * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, net.minecraft.resources.ResourceKey)}. This is the default, so it is generally
      * not necessary to call, unless for undoing previous changes.
-     * 
+     *
      * @return this {@link EntityBuilder}
      */
     public EntityBuilder<T, P> defaultLang() {
@@ -248,7 +241,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     /**
      * Set the translation for this entity.
-     * 
+     *
      * @param name
      *            A localized English name
      * @return this {@link EntityBuilder}
@@ -260,7 +253,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     /**
      * Configure the loot table for this entity. This is different than most data gen callbacks as the callback does not accept a {@link DataGenContext}, but instead a
      * {@link RegistrateEntityLootTables}, for creating specifically entity loot tables.
-     * 
+     *
      * @param cons
      *            The callback which will be invoked during entity loot table creation.
      * @return this {@link EntityBuilder}
@@ -271,7 +264,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     /**
      * Assign {@link TagKey}{@code s} to this entity. Multiple calls will add additional tags.
-     * 
+     *
      * @param tags
      *            The tags to assign
      * @return this {@link EntityBuilder}

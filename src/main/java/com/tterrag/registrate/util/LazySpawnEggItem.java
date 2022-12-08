@@ -1,11 +1,5 @@
 package com.tterrag.registrate.util;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.core.BlockPos;
@@ -36,6 +30,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Objects;
+
 @Deprecated
 public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
 
@@ -45,9 +44,9 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
         super(null, primaryColor, secondaryColor, properties);
         this.typeIn = type;
     }
-    
+
     private static final Field _EGGS = ObfuscationReflectionHelper.findField(SpawnEggItem.class, "BY_ID");
-    
+
     @SuppressWarnings("unchecked")
     public void injectType() {
         try {
@@ -58,7 +57,7 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
             throw new RuntimeException(e);
         }
     }
-    
+
     public EntityType<?> getType(@Nullable CompoundTag p_208076_1_) {
         if (p_208076_1_ != null && p_208076_1_.contains("EntityTag", 10)) {
             return super.getType(p_208076_1_);
@@ -82,7 +81,7 @@ public class LazySpawnEggItem<T extends Entity> extends SpawnEggItem {
                 if (BlockEntity instanceof SpawnerBlockEntity) {
                     BaseSpawner abstractspawner = ((SpawnerBlockEntity) BlockEntity).getSpawner();
                     EntityType<?> entitytype1 = this.getType(itemstack.getTag());
-                    abstractspawner.setEntityId(entitytype1);
+                    abstractspawner.setEntityId(entitytype1, world, world.random, blockpos);
                     BlockEntity.setChanged();
                     world.sendBlockUpdated(blockpos, blockstate, blockstate, 3);
                     itemstack.shrink(1);

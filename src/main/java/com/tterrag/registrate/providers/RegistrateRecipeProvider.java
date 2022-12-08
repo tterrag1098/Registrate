@@ -1,13 +1,5 @@
 package com.tterrag.registrate.providers;
 
-import java.nio.file.Path;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.tterrag.registrate.AbstractRegistrate;
@@ -20,15 +12,8 @@ import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.HashCache;
-import net.minecraft.data.recipes.FinishedRecipe;
-import net.minecraft.data.recipes.RecipeBuilder;
-import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
-import net.minecraft.data.recipes.ShapelessRecipeBuilder;
-import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
-import net.minecraft.data.recipes.SingleItemRecipeBuilder;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -41,12 +26,19 @@ import net.minecraftforge.common.Tags;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 public class RegistrateRecipeProvider extends RecipeProvider implements RegistrateProvider, Consumer<FinishedRecipe> {
-    
+
     private final AbstractRegistrate<?> owner;
 
-    public RegistrateRecipeProvider(AbstractRegistrate<?> owner, DataGenerator generatorIn) {
-        super(generatorIn);
+    public RegistrateRecipeProvider(AbstractRegistrate<?> owner, PackOutput output) {
+        super(output);
         this.owner = owner;
     }
 
@@ -54,10 +46,10 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     public LogicalSide getSide() {
         return LogicalSide.SERVER;
     }
-    
+
     @Nullable
     private Consumer<FinishedRecipe> callback;
-    
+
     @Override
     public void accept(@Nullable FinishedRecipe t) {
         if (callback == null) {
@@ -67,12 +59,12 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     @Override
-    protected void buildCraftingRecipes(Consumer<FinishedRecipe> consumer) {
+    protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
         this.callback = consumer;
         owner.genData(ProviderType.RECIPE, this);
         this.callback = null;
     }
-    
+
     public ResourceLocation safeId(ResourceLocation id) {
         return new ResourceLocation(owner.getModid(), safeName(id));
     }
@@ -101,81 +93,81 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     public static final int DEFAULT_BLAST_TIME = DEFAULT_SMELT_TIME / 2;
     public static final int DEFAULT_SMOKE_TIME = DEFAULT_BLAST_TIME;
     public static final int DEFAULT_CAMPFIRE_TIME = DEFAULT_SMELT_TIME * 3;
-    
+
     private static final String SMELTING_NAME = "smelting";
     @SuppressWarnings("null")
     private static final ImmutableMap<SimpleCookingSerializer<?>, String> COOKING_TYPE_NAMES = ImmutableMap.<SimpleCookingSerializer<?>, String>builder()
-            .put(RecipeSerializer.SMELTING_RECIPE, SMELTING_NAME)
-            .put(RecipeSerializer.BLASTING_RECIPE, "blasting")
-            .put(RecipeSerializer.SMOKING_RECIPE, "smoking")
-            .put(RecipeSerializer.CAMPFIRE_COOKING_RECIPE, "campfire")
+            .put((SimpleCookingSerializer<?>) RecipeSerializer.SMELTING_RECIPE, SMELTING_NAME)
+            .put((SimpleCookingSerializer<?>) RecipeSerializer.BLASTING_RECIPE, "blasting")
+            .put((SimpleCookingSerializer<?>) RecipeSerializer.SMOKING_RECIPE, "smoking")
+            .put((SimpleCookingSerializer<?>) RecipeSerializer.CAMPFIRE_COOKING_RECIPE, "campfire")
             .build();
-    
-    public <T extends ItemLike> void cooking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime, SimpleCookingSerializer<?> serializer) {
-        cooking(source, result, experience, cookingTime, COOKING_TYPE_NAMES.get(serializer), serializer);
+
+    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, SimpleCookingSerializer<?> serializer) {
+        cooking(source, category, result, experience, cookingTime, COOKING_TYPE_NAMES.get(serializer), serializer);
     }
-    
-    public <T extends ItemLike> void cooking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime, String typeName, SimpleCookingSerializer<?> serializer) {
-        SimpleCookingRecipeBuilder.cooking(source, result.get(), experience, cookingTime, serializer)
+
+    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, String typeName, SimpleCookingSerializer<?> serializer) {
+        SimpleCookingRecipeBuilder.generic(source, category, result.get(), experience, cookingTime, serializer)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
     }
-    
-    public <T extends ItemLike> void smelting(DataIngredient source, Supplier<? extends T> result, float experience) {
-        smelting(source, result, experience, DEFAULT_SMELT_TIME);
+
+    public <T extends ItemLike> void smelting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
+        smelting(source, category, result, experience, DEFAULT_SMELT_TIME);
     }
 
-    public <T extends ItemLike> void smelting(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, RecipeSerializer.SMELTING_RECIPE);
-    }
-    
-    public <T extends ItemLike> void blasting(DataIngredient source, Supplier<? extends T> result, float experience) {
-        blasting(source, result, experience, DEFAULT_BLAST_TIME);
+    public <T extends ItemLike> void smelting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
+        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.SMELTING_RECIPE);
     }
 
-    public <T extends ItemLike> void blasting(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, RecipeSerializer.BLASTING_RECIPE);
+    public <T extends ItemLike> void blasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
+        blasting(source, category, result, experience, DEFAULT_BLAST_TIME);
     }
 
-    public <T extends ItemLike> void smoking(DataIngredient source, Supplier<? extends T> result, float experience) {
-        smoking(source, result, experience, DEFAULT_SMOKE_TIME);
+    public <T extends ItemLike> void blasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
+        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.BLASTING_RECIPE);
     }
 
-    public <T extends ItemLike> void smoking(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, RecipeSerializer.SMOKING_RECIPE);
-    }
-    
-    public <T extends ItemLike> void campfire(DataIngredient source, Supplier<? extends T> result, float experience) {
-        campfire(source, result, experience, DEFAULT_CAMPFIRE_TIME);
+    public <T extends ItemLike> void smoking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
+        smoking(source, category, result, experience, DEFAULT_SMOKE_TIME);
     }
 
-    public <T extends ItemLike> void campfire(DataIngredient source, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, result, experience, cookingTime, RecipeSerializer.CAMPFIRE_COOKING_RECIPE);
-    }
-    
-    public <T extends ItemLike> void stonecutting(DataIngredient source, Supplier<? extends T> result) {
-        stonecutting(source, result, 1);
+    public <T extends ItemLike> void smoking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
+        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.SMOKING_RECIPE);
     }
 
-    public <T extends ItemLike> void stonecutting(DataIngredient source, Supplier<? extends T> result, int resultAmount) {
-        SingleItemRecipeBuilder.stonecutting(source, result.get(), resultAmount)
+    public <T extends ItemLike> void campfire(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
+        campfire(source, category, result, experience, DEFAULT_CAMPFIRE_TIME);
+    }
+
+    public <T extends ItemLike> void campfire(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
+        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.CAMPFIRE_COOKING_RECIPE);
+    }
+
+    public <T extends ItemLike> void stonecutting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
+        stonecutting(source, category, result, 1);
+    }
+
+    public <T extends ItemLike> void stonecutting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, int resultAmount) {
+        SingleItemRecipeBuilder.stonecutting(source, category, result.get(), resultAmount)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_stonecutting");
     }
-    
-    public <T extends ItemLike> void smeltingAndBlasting(DataIngredient source, Supplier<? extends T> result, float xp) {
-        smelting(source, result, xp);
-        blasting(source, result, xp);
+
+    public <T extends ItemLike> void smeltingAndBlasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float xp) {
+        smelting(source, category, result, xp);
+        blasting(source, category, result, xp);
     }
 
-    public <T extends ItemLike> void food(DataIngredient source, Supplier<? extends T> result, float xp) {
-        smelting(source, result, xp);
-        smoking(source, result, xp);
-        campfire(source, result, xp);
+    public <T extends ItemLike> void food(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float xp) {
+        smelting(source, category, result, xp);
+        smoking(source, category, result, xp);
+        campfire(source, category, result, xp);
     }
-    
-    public <T extends ItemLike> void square(DataIngredient source, Supplier<? extends T> output, boolean small) {
-        ShapedRecipeBuilder builder = ShapedRecipeBuilder.shaped(output.get())
+
+    public <T extends ItemLike> void square(DataIngredient source, RecipeCategory category, Supplier<? extends T> output, boolean small) {
+        ShapedRecipeBuilder builder = ShapedRecipeBuilder.shaped(category, output.get())
                 .define('X', source);
         if (small) {
             builder.pattern("XX").pattern("XX");
@@ -190,69 +182,69 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
      * @param <T>
      * @param source
      * @param output
-     * @deprecated Broken, use {@link #storage(NonNullSupplier, NonNullSupplier)} or {@link #storage(DataIngredient, NonNullSupplier, DataIngredient, NonNullSupplier)}.
+     * @deprecated Broken, use {@link #storage(NonNullSupplier, RecipeCategory, NonNullSupplier)} or {@link #storage(DataIngredient, RecipeCategory, NonNullSupplier, DataIngredient, NonNullSupplier)}.
      */
     @Deprecated
-    public <T extends ItemLike> void storage(DataIngredient source, NonNullSupplier<? extends T> output) {
-        square(source, output, false);
+    public <T extends ItemLike> void storage(DataIngredient source, RecipeCategory category, NonNullSupplier<? extends T> output) {
+        square(source, category, output, false);
         // This is backwards, but leaving in for binary compat
-        singleItemUnfinished(source, output, 1, 9)
+        singleItemUnfinished(source, category, output, 1, 9)
             .save(this, safeId(source) + "_from_" + safeName(output.get()));
     }
 
-    public <T extends ItemLike> void storage(NonNullSupplier<? extends T> source, NonNullSupplier<? extends T> output) {
-        storage(DataIngredient.items(source), source, DataIngredient.items(output), output);
+    public <T extends ItemLike> void storage(NonNullSupplier<? extends T> source, RecipeCategory category, NonNullSupplier<? extends T> output) {
+        storage(DataIngredient.items(source), category, source, DataIngredient.items(output), output);
     }
-    
-    public <T extends ItemLike> void storage(DataIngredient sourceIngredient, NonNullSupplier<? extends T> source, DataIngredient outputIngredient, NonNullSupplier<? extends T> output) {
-        square(sourceIngredient, output, false);
-        singleItemUnfinished(outputIngredient, source, 1, 9)
+
+    public <T extends ItemLike> void storage(DataIngredient sourceIngredient, RecipeCategory category, NonNullSupplier<? extends T> source, DataIngredient outputIngredient, NonNullSupplier<? extends T> output) {
+        square(sourceIngredient, category, output, false);
+        singleItemUnfinished(outputIngredient, category, source, 1, 9)
             .save(this, safeId(sourceIngredient) + "_from_" + safeName(output.get()));
     }
 
     @CheckReturnValue
-    public <T extends ItemLike> ShapelessRecipeBuilder singleItemUnfinished(DataIngredient source, Supplier<? extends T> result, int required, int amount) {
-        return ShapelessRecipeBuilder.shapeless(result.get(), amount)
+    public <T extends ItemLike> ShapelessRecipeBuilder singleItemUnfinished(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, int required, int amount) {
+        return ShapelessRecipeBuilder.shapeless(category, result.get(), amount)
             .requires(source, required)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this));
     }
-    
-    public <T extends ItemLike> void singleItem(DataIngredient source, Supplier<? extends T> result, int required, int amount) {
-        singleItemUnfinished(source, result, required, amount).save(this, safeId(result.get()));
+
+    public <T extends ItemLike> void singleItem(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, int required, int amount) {
+        singleItemUnfinished(source, category, result, required, amount).save(this, safeId(result.get()));
     }
-    
-    public <T extends ItemLike> void planks(DataIngredient source, Supplier<? extends T> result) {
-        singleItemUnfinished(source, result, 1, 4)
+
+    public <T extends ItemLike> void planks(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
+        singleItemUnfinished(source, category, result, 1, 4)
             .group("planks")
             .save(this, safeId(result.get()));
     }
-    
-    public <T extends ItemLike> void stairs(DataIngredient source, Supplier<? extends T> result, @Nullable String group, boolean stone) {
-        ShapedRecipeBuilder.shaped(result.get(), 4)
+
+    public <T extends ItemLike> void stairs(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group, boolean stone) {
+        ShapedRecipeBuilder.shaped(category, result.get(), 4)
             .pattern("X  ").pattern("XX ").pattern("XXX")
             .define('X', source)
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()));
         if (stone) {
-            stonecutting(source, result);
+            stonecutting(source, category, result);
         }
     }
-    
-    public <T extends ItemLike> void slab(DataIngredient source, Supplier<? extends T> result, @Nullable String group, boolean stone) {
-        ShapedRecipeBuilder.shaped(result.get(), 6)
+
+    public <T extends ItemLike> void slab(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group, boolean stone) {
+        ShapedRecipeBuilder.shaped(category, result.get(), 6)
             .pattern("XXX")
             .define('X', source)
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()));
         if (stone) {
-            stonecutting(source, result, 2);
+            stonecutting(source, category, result, 2);
         }
     }
-    
-    public <T extends ItemLike> void fence(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shaped(result.get(), 3)
+
+    public <T extends ItemLike> void fence(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
+        ShapedRecipeBuilder.shaped(category, result.get(), 3)
             .pattern("W#W").pattern("W#W")
             .define('W', source)
             .define('#', Tags.Items.RODS_WOODEN)
@@ -260,9 +252,9 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()));
     }
-    
-    public <T extends ItemLike> void fenceGate(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shaped(result.get())
+
+    public <T extends ItemLike> void fenceGate(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
+        ShapedRecipeBuilder.shaped(category, result.get())
             .pattern("#W#").pattern("#W#")
             .define('W', source)
             .define('#', Tags.Items.RODS_WOODEN)
@@ -270,18 +262,18 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()));
     }
-    
-    public <T extends ItemLike> void wall(DataIngredient source, Supplier<? extends T> result) {
-        ShapedRecipeBuilder.shaped(result.get(), 6)
+
+    public <T extends ItemLike> void wall(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
+        ShapedRecipeBuilder.shaped(category, result.get(), 6)
             .pattern("XXX").pattern("XXX")
             .define('X', source)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()));
-        stonecutting(source, result);
+        stonecutting(source, category, result);
     }
-    
-    public <T extends ItemLike> void door(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shaped(result.get(), 3)
+
+    public <T extends ItemLike> void door(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
+        ShapedRecipeBuilder.shaped(category, result.get(), 3)
             .pattern("XX").pattern("XX").pattern("XX")
             .define('X', source)
             .group(group)
@@ -289,8 +281,8 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
             .save(this, safeId(result.get()));
     }
 
-    public <T extends ItemLike> void trapDoor(DataIngredient source, Supplier<? extends T> result, @Nullable String group) {
-        ShapedRecipeBuilder.shaped(result.get(), 2)
+    public <T extends ItemLike> void trapDoor(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
+        ShapedRecipeBuilder.shaped(category, result.get(), 2)
             .pattern("XXX").pattern("XXX")
             .define('X', source)
             .group(group)
@@ -302,19 +294,19 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     // GENERATED START
 
     @Override
-    public void saveAdvancement(CachedOutput p_236368_, JsonObject p_236369_, Path p_236370_) { super.saveAdvancement(p_236368_, p_236369_, p_236370_); }
+    public CompletableFuture<?> saveAdvancement(CachedOutput p_236368_, FinishedRecipe recipe, JsonObject p_236369_) { return super.saveAdvancement(p_236368_, recipe, p_236369_); }
 
-    public static void oreSmelting(Consumer<FinishedRecipe> p_176592_, List<ItemLike> p_176593_, ItemLike p_176594_, float p_176595_, int p_176596_, String p_176597_) { RecipeProvider.oreSmelting(p_176592_, p_176593_, p_176594_, p_176595_, p_176596_, p_176597_); }
+    public static void oreSmelting(Consumer<FinishedRecipe> p_176592_, List<ItemLike> p_176593_, RecipeCategory category, ItemLike p_176594_, float p_176595_, int p_176596_, String p_176597_) { RecipeProvider.oreSmelting(p_176592_, p_176593_, category, p_176594_, p_176595_, p_176596_, p_176597_); }
 
-    public static void oreBlasting(Consumer<FinishedRecipe> p_176626_, List<ItemLike> p_176627_, ItemLike p_176628_, float p_176629_, int p_176630_, String p_176631_) { RecipeProvider.oreBlasting(p_176626_, p_176627_, p_176628_, p_176629_, p_176630_, p_176631_); }
+    public static void oreBlasting(Consumer<FinishedRecipe> p_176626_, List<ItemLike> p_176627_, RecipeCategory category, ItemLike p_176628_, float p_176629_, int p_176630_, String p_176631_) { RecipeProvider.oreBlasting(p_176626_, p_176627_, category, p_176628_, p_176629_, p_176630_, p_176631_); }
 
-    public static void oreCooking(Consumer<FinishedRecipe> p_176534_, SimpleCookingSerializer<?> p_176535_, List<ItemLike> p_176536_, ItemLike p_176537_, float p_176538_, int p_176539_, String p_176540_, String p_176541_) { RecipeProvider.oreCooking(p_176534_, p_176535_, p_176536_, p_176537_, p_176538_, p_176539_, p_176540_, p_176541_); }
+    public static void oreCooking(Consumer<FinishedRecipe> p_176534_, SimpleCookingSerializer<?> p_176535_, List<ItemLike> p_176536_, RecipeCategory category, ItemLike p_176537_, float p_176538_, int p_176539_, String p_176540_, String p_176541_) { RecipeProvider.oreCooking(p_176534_, p_176535_, p_176536_, category, p_176537_, p_176538_, p_176539_, p_176540_, p_176541_); }
 
-    public static void netheriteSmithing(Consumer<FinishedRecipe> p_125995_, Item p_125996_, Item p_125997_) { RecipeProvider.netheriteSmithing(p_125995_, p_125996_, p_125997_); }
+    public static void netheriteSmithing(Consumer<FinishedRecipe> p_125995_, Item p_125996_, RecipeCategory category, Item p_125997_) { RecipeProvider.netheriteSmithing(p_125995_, p_125996_, category, p_125997_); }
 
-    public static void planksFromLog(Consumer<FinishedRecipe> p_206409_, ItemLike p_206410_, TagKey<Item> p_206411_) { RecipeProvider.planksFromLog(p_206409_, p_206410_, p_206411_); }
+    public static void planksFromLog(Consumer<FinishedRecipe> p_206409_, ItemLike p_206410_, TagKey<Item> p_206411_, int i) { RecipeProvider.planksFromLog(p_206409_, p_206410_, p_206411_, i); }
 
-    public static void planksFromLogs(Consumer<FinishedRecipe> p_206413_, ItemLike p_206414_, TagKey<Item> p_206415_) { RecipeProvider.planksFromLogs(p_206413_, p_206414_, p_206415_); }
+    public static void planksFromLogs(Consumer<FinishedRecipe> p_206413_, ItemLike p_206414_, TagKey<Item> p_206415_, int i) { RecipeProvider.planksFromLogs(p_206413_, p_206414_, p_206415_, i); }
 
     public static void woodFromLogs(Consumer<FinishedRecipe> p_126003_, ItemLike p_126004_, ItemLike p_126005_) { RecipeProvider.woodFromLogs(p_126003_, p_126004_, p_126005_); }
 
@@ -330,11 +322,11 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
 
     public static void pressurePlate(Consumer<FinishedRecipe> p_176691_, ItemLike p_176692_, ItemLike p_176693_) { RecipeProvider.pressurePlate(p_176691_, p_176692_, p_176693_); }
 
-    public static RecipeBuilder pressurePlateBuilder(ItemLike p_176695_, Ingredient p_176696_) { return RecipeProvider.pressurePlateBuilder(p_176695_, p_176696_); }
+    public static RecipeBuilder pressurePlateBuilder(RecipeCategory category, ItemLike p_176695_, Ingredient p_176696_) { return RecipeProvider.pressurePlateBuilder(category, p_176695_, p_176696_); }
 
-    public static void slab(Consumer<FinishedRecipe> p_176701_, ItemLike p_176702_, ItemLike p_176703_) { RecipeProvider.slab(p_176701_, p_176702_, p_176703_); }
+    public static void slab(Consumer<FinishedRecipe> p_176701_, RecipeCategory category, ItemLike p_176702_, ItemLike p_176703_) { RecipeProvider.slab(p_176701_, category, p_176702_, p_176703_); }
 
-    public static RecipeBuilder slabBuilder(ItemLike p_176705_, Ingredient p_176706_) { return RecipeProvider.slabBuilder(p_176705_, p_176706_); }
+    public static RecipeBuilder slabBuilder(RecipeCategory category, ItemLike p_176705_, Ingredient p_176706_) { return RecipeProvider.slabBuilder(category, p_176705_, p_176706_); }
 
     public static RecipeBuilder stairBuilder(ItemLike p_176711_, Ingredient p_176712_) { return RecipeProvider.stairBuilder(p_176711_, p_176712_); }
 
@@ -364,17 +356,17 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
 
     public static void concretePowder(Consumer<FinishedRecipe> p_126102_, ItemLike p_126103_, ItemLike p_126104_) { RecipeProvider.concretePowder(p_126102_, p_126103_, p_126104_); }
 
-    public static void stonecutterResultFromBase(Consumer<FinishedRecipe> p_176736_, ItemLike p_176737_, ItemLike p_176738_) { RecipeProvider.stonecutterResultFromBase(p_176736_, p_176737_, p_176738_); }
+    public static void stonecutterResultFromBase(Consumer<FinishedRecipe> p_176736_, RecipeCategory category, ItemLike p_176737_, ItemLike p_176738_) { RecipeProvider.stonecutterResultFromBase(p_176736_, category, p_176737_, p_176738_); }
 
-    public static void stonecutterResultFromBase(Consumer<FinishedRecipe> p_176547_, ItemLike p_176548_, ItemLike p_176549_, int p_176550_) { RecipeProvider.stonecutterResultFromBase(p_176547_, p_176548_, p_176549_, p_176550_); }
+    public static void stonecutterResultFromBase(Consumer<FinishedRecipe> p_176547_, RecipeCategory category, ItemLike p_176548_, ItemLike p_176549_, int p_176550_) { RecipeProvider.stonecutterResultFromBase(p_176547_, category, p_176548_, p_176549_, p_176550_); }
 
     public static void smeltingResultFromBase(Consumer<FinishedRecipe> p_176740_, ItemLike p_176741_, ItemLike p_176742_) { RecipeProvider.smeltingResultFromBase(p_176740_, p_176741_, p_176742_); }
 
-    public static void nineBlockStorageRecipes(Consumer<FinishedRecipe> p_176744_, ItemLike p_176745_, ItemLike p_176746_) { RecipeProvider.nineBlockStorageRecipes(p_176744_, p_176745_, p_176746_); }
+    public static void nineBlockStorageRecipes(Consumer<FinishedRecipe> p_176744_, RecipeCategory category, ItemLike p_176745_, RecipeCategory category1, ItemLike p_176746_) { RecipeProvider.nineBlockStorageRecipes(p_176744_, category, p_176745_, category1, p_176746_); }
 
-    public static void nineBlockStorageRecipesWithCustomPacking(Consumer<FinishedRecipe> p_176563_, ItemLike p_176564_, ItemLike p_176565_, String p_176566_, String p_176567_) { RecipeProvider.nineBlockStorageRecipesWithCustomPacking(p_176563_, p_176564_, p_176565_, p_176566_, p_176567_); }
+    public static void nineBlockStorageRecipesWithCustomPacking(Consumer<FinishedRecipe> p_176563_, RecipeCategory category, ItemLike p_176564_, RecipeCategory category1, ItemLike p_176565_, String p_176566_, String p_176567_) { RecipeProvider.nineBlockStorageRecipesWithCustomPacking(p_176563_, category, p_176564_, category1, p_176565_, p_176566_, p_176567_); }
 
-    public static void nineBlockStorageRecipesRecipesWithCustomUnpacking(Consumer<FinishedRecipe> p_176617_, ItemLike p_176618_, ItemLike p_176619_, String p_176620_, String p_176621_) { RecipeProvider.nineBlockStorageRecipesRecipesWithCustomUnpacking(p_176617_, p_176618_, p_176619_, p_176620_, p_176621_); }
+    public static void nineBlockStorageRecipesRecipesWithCustomUnpacking(Consumer<FinishedRecipe> p_176617_, RecipeCategory category, ItemLike p_176618_, RecipeCategory category1, ItemLike p_176619_, String p_176620_, String p_176621_) { RecipeProvider.nineBlockStorageRecipesRecipesWithCustomUnpacking(p_176617_, category, p_176618_, category1, p_176619_, p_176620_, p_176621_); }
 
     public static void cookRecipes(Consumer<FinishedRecipe> p_126007_, String p_126008_, SimpleCookingSerializer<?> p_126009_, int p_126010_) { RecipeProvider.cookRecipes(p_126007_, p_126008_, p_126009_, p_126010_); }
 
