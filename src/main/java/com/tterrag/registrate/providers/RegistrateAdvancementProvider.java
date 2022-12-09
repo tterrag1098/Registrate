@@ -31,13 +31,13 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
 
     private final AbstractRegistrate<?> owner;
     private final PackOutput packOutput;
-    private final CompletableFuture<HolderLookup.Provider> registries;
+    private final CompletableFuture<HolderLookup.Provider> registriesLookup;
     private final List<CompletableFuture<?>> advancementsToSave = Lists.newArrayList();
 
-    public RegistrateAdvancementProvider(AbstractRegistrate<?> owner, PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registriesLookup) {
+    public RegistrateAdvancementProvider(AbstractRegistrate<?> owner, PackOutput packOutputIn, CompletableFuture<HolderLookup.Provider> registriesLookupIn) {
         this.owner = owner;
-        this.packOutput = packOutput;
-        registries = registriesLookup;
+        this.packOutput = packOutputIn;
+        this.registriesLookup = registriesLookupIn;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
 
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {
-        return registries.thenCompose(lookup -> {
+        return registriesLookup.thenCompose(lookup -> {
             advancementsToSave.clear();
 
             try {
