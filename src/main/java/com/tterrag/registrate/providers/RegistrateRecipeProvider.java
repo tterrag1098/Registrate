@@ -22,7 +22,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleCookingSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.Tags;
@@ -99,18 +98,18 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
 
     private static final String SMELTING_NAME = "smelting";
     @SuppressWarnings("null")
-    private static final ImmutableMap<SimpleCookingSerializer<?>, String> COOKING_TYPE_NAMES = ImmutableMap.<SimpleCookingSerializer<?>, String>builder()
-            .put((SimpleCookingSerializer<?>) RecipeSerializer.SMELTING_RECIPE, SMELTING_NAME)
-            .put((SimpleCookingSerializer<?>) RecipeSerializer.BLASTING_RECIPE, "blasting")
-            .put((SimpleCookingSerializer<?>) RecipeSerializer.SMOKING_RECIPE, "smoking")
-            .put((SimpleCookingSerializer<?>) RecipeSerializer.CAMPFIRE_COOKING_RECIPE, "campfire")
+    private static final ImmutableMap<RecipeSerializer<? extends AbstractCookingRecipe>, String> COOKING_TYPE_NAMES = ImmutableMap.<RecipeSerializer<? extends AbstractCookingRecipe>, String>builder()
+            .put(RecipeSerializer.SMELTING_RECIPE, SMELTING_NAME)
+            .put(RecipeSerializer.BLASTING_RECIPE, "blasting")
+            .put(RecipeSerializer.SMOKING_RECIPE, "smoking")
+            .put(RecipeSerializer.CAMPFIRE_COOKING_RECIPE, "campfire")
             .build();
 
-    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, SimpleCookingSerializer<?> serializer) {
+    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, RecipeSerializer<? extends AbstractCookingRecipe> serializer) {
         cooking(source, category, result, experience, cookingTime, COOKING_TYPE_NAMES.get(serializer), serializer);
     }
 
-    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, String typeName, SimpleCookingSerializer<?> serializer) {
+    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, String typeName, RecipeSerializer<? extends AbstractCookingRecipe> serializer) {
         SimpleCookingRecipeBuilder.generic(source, category, result.get(), experience, cookingTime, serializer)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
@@ -121,7 +120,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void smelting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.SMELTING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.SMELTING_RECIPE);
     }
 
     public <T extends ItemLike> void blasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
@@ -129,7 +128,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void blasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.BLASTING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.BLASTING_RECIPE);
     }
 
     public <T extends ItemLike> void smoking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
@@ -137,7 +136,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void smoking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.SMOKING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.SMOKING_RECIPE);
     }
 
     public <T extends ItemLike> void campfire(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
@@ -145,7 +144,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void campfire(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, (SimpleCookingSerializer<?>) RecipeSerializer.CAMPFIRE_COOKING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.CAMPFIRE_COOKING_RECIPE);
     }
 
     public <T extends ItemLike> void stonecutting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
