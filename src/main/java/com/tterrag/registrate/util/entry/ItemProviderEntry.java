@@ -7,18 +7,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraftforge.registries.RegistryObject;
 
-public class ItemProviderEntry<T extends ItemLike> extends RegistryEntry<T> {
+public class ItemProviderEntry<T extends ItemLike> extends RegistryEntry<T> implements ItemLike {
 
     public ItemProviderEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
         super(owner, delegate);
     }
 
     public ItemStack asStack() {
-        return new ItemStack(get());
+        return new ItemStack(this);
     }
 
     public ItemStack asStack(int count) {
-        return new ItemStack(get(), count);
+        return new ItemStack(this, count);
     }
 
     public boolean isIn(ItemStack stack) {
@@ -26,6 +26,11 @@ public class ItemProviderEntry<T extends ItemLike> extends RegistryEntry<T> {
     }
 
     public boolean is(Item item) {
-        return get().asItem() == item;
+        return asItem() == item;
+    }
+
+    @Override
+    public Item asItem() {
+        return get().asItem();
     }
 }
