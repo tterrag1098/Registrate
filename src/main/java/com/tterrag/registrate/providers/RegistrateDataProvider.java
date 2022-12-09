@@ -35,7 +35,7 @@ public class RegistrateDataProvider implements DataProvider {
 
     public RegistrateDataProvider(AbstractRegistrate<?> parent, String modid, GatherDataEvent event) {
         this.mod = modid;
-        registriesLookup = event.getLookupProvider();
+        this.registriesLookup = event.getLookupProvider();
 
         EnumSet<LogicalSide> sides = EnumSet.noneOf(LogicalSide.class);
         if (event.includeServer()) {
