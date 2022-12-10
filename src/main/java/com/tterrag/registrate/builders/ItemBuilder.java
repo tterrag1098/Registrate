@@ -9,6 +9,7 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.tags.TagKey;
@@ -16,7 +17,9 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -32,6 +35,35 @@ import java.util.function.Supplier;
  *            Parent object type
  */
 public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, ItemBuilder<T, P>> {
+
+    /**
+     * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The item will be assigned the following data:
+     * <ul>
+     * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
+     * </ul>
+     *
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the item
+     * @return A new {@link ItemBuilder} with reasonable default data generators.
+     */
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+        return create(owner, parent, name, callback, factory, null);
+    }
 
     /**
      * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
@@ -57,11 +89,16 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            A callback used to actually register the built entry
      * @param factory
      *            Factory to create the item
+     * @param tab
+     *            The {@link CreativeModeTab} for the object, can be null for none
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
+    @Deprecated(forRemoval = true, since = "1.19.3")
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab) {
         return new ItemBuilder<>(owner, parent, name, callback, factory)
-                .defaultModel().defaultLang();
+                .defaultModel().defaultLang()
+                .transform(ib -> tab == null ? ib : ib.tab(tab));
     }
 
     private final NonNullFunction<Item.Properties, T> factory;
@@ -71,6 +108,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
+    @Nullable private NonNullSupplier<? extends CreativeModeTab> tab = null;
+    private boolean registeredTabEvent = false;
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
@@ -102,6 +141,24 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     public ItemBuilder<T, P> initialProperties(NonNullSupplier<Item.Properties> properties) {
         initialProperties = properties;
         return this;
+    }
+
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
+    @Deprecated(forRemoval = true, since = "1.19.3")
+    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        if(!registeredTabEvent) {
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onBuildCreativeModeTabContents);
+            registeredTabEvent = true;
+        }
+
+        this.tab = tab;
+        return this;
+    }
+
+    protected void onBuildCreativeModeTabContents(CreativeModeTabEvent.BuildContents event) {
+        if(tab == null) return;
+        var tab = this.tab.get();
+        if(tab != null) event.registerSimple(tab, getEntry());
     }
 
     /**

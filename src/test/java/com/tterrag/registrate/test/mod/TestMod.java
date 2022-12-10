@@ -46,10 +46,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantment.Rarity;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -86,6 +83,7 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 @Mod("testmod")
@@ -186,7 +184,9 @@ public class TestMod {
 
     private static class TestCustomRegistryEntry {}
 
-    private final Registrate registrate = Registrate.create("testmod");
+    private AtomicReference<CreativeModeTab> modTab = new AtomicReference<>();
+
+    private final Registrate registrate = Registrate.create("testmod").creativeModeTab(modTab::get, "Test Mod");
 
     private final AtomicBoolean sawCallback = new AtomicBoolean();
 
@@ -396,14 +396,16 @@ public class TestMod {
     }
 
     private void registerCreativeTab(CreativeModeTabEvent.Register event) {
-        event.registerCreativeModeTab(new ResourceLocation("testmod", "test_creative_mode_tab"), builder -> builder
-                .title(Component.literal("Test Mod"))
-                .displayItems((flagSet, output, showOp) -> registrate
+        var result = event.registerCreativeModeTab(new ResourceLocation("testmod", "test_creative_mode_tab"), builder -> builder
+                .title(Component.translatable("itemGroup.testmod"))
+                /*.displayItems((flagSet, output, showOp) -> registrate
                         .getAll(Registries.ITEM)
                         .stream()
                         .map(RegistryEntry::get)
                         .forEach(output::accept)
-                )
+                )*/
         );
+
+        modTab.set(result);
     }
 }

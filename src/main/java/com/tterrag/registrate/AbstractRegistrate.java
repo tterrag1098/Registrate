@@ -2,6 +2,7 @@ package com.tterrag.registrate;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.*;
 import com.tterrag.registrate.builders.*;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
@@ -23,6 +24,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
+import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
@@ -36,6 +38,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType.EntityFactory;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -144,6 +147,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     @Nullable
     private String currentName;
+    private Supplier<? extends @NonnullType CreativeModeTab> currentTab;
     private boolean skipErrors;
 
     /**
@@ -579,6 +583,40 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
+     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * entry.
+     *
+     * @param tab
+     *            The tab to use for future items
+     * @return this {@link AbstractRegistrate}
+     */
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
+    @Deprecated(forRemoval = true, since = "1.19.3")
+    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        this.currentTab = Suppliers.memoize(tab::get);
+        return self();
+    }
+
+    /**
+     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
+     * entry.
+     * <p>
+     * Additionally, add a translation for the creative mode tab.
+     *
+     * @param tab
+     *            The tab to use for future items
+     * @param localizedName
+     *            The english name to use for the creative mode tab title
+     * @return this {@link AbstractRegistrate}
+     */
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
+    @Deprecated(forRemoval = true, since = "1.19.3")
+    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab, String localizedName) {
+        addDataGenerator(ProviderType.LANG, prov -> prov.add(tab.get(), localizedName));
+        return creativeModeTab(tab);
+    }
+
+    /**
      * Apply a transformation to this {@link AbstractRegistrate}. Useful to apply helper methods within a fluent chain, e.g.
      *
      * <pre>
@@ -722,7 +760,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory));
+        Supplier<? extends @NonnullType CreativeModeTab> currentTab = this.currentTab;
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentTab == null ? null : currentTab::get));
     }
 
     // Blocks
