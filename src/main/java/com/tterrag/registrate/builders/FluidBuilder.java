@@ -10,6 +10,7 @@ import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.*;
+
 import net.minecraft.Util;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -511,7 +512,7 @@ public class FluidBuilder<T extends ForgeFlowingFluid, P> extends AbstractBuilde
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
-                prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource())));
+                prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource().builtInRegistryHolder().key())));
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;

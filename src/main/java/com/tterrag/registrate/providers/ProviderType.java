@@ -6,7 +6,8 @@ import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.core.Registry;
+
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
@@ -33,13 +34,13 @@ import java.util.Map;
 public interface ProviderType<T extends RegistrateProvider> {
 
     // SERVER DATA
-    public static final ProviderType<RegistrateRecipeProvider> RECIPE = register("recipe", (p, e) -> new RegistrateRecipeProvider(p, e.getGenerator()));
-    public static final ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = register("advancement", (p, e) -> new RegistrateAdvancementProvider(p, e.getGenerator()));
-    public static final ProviderType<RegistrateLootTableProvider> LOOT = register("loot", (p, e) -> new RegistrateLootTableProvider(p, e.getGenerator()));
-    public static final ProviderType<RegistrateTagsProvider<Block>> BLOCK_TAGS = register("tags/block", type -> (p, e) -> new RegistrateTagsProvider<Block>(p, type, "blocks", e.getGenerator(), Registry.BLOCK, e.getExistingFileHelper()));
-    public static final ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerDelegate("tags/item", type -> (p, e, existing) -> new RegistrateItemTagsProvider(p, type, "items", e.getGenerator(), e.getExistingFileHelper(), (RegistrateTagsProvider<Block>)existing.get(BLOCK_TAGS)));
-    public static final ProviderType<RegistrateTagsProvider<Fluid>> FLUID_TAGS = register("tags/fluid", type -> (p, e) -> new RegistrateTagsProvider<Fluid>(p, type, "fluids", e.getGenerator(), Registry.FLUID, e.getExistingFileHelper()));
-    public static final ProviderType<RegistrateTagsProvider<EntityType<?>>> ENTITY_TAGS = register("tags/entity", type -> (p, e) -> new RegistrateTagsProvider<EntityType<?>>(p, type, "entity_types", e.getGenerator(), Registry.ENTITY_TYPE, e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateRecipeProvider> RECIPE = register("recipe", (p, e) -> new RegistrateRecipeProvider(p, e.getGenerator().getPackOutput()));
+    public static final ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = register("advancement", (p, e) -> new RegistrateAdvancementProvider(p, e.getGenerator().getPackOutput(), e.getLookupProvider()));
+    public static final ProviderType<RegistrateLootTableProvider> LOOT = register("loot", (p, e) -> new RegistrateLootTableProvider(p, e.getGenerator().getPackOutput()));
+    public static final ProviderType<RegistrateTagsProvider<Block>> BLOCK_TAGS = register("tags/block", type -> (p, e) -> new RegistrateTagsProvider<Block>(p, type, "blocks", e.getGenerator().getPackOutput(), Registries.BLOCK, e.getLookupProvider(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerDelegate("tags/item", type -> (p, e, existing) -> new RegistrateItemTagsProvider(p, type, "items", e.getGenerator().getPackOutput(), e.getLookupProvider(), e.getExistingFileHelper(), (RegistrateTagsProvider<Block>)existing.get(BLOCK_TAGS)));
+    public static final ProviderType<RegistrateTagsProvider<Fluid>> FLUID_TAGS = register("tags/fluid", type -> (p, e) -> new RegistrateTagsProvider<Fluid>(p, type, "fluids", e.getGenerator().getPackOutput(), Registries.FLUID, e.getLookupProvider(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateTagsProvider<EntityType<?>>> ENTITY_TAGS = register("tags/entity", type -> (p, e) -> new RegistrateTagsProvider<EntityType<?>>(p, type, "entity_types", e.getGenerator().getPackOutput(), Registries.ENTITY_TYPE, e.getLookupProvider(), e.getExistingFileHelper()));
 
     // CLIENT DATA
     public static final ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = register("blockstate", (p, e) -> new RegistrateBlockstateProvider(p, e.getGenerator(), e.getExistingFileHelper()));
@@ -64,7 +65,7 @@ public interface ProviderType<T extends RegistrateProvider> {
     @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullFunction<ProviderType<T>, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T>> type) {
         ProviderType<T> ret = new ProviderType<T>() {
-            
+
             @Override
             public T create(@Nonnull AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
                 return type.apply(this).apply(parent, event);
@@ -72,11 +73,11 @@ public interface ProviderType<T extends RegistrateProvider> {
         };
         return register(name, ret);
     }
-    
+
     @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T> type) {
         ProviderType<T> ret = new ProviderType<T>() {
-            
+
             @Override
             public T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
                 return type.apply(parent, event);

@@ -1,21 +1,11 @@
 package com.tterrag.registrate.test.mod;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
-import com.tterrag.registrate.util.entry.BlockEntityEntry;
-import com.tterrag.registrate.util.entry.BlockEntry;
-import com.tterrag.registrate.util.entry.EntityEntry;
-import com.tterrag.registrate.util.entry.FluidEntry;
-import com.tterrag.registrate.util.entry.ItemEntry;
-import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.entry.*;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import net.minecraft.advancements.Advancement;
@@ -31,6 +21,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.PigRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -54,11 +46,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantment.Rarity;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -83,6 +71,7 @@ import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -92,27 +81,20 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryBuilder;
 
+import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
 @Mod("testmod")
 public class TestMod {
-    
-    private static class TestCreativeModeTab extends CreativeModeTab {
 
-        public TestCreativeModeTab() {
-            super("testmod");
-        }
-
-        @Override
-        public ItemStack makeIcon() {
-            return new ItemStack(Items.EGG);
-        }
-    }
-    
     private class TestBlock extends Block implements EntityBlock {
 
         public TestBlock(Properties properties) {
             super(properties);
         }
-        
+
         @Override
         protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
             super.createBlockStateDefinition(builder);
@@ -123,13 +105,13 @@ public class TestMod {
         public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit) {
             if (!worldIn.isClientSide) {
                 player.openMenu(new MenuProvider() {
-                    
+
                     @Override
                     @Nullable
                     public AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
                         return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, testblockbe.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
-                    
+
                     @Override
                     public Component getDisplayName() {
                         return Component.literal("Test");
@@ -152,7 +134,7 @@ public class TestMod {
             super(type, pos, state);
         }
     }
-    
+
     private static class TestBlockEntityRenderer implements BlockEntityRenderer<TestBlockEntity> {
 
         public TestBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
@@ -166,7 +148,7 @@ public class TestMod {
             matrixStackIn.popPose();
         }
     }
-    
+
     private class TestDummyBlockEntity extends BlockEntity {
 
         public TestDummyBlockEntity(BlockEntityType<? extends TestDummyBlockEntity> type, BlockPos pos, BlockState state) {
@@ -180,19 +162,19 @@ public class TestMod {
             super(p_i50250_1_, p_i50250_2_);
         }
     }
-    
+
     private static class TestEnchantment extends Enchantment {
 
         public TestEnchantment(Rarity rarityIn, EnchantmentCategory typeIn, EquipmentSlot... slots) {
             super(rarityIn, typeIn, slots);
         }
-        
+
         @Override
         public int getMaxLevel() {
             return 5;
         }
     }
-    
+
 //    private static class TestBiome extends Biome {
 //
 //        public TestBiome(Biome.Builder biomeBuilder) {
@@ -201,11 +183,13 @@ public class TestMod {
 //    }
 
     private static class TestCustomRegistryEntry {}
-    
-    private final Registrate registrate = Registrate.create("testmod").creativeModeTab(TestCreativeModeTab::new, "Test Mod");
-    
+
+    private AtomicReference<CreativeModeTab> modTab = new AtomicReference<>();
+
+    private final Registrate registrate = Registrate.create("testmod").creativeModeTab(modTab::get, "Test Mod");
+
     private final AtomicBoolean sawCallback = new AtomicBoolean();
-    
+
     private final RegistryEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
@@ -214,14 +198,14 @@ public class TestMod {
                 .tag(ItemTags.BEDS)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("block/stone")))
                 .register();
-    
+
     private final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, MobCategory.CREATURE)
             .attributes(Pig::createAttributes)
             .loot((tb, e) -> tb.add(e, LootTable.lootTable()))
             .renderer(() -> PigRenderer::new)
             .register();
-    
+
     private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
                 .properties(p -> p.noOcclusion())
@@ -229,14 +213,14 @@ public class TestMod {
                                 prov.models().withExistingParent(ctx.getName(), new ResourceLocation("block/glass")).renderType(prov.mcLoc("cutout"))))
                 .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
-                    ShapedRecipeBuilder.shaped(ctx.getEntry())
+                    ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.getEntry())
                             .pattern("DDD").pattern("DED").pattern("DDD")
                             .define('D', Items.DIAMOND)
                             .define('E', Items.EGG)
                             .unlockedBy("has_egg", prov.has(Items.EGG))
                             .save(prov);
-                    
-                    prov.food(DataIngredient.items(ctx), () -> Blocks.DIAMOND_BLOCK, 1f);
+
+                    prov.food(DataIngredient.items(ctx), RecipeCategory.MISC, () -> Blocks.DIAMOND_BLOCK, 1f);
                 })
                 .tag(BlockTags.BAMBOO_PLANTABLE_ON, BlockTags.DRAGON_IMMUNE)
                 .tag(BlockTags.WITHER_IMMUNE)
@@ -249,17 +233,17 @@ public class TestMod {
                     .renderer(() -> TestBlockEntityRenderer::new)
                     .build()
                 .register();
-    
+
     private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
             .block(Block::new)
             .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
                     prov.models().withExistingParent("block/subfolder/" + ctx.getName(), prov.mcLoc("block/gold_block"))))
             .simpleItem()
             .register();
-    
-    private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registry.ITEM_REGISTRY);
+
+    private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registries.ITEM);
     private final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(ForgeRegistries.BLOCK_ENTITY_TYPES));
-    
+
     @SuppressWarnings("deprecation")
     private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
             .entity(TestEntity::new, MobCategory.CREATURE)
@@ -275,11 +259,11 @@ public class TestMod {
                                     .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0, 2)))))))
             .tag(EntityTypeTags.RAIDERS)
             .register();
-    
+
     private final BlockEntityEntry<TestDummyBlockEntity> testblockentity = registrate.object("testblockentity")
             .blockEntity(TestDummyBlockEntity::new)
             .register();
-    
+
     private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"), (props, still, flow) -> new FluidType(props) {
                 // And now you can do custom behaviours.
@@ -305,17 +289,17 @@ public class TestMod {
 //                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
 //                .build()
             .register();
-    
+
     private final RegistryEntry<MenuType<ChestMenu>> testmenu = registrate.object("testmenu")
             .menu((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
-    
+
     private final RegistryEntry<TestEnchantment> testenchantment = registrate.object("testenchantment")
             .enchantment(EnchantmentCategory.ARMOR, TestEnchantment::new)
             .rarity(Rarity.UNCOMMON)
             .addArmorSlots()
             .register();
-    
+
 //    private final RegistryEntry<TestBiome> testbiome = registrate.object("testbiome")
 //            .biome(TestBiome::new)
 //            .properties(b -> b.category(Category.PLAINS)
@@ -337,7 +321,7 @@ public class TestMod {
 //            .addSpawn(EntityClassification.CREATURE, () -> EntityType.IRON_GOLEM, 1, 2, 3)
 //            .addSpawn(EntityClassification.CREATURE, testentity, 1, 4, 8)
 //            .register();
-//    
+//
 //    private final RegistryEntry<TestBiome> testbiome2 = registrate.object("testbiome2")
 //            .biome(TestBiome::new)
 //            .properties(b -> b.category(Category.DESERT)
@@ -356,7 +340,7 @@ public class TestMod {
 //            .copyCarvers(() -> Biomes.DESERT)
 //            .copySpawns(() -> Biomes.DESERT)
 //            .register();
-//    
+//
 //    private @Nullable DimensionType testdimensiontype;
 //    private final RegistryEntry<ModDimension> testdimension = registrate.object("testdimension")
 //            .dimension(OverworldDimension::new)
@@ -372,13 +356,13 @@ public class TestMod {
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
 //            .block(Block::new)
 //            .addLayer(() -> RenderType::getTranslucent);
-    
+
     private static <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
         return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
     }
 
     public TestMod() {
-        
+
         registrate.addRawLang("testmod.custom.lang", "Test");
         registrate.addLang("tooltip", testblock.getId(), "Egg.");
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
@@ -386,27 +370,42 @@ public class TestMod {
             Advancement.Builder.advancement()
                 .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
                 .display(Items.EGG,
-                        adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."), 
+                        adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
                         new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
                 .save(adv, registrate.getModid() + ":root");
         });
-        
+
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerCreativeTab);
         MinecraftForge.EVENT_BUS.addListener(this::afterServerStart);
     }
-    
+
     private void onCommonSetup(FMLCommonSetupEvent event) {
         if (!sawCallback.get()) {
             throw new IllegalStateException("Register callback not fired!");
         }
-        
+
         testblock.asStack();
         testitem.is(Items.SNOWBALL);
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
     }
-    
+
     private void afterServerStart(ServerStartedEvent event) {
+    }
+
+    private void registerCreativeTab(CreativeModeTabEvent.Register event) {
+        var result = event.registerCreativeModeTab(new ResourceLocation("testmod", "test_creative_mode_tab"), builder -> builder
+                .title(Component.translatable("itemGroup.testmod"))
+                /*.displayItems((flagSet, output, showOp) -> registrate
+                        .getAll(Registries.ITEM)
+                        .stream()
+                        .map(RegistryEntry::get)
+                        .forEach(output::accept)
+                )*/
+        );
+
+        modTab.set(result);
     }
 }

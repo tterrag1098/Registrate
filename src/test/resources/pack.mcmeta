@@ -1,7 +1,9 @@
 {
     "pack": {
         "description": "examplemod resources",
-        "pack_format": 4,
+        "pack_format": 12,
+        "forge:resource_pack_format": 12,
+        "forge:data_pack_format": 10,
         "_comment": "A pack_format of 4 requires json lang files. Note: we require v4 pack meta for all mods."
     }
 }

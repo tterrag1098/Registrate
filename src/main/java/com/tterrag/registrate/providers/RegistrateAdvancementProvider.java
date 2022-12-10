@@ -1,27 +1,28 @@
 package com.tterrag.registrate.providers;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.tterrag.registrate.AbstractRegistrate;
-
 import lombok.extern.log4j.Log4j2;
+
 import net.minecraft.advancements.Advancement;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
+import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.LogicalSide;
+
+import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 @Log4j2
 public class RegistrateAdvancementProvider implements RegistrateProvider, Consumer<Advancement> {
@@ -29,40 +30,49 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
     private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
 
     private final AbstractRegistrate<?> owner;
-    private final DataGenerator generator;
+    private final PackOutput packOutput;
+    private final CompletableFuture<HolderLookup.Provider> registriesLookup;
+    private final List<CompletableFuture<?>> advancementsToSave = Lists.newArrayList();
 
-    public RegistrateAdvancementProvider(AbstractRegistrate<?> owner, DataGenerator generatorIn) {
+    public RegistrateAdvancementProvider(AbstractRegistrate<?> owner, PackOutput packOutputIn, CompletableFuture<HolderLookup.Provider> registriesLookupIn) {
         this.owner = owner;
-        this.generator = generatorIn;
+        this.packOutput = packOutputIn;
+        this.registriesLookup = registriesLookupIn;
     }
 
     @Override
     public LogicalSide getSide() {
         return LogicalSide.SERVER;
     }
-    
+
     public MutableComponent title(String category, String name, String title) {
         return owner.addLang("advancements", new ResourceLocation(category, name), "title", title);
     }
-    
+
     public MutableComponent desc(String category, String name, String desc) {
         return owner.addLang("advancements", new ResourceLocation(category, name), "description", desc);
     }
-    
+
     private @Nullable CachedOutput cache;
     private Set<ResourceLocation> seenAdvancements = new HashSet<>();
 
     @Override
-    public void run(CachedOutput cache) throws IOException {
-        try {
-            this.cache = cache;
-            this.seenAdvancements.clear();
-            owner.genData(ProviderType.ADVANCEMENT, this);
-        } finally {
-            this.cache = null;
-        }
+    public CompletableFuture<?> run(CachedOutput cache) {
+        return registriesLookup.thenCompose(lookup -> {
+            advancementsToSave.clear();
+
+            try {
+                this.cache = cache;
+                this.seenAdvancements.clear();
+                owner.genData(ProviderType.ADVANCEMENT, this);
+            } finally {
+                this.cache = null;
+            }
+
+            return CompletableFuture.allOf(advancementsToSave.toArray(CompletableFuture[]::new));
+        });
     }
-    
+
     @Override
     public void accept(@Nullable Advancement t) {
         CachedOutput cache = this.cache;
@@ -70,17 +80,12 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
             throw new IllegalStateException("Cannot accept advancements outside of act");
         }
         Objects.requireNonNull(t, "Cannot accept a null advancement");
-        Path path = this.generator.getOutputFolder();
+        Path path = this.packOutput.getOutputFolder();
         if (!seenAdvancements.add(t.getId())) {
             throw new IllegalStateException("Duplicate advancement " + t.getId());
         } else {
             Path path1 = getPath(path, t);
-
-            try {
-                DataProvider.saveStable(cache, t.deconstruct().serializeToJson(), path1);
-            } catch (IOException ioexception) {
-                log.error("Couldn't save advancement {}", path1, ioexception);
-            }
+            advancementsToSave.add(DataProvider.saveStable(cache, t.deconstruct().serializeToJson(), path1));
         }
     }
 

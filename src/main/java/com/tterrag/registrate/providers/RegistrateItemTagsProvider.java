@@ -1,24 +1,26 @@
 package com.tterrag.registrate.providers;
 
-import java.util.function.Function;
-
 import com.tterrag.registrate.AbstractRegistrate;
 
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.data.ExistingFileHelper;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+
 public class RegistrateItemTagsProvider extends RegistrateTagsProvider<Item> {
 
     private final Function<TagKey<Block>, TagBuilder> builderLookup;
 
-    @SuppressWarnings({ "deprecation", "null" })
-    public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, DataGenerator generatorIn, ExistingFileHelper existingFileHelper, RegistrateTagsProvider<Block> blockTags) {
-        super(owner, type, name, generatorIn, Registry.ITEM, existingFileHelper);
+    @SuppressWarnings("null")
+    public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, PackOutput output, CompletableFuture<HolderLookup.Provider> registriesLookup, ExistingFileHelper existingFileHelper, RegistrateTagsProvider<Block> blockTags) {
+        super(owner, type, name, output, Registries.ITEM, registriesLookup, existingFileHelper);
         this.builderLookup = blockTags::getOrCreateRawBuilder;
     }
 

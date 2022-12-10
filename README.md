@@ -65,46 +65,29 @@ To get an overview of the different APIs and methods, check out the [Javadocs](h
 
 ## Project Setup
 
-Registrate can be installed in the mods folder as a typical dependency, but since it does not have a mod, it can also be shaded. Shading is the recommended way to include Registrate (at least until Forge jar-in-jar is working again).
+Registrate can be installed in the mods folder as a typical dependency, but since it does not have a mod, it can also be pre-packaged into your mod. You can do this by making use of Forges Jar-in-Jar system.
 
-This is easiest with the [Gradle Shadow plugin](https://imperceptiblethoughts.com/shadow/). Add the plugin to your buildscript like so:
+[See here for more info on Forges Jar-in-Jar system](https://forge.gemwire.uk/wiki/Jar-in-jar).
+
+To get started you **MUST** enable the Jar-in-Jar system, you can do this by adding the following code anywhere in your build script:
 
 ```gradle
-plugins {
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
-}
+jarJar.enable()
 ```
 
-**Note: Shadow 5.1+ requires Gradle 5.x. I recommend 5.6 as I know this version works with both Shadow and FG3.**
+Then, make sure the jarJar artifact is reobfuscated.
 
-Once you have the plugin, it needs to be configured. First add a shade configuration,
-
-```gradle
-configurations {
-    shade
-}
-```
-
-configure the shadowJar task use it, and repackage Registrate classes.
-
-```gradle
-shadowJar {
-    configurations = [project.configurations.shade]
-    relocate 'com.tterrag.registrate', 'com.mymod.repack.registrate'
-}
-```
-
-Then, make sure the shadow jar artifact is reobfuscated.
-
-```gradle
+```groovy
 reobf {
-    shadowJar {}
+    jarJar { }
 }
+
+tasks.jarJar.finalizedBy('reobfJarJar')
 ```
 
 Finally, the dependency itself must be added. First add my maven repository,
 
-```gradle
+```groovy
 repositories {
     maven { // Registrate
         url "http://maven.tterrag.com/"
@@ -113,21 +96,39 @@ repositories {
 }
 ```
 
-and then the Registrate dependency to the implementation and shade configurations.
+and then the Registrate dependency to the implementation and jarJar configurations.
 
-```gradle
+```groovy
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}" // This should already be here
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}" // This should alread
     
-    def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
-    implementation fg.deobf(registrate)
-    shade registrate
+    // MC<minecraft_version>-<registrate_version>
+    implementation fg.deobf("com.tterrag.registrate:Registrate:MC1.19.3-1.1.6")
+    // [MC<minecraft_version>,MC<next_minecraft_version>)
+    jarJar(group: 'com.tterrag.registrate', name: 'Registrate', version: "[MC1.19.3,MC1.20)")
+}
+```
+<details>
+
+<summary>Additional JarJar Note</summary>
+
+By default the jar containing your mod & registrate will have a `-all` suffix and the normal jar file will not contain registrate.
+You would want to share around this `-all` jar, as that contains registrate and any other libs you have pre-packaged.
+
+You can change this though with the following code, this changes the `-all` jar to no longer have a suffix, and the default main jar to be given a `-slim` suffix.
+Essentially swapping the 2 jars [_you now would want to share the jar with no suffix appended_].
+
+```groovy
+tasks.jarJar.configure {
+    // remove '-all' from jarJar jar file
+	classifier ''
+}
+
+jar {
+    // this now conflicts with jarJar as filenames are the same
+    // append a `-slim` to this jar, as this jar contains no pre-packaged libs
+    classifier 'slim'
 }
 ```
 
-To build the jar containing shaded dependencies, use the `shadowJar` task, or configure the task to run automatically when using `build`.
- 
-```gradle
-build.dependsOn shadowJar
-build.dependsOn reobfShadowJar
-```
+</details>
