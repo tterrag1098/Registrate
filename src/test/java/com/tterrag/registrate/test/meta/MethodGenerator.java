@@ -1,8 +1,10 @@
 package com.tterrag.registrate.test.meta;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -97,5 +99,6 @@ public class MethodGenerator {
             }
         }
         Files.write(output, currentSource);
+        System.out.print("Updated source code: " + Paths.get("src/main/java").relativize(output).toString().replace(File.separator, ".").replace(".java", ""));
     }
 }

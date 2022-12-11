@@ -120,7 +120,8 @@ public class ProtectedMethodScraper {
                 className = line.replaceAll("public (abstract )?class ", "").split("\\s+")[0];
             }
             line = scanner.nextLine();
-        } while (!"done".equals(line));
+        } while (!"done".equals(line) && !"}".equals(line));
+        System.out.println("Text processed! Found " + headers.size() + " methods to generate.");
         return headers;
     }
 }
