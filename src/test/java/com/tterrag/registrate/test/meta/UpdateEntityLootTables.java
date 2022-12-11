@@ -6,7 +6,7 @@ import java.nio.file.Paths;
 public class UpdateEntityLootTables {
     
     public static void main(String[] args) throws IOException {
-        new MethodGenerator()
+        new MethodGenerator(UpdateEntityLootTables.class)
             .exclude("isNonLiving").exclude("getKnownEntities")
             .generate(Paths.get("src", "main", "java", "com", "tterrag", "registrate", "providers", "loot", "RegistrateEntityLootTables.java"));
     }

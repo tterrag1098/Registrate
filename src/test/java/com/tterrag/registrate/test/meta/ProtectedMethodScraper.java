@@ -1,5 +1,8 @@
 package com.tterrag.registrate.test.meta;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,11 +46,14 @@ public class ProtectedMethodScraper {
             return new Header(this.className, this.isStatic, this.generics, type, this.name, newParamTypes, this.paramNames);
         }
 
-        public String printStubMethod() {
+        public String printStubMethod(Class<?> source) {
             StringBuilder base = new StringBuilder();
+            base.append("/** Generated override to expose protected method: {@link ").append(className).append(isStatic ? "." : "#").append(name).append("} */\n");
             if (!isStatic) {
                 base.append("@Override\n");
             }
+            base.append("@Generated(value = \"").append(source.getName()).append("\", date = \"")
+                .append(DateTimeFormatter.RFC_1123_DATE_TIME.format(Instant.now().atZone(ZoneOffset.UTC))).append("\")\n");
             base.append("public ").append(isStatic ? "static " : "");
             if (generics != null) {
                 base.append(generics).append(" ");

@@ -41,8 +41,10 @@ public class MethodGenerator {
     private final List<Pair<String, String>> typeReplacements;
     private final Set<Exclusion> excludes = new HashSet<>();
     
-    public MethodGenerator() {
-        this(ImmutableList.of());
+    private final Class<?> mainClass;
+    
+    public MethodGenerator(Class<?> mainClass) {
+        this(ImmutableList.of(), mainClass);
     }
     
     public MethodGenerator exclude(String name) {
@@ -81,11 +83,11 @@ public class MethodGenerator {
                         break;
                     }
                 }
-                itr.add("    " + START_KEY);
+                itr.add(line);
                 for (Header header : newHeaders) {
                     if (excludes.stream().anyMatch(e -> e.matches(header))) continue;
                     itr.add("");
-                    for (String s : header.printStubMethod().split("\n")) {
+                    for (String s : header.printStubMethod(mainClass).split("\n")) {
                         itr.add("    " + s);
                     }
                 }
