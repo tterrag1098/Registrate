@@ -9,7 +9,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
@@ -31,8 +31,8 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
 
     private static class AccessibleLanguageProvider extends LanguageProvider {
 
-        public AccessibleLanguageProvider(DataGenerator gen, String modid, String locale) {
-            super(gen, modid, locale);
+        public AccessibleLanguageProvider(PackOutput packOutput, String modid, String locale) {
+            super(packOutput, modid, locale);
         }
 
         @Override
@@ -48,10 +48,10 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
 
     private final AccessibleLanguageProvider upsideDown;
 
-    public RegistrateLangProvider(AbstractRegistrate<?> owner, DataGenerator gen) {
-        super(gen, owner.getModid(), "en_us");
+    public RegistrateLangProvider(AbstractRegistrate<?> owner, PackOutput packOutput) {
+        super(packOutput, owner.getModid(), "en_us");
         this.owner = owner;
-        this.upsideDown = new AccessibleLanguageProvider(gen, owner.getModid(), "en_ud");
+        this.upsideDown = new AccessibleLanguageProvider(packOutput, owner.getModid(), "en_ud");
     }
 
     @Override

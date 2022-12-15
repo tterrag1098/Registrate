@@ -158,7 +158,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     protected void onBuildCreativeModeTabContents(CreativeModeTabEvent.BuildContents event) {
         if(tab == null) return;
         var tab = this.tab.get();
-        if(tab != null) event.registerSimple(tab, getEntry());
+        if(tab != null && event.getTab() == tab) event.accept(get());
     }
 
     /**
