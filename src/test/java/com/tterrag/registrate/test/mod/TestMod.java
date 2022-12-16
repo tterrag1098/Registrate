@@ -71,7 +71,6 @@ import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -83,7 +82,6 @@ import net.minecraftforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 @Mod("testmod")
@@ -184,9 +182,16 @@ public class TestMod {
 
     private static class TestCustomRegistryEntry {}
 
-    private AtomicReference<CreativeModeTab> modTab = new AtomicReference<>();
-
-    private final Registrate registrate = Registrate.create("testmod").creativeModeTab(modTab::get, "Test Mod");
+    private final Registrate registrate = Registrate
+            .create("testmod")
+            .creativeModeTab("test_creative_mode_tab", c -> c
+                    .title(Component.translatable("itemGroup.testmod"))
+                    .icon(Items.STONE::getDefaultInstance)
+            )
+            // TODO: Auto add these when registering new CreativeModeTabs
+            //  Should also update RegistrateLangProvider to check if CreativeModeTab translation component is translatable,
+            //  they used to always be translatable in the past but this is not the case anymore
+            .addDataGenerator(ProviderType.LANG, provider -> provider.add("itemGroup.testmod", "Test Mod"));
 
     private final AtomicBoolean sawCallback = new AtomicBoolean();
 
@@ -376,7 +381,6 @@ public class TestMod {
         });
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::registerCreativeTab);
         MinecraftForge.EVENT_BUS.addListener(this::afterServerStart);
     }
 
@@ -393,19 +397,5 @@ public class TestMod {
     }
 
     private void afterServerStart(ServerStartedEvent event) {
-    }
-
-    private void registerCreativeTab(CreativeModeTabEvent.Register event) {
-        var result = event.registerCreativeModeTab(new ResourceLocation("testmod", "test_creative_mode_tab"), builder -> builder
-                .title(Component.translatable("itemGroup.testmod"))
-                /*.displayItems((flagSet, output, showOp) -> registrate
-                        .getAll(Registries.ITEM)
-                        .stream()
-                        .map(RegistryEntry::get)
-                        .forEach(output::accept)
-                )*/
-        );
-
-        modTab.set(result);
     }
 }

@@ -2,7 +2,6 @@ package com.tterrag.registrate;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.*;
 import com.tterrag.registrate.builders.*;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
@@ -24,7 +23,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
-import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
@@ -37,17 +35,23 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType.EntityFactory;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Material;
+import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.data.loading.DatagenModLoader;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fluids.FluidType;
@@ -60,10 +64,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 /**
@@ -123,6 +124,79 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
     }
 
+    public static final class CreativeModeTabModifier implements CreativeModeTab.Output {
+        private final Supplier<FeatureFlagSet> flags;
+        private final BooleanSupplier hasPermissions;
+        private final BiConsumer<ItemStack, CreativeModeTab.TabVisibility> acceptFunc;
+
+        private CreativeModeTabModifier(Supplier<FeatureFlagSet> flags, BooleanSupplier hasPermissions, BiConsumer<ItemStack, CreativeModeTab.TabVisibility> acceptFunc) {
+            this.flags = flags;
+            this.hasPermissions = hasPermissions;
+            this.acceptFunc = acceptFunc;
+        }
+
+        public FeatureFlagSet getFlags() {
+            return flags.get();
+        }
+
+        public boolean hasPermissions() {
+            return hasPermissions.getAsBoolean();
+        }
+
+        @Override
+        public void accept(ItemStack stack, CreativeModeTab.TabVisibility visibility) {
+            acceptFunc.accept(stack, visibility);
+        }
+
+        public void accept(Supplier<? extends ItemLike> item, CreativeModeTab.TabVisibility visibility) {
+            accept(item.get(), visibility);
+        }
+
+        public void accept(Supplier<? extends ItemLike> item) {
+            accept(item.get());
+        }
+    }
+
+    private static final class CreativeModeTabRegistration implements Supplier<CreativeModeTab> {
+        private static final Supplier<List<Object>> DEFAULT_AFTER_ENTRIES = Lazy.of(CreativeModeTabRegistration::defaultAfterEntries);
+
+        @Nullable private CreativeModeTab creativeModeTab = null;
+        private final ResourceLocation registryName;
+        private final List<Object> beforeEntries;
+        private final List<Object> afterEntries;
+        private final Consumer<CreativeModeTab.Builder> configurator;
+
+        private CreativeModeTabRegistration(ResourceLocation registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
+            this.registryName = registryName;
+            this.beforeEntries = beforeEntries == null ? List.of() : beforeEntries;
+            this.afterEntries = afterEntries == null ? DEFAULT_AFTER_ENTRIES.get() : afterEntries;
+            this.configurator = configurator;
+        }
+
+        void register(CreativeModeTabEvent.Register event) {
+            log.debug("Registering CreativeModeTab '{}'", registryName);
+            creativeModeTab = event.registerCreativeModeTab(registryName, beforeEntries, afterEntries, configurator);
+        }
+
+        @Override
+        public CreativeModeTab get() {
+            return Objects.requireNonNull(creativeModeTab, () -> "Attempt to obtain CreativeModeTab(%s) instance before it was registered!".formatted(registryName));
+        }
+
+        @SuppressWarnings("unchecked")
+        private static List<Object> defaultAfterEntries() {
+            try {
+                var field = CreativeModeTabEvent.class.getDeclaredField("DEFAULT_AFTER_ENTRIES");
+                field.setAccessible(true);
+                return (List<Object>) field.get(null);
+            }
+            catch(NoSuchFieldException | IllegalAccessException e) {
+                log.fatal("Error occurred while obtaining CreativeModeTabEvent#DEFAULT_AFTER_ENTRIES", e);
+                return List.of(CreativeModeTabs.SPAWN_EGGS); // Match value from CreativeModeTabEvent
+            }
+        }
+    }
+
     public static boolean isDevEnvironment() {
         return FMLEnvironment.naming.equals("mcp");
     }
@@ -136,6 +210,9 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     private final Table<Pair<String, ResourceKey<? extends Registry<?>>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
+    private final Map<Supplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = Maps.newHashMap();
+    private final List<CreativeModeTabRegistration> creativeModeTabsRegistrars = Lists.newArrayList();
+    @Nullable private Supplier<CreativeModeTab> defaultCreativeModeTab = null;
 
     private final NonNullSupplier<Boolean> doDatagen = NonNullSupplier.lazy(DatagenModLoader::isRunningDataGen);
 
@@ -147,7 +224,6 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     @Nullable
     private String currentName;
-    private Supplier<? extends @NonnullType CreativeModeTab> currentTab;
     private boolean skipErrors;
 
     /**
@@ -171,11 +247,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         try {
             Consumer<RegisterEvent> onRegister = this::onRegister;
             Consumer<RegisterEvent> onRegisterLate = this::onRegisterLate;
+            Consumer<CreativeModeTabEvent.Register> onRegisterCreativeModeTabs = this::onRegisterCreativeModeTabs;
             bus.addListener(onRegister);
             bus.addListener(EventPriority.LOWEST, onRegisterLate);
+            bus.addListener(onRegisterCreativeModeTabs); // OnetimeEvent : Fired once post all other registration
+            bus.addListener(this::onBuildCreativeModeTabContents); // Fired multiple times when ever tabs need contents rebuilt (changing op tab perms for example)
             OneTimeEventReceiver.addListener(bus, FMLCommonSetupEvent.class, $ -> {
                 OneTimeEventReceiver.unregister(bus, onRegister, RegisterEvent.class);
                 OneTimeEventReceiver.unregister(bus, onRegisterLate, RegisterEvent.class);
+                OneTimeEventReceiver.unregister(bus, onRegisterCreativeModeTabs, CreativeModeTabEvent.Register.class);
             });
         } catch (IllegalArgumentException e) {
 //            log.info("Detected new forge version, registering events reflectively.");
@@ -229,6 +309,21 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         callbacks.forEach(Runnable::run);
         callbacks.clear();
         completedRegistrations.add(type);
+    }
+
+    protected void onRegisterCreativeModeTabs(CreativeModeTabEvent.Register event) {
+        log.debug("Registering CreativeModeTabs...");
+        creativeModeTabsRegistrars.forEach(registrar -> registrar.register(event));
+        creativeModeTabsRegistrars.clear();
+    }
+
+    protected void onBuildCreativeModeTabContents(CreativeModeTabEvent.BuildContents event) {
+        var creativeModeTab = event.getTab();
+        var modifier = new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept);
+
+        creativeModeTabModifiers.forEach((key, value) -> {
+            if(creativeModeTab == key.get()) value.accept(modifier);
+        });
     }
 
     @Nullable
@@ -582,38 +677,30 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
 
-    /**
-     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
-     * entry.
-     *
-     * @param tab
-     *            The tab to use for future items
-     * @return this {@link AbstractRegistrate}
-     */
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
-    @Deprecated(forRemoval = true, since = "1.19.3")
-    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
-        this.currentTab = Suppliers.memoize(tab::get);
+    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
+        var result = new CreativeModeTabRegistration(new ResourceLocation(modid, registryName), beforeEntries, afterEntries, configurator);
+        creativeModeTabsRegistrars.add(result);
+        if(defaultCreativeModeTab == null) defaultCreativeModeTab = result;
+        return result;
+    }
+
+    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
+        return buildCreativeModeTab(registryName, null, null, configurator);
+    }
+
+    public S creativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
+        buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator);
         return self();
     }
 
-    /**
-     * Set the default creative mode tab for all future items created with this Registrate, until the next time this method is called. The supplier will only be called once, and the value re-used for each
-     * entry.
-     * <p>
-     * Additionally, add a translation for the creative mode tab.
-     *
-     * @param tab
-     *            The tab to use for future items
-     * @param localizedName
-     *            The english name to use for the creative mode tab title
-     * @return this {@link AbstractRegistrate}
-     */
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
-    @Deprecated(forRemoval = true, since = "1.19.3")
-    public S creativeModeTab(NonNullSupplier<? extends CreativeModeTab> tab, String localizedName) {
-        addDataGenerator(ProviderType.LANG, prov -> prov.add(tab.get(), localizedName));
-        return creativeModeTab(tab);
+    public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
+        buildCreativeModeTab(registryName, configurator);
+        return self();
+    }
+
+    public S modifyCreativeModeTab(Supplier<? extends CreativeModeTab> creativeModeTab, Consumer<CreativeModeTabModifier> modifier) {
+        creativeModeTabModifiers.put(creativeModeTab, modifier);
+        return self();
     }
 
     /**
@@ -760,8 +847,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
-        Supplier<? extends @NonnullType CreativeModeTab> currentTab = this.currentTab;
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, currentTab == null ? null : currentTab::get));
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, defaultCreativeModeTab == null ? null : defaultCreativeModeTab::get));
     }
 
     // Blocks

@@ -1,5 +1,6 @@
 package com.tterrag.registrate.builders;
 
+import com.google.common.collect.Maps;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.*;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
@@ -17,13 +18,13 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -108,12 +109,29 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
-    @Nullable private NonNullSupplier<? extends CreativeModeTab> tab = null;
-    private boolean registeredTabEvent = false;
+    private Map<NonNullSupplier<? extends CreativeModeTab>, Consumer<AbstractRegistrate.CreativeModeTabModifier>> creativeModeTabs = Maps.newHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
         this.factory = factory;
+
+        // delegate creative mode tab modification callback registration
+        // until after item has been registered
+        // this allows the instance of `#tab` to be modified as many times as we want
+        // during the build process
+        // and only register the handler once everything is finalized
+        //
+        // we use a map to also keep track of the modifier used to add item to the tab
+        // this allows to end user to pick and choose how & in what state to add the itemstack to the tab in
+        //
+        // using a map also allows item to be added to multiple tabs, rather than keep tacking of 1 tab and adding to that singular tab
+        // this means, if mod registers custom tab & spawn eggs the eggs will be on the mod tab & spawn eggs tab for example, rather than only on the spawn eggs tab
+        // user can modify this though, by using #removeTab() to remove item from any registered tab
+        // must pass in the *EXACT* same supplier to the method though, otherwise the map keys wont match and nothing (or something else) may get removed
+        onRegister(item -> {
+            creativeModeTabs.forEach(owner::modifyCreativeModeTab);
+            creativeModeTabs.clear(); // this registration should only fire once, to doubly ensure this, clear the map
+        });
     }
 
     /**
@@ -143,22 +161,18 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
-    @Deprecated(forRemoval = true, since = "1.19.3")
-    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
-        if(!registeredTabEvent) {
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onBuildCreativeModeTabContents);
-            registeredTabEvent = true;
-        }
-
-        this.tab = tab;
+    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab, Consumer<AbstractRegistrate.CreativeModeTabModifier> modifier) {
+        creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
 
-    protected void onBuildCreativeModeTabContents(CreativeModeTabEvent.BuildContents event) {
-        if(tab == null) return;
-        var tab = this.tab.get();
-        if(tab != null && event.getTab() == tab) event.accept(get());
+    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        return tab(tab, modifier -> modifier.accept(get()));
+    }
+
+    public ItemBuilder<T, P> removeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        creativeModeTabs.remove(tab);
+        return this;
     }
 
     /**
