@@ -212,7 +212,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
     private final Map<Supplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = Maps.newHashMap();
     private final List<CreativeModeTabRegistration> creativeModeTabsRegistrars = Lists.newArrayList();
-    @Nullable private Supplier<CreativeModeTab> defaultCreativeModeTab = null;
+    @Nullable private Supplier<? extends CreativeModeTab> defaultCreativeModeTab = null;
 
     private final NonNullSupplier<Boolean> doDatagen = NonNullSupplier.lazy(DatagenModLoader::isRunningDataGen);
 
@@ -687,7 +687,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
         var result = new CreativeModeTabRegistration(internalName, beforeEntries, afterEntries, configurator);
         creativeModeTabsRegistrars.add(result);
-        if(defaultCreativeModeTab == null) defaultCreativeModeTab = result;
+        if(defaultCreativeModeTab == null) creativeModeTab(result);
         return result;
     }
 
@@ -720,6 +720,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
         buildCreativeModeTab(registryName, configurator, englishTranslation);
+        return self();
+    }
+
+    public S creativeModeTab(Supplier<? extends CreativeModeTab> creativeModeTab) {
+        defaultCreativeModeTab = creativeModeTab;
         return self();
     }
 
