@@ -677,15 +677,30 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
 
-    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
-        var result = new CreativeModeTabRegistration(new ResourceLocation(modid, registryName), beforeEntries, afterEntries, configurator);
+    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+        var internalName = new ResourceLocation(modid, registryName);
+
+        if(englishTranslation != null) {
+            var component = addLang("itemGroup", internalName, englishTranslation);
+            configurator = configurator.andThen(builder -> builder.title(component));
+        }
+
+        var result = new CreativeModeTabRegistration(internalName, beforeEntries, afterEntries, configurator);
         creativeModeTabsRegistrars.add(result);
         if(defaultCreativeModeTab == null) defaultCreativeModeTab = result;
         return result;
     }
 
+    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
+        return buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator, null);
+    }
+
     public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
         return buildCreativeModeTab(registryName, null, null, configurator);
+    }
+
+    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+        return buildCreativeModeTab(registryName, null, null, configurator, englishTranslation);
     }
 
     public S creativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
@@ -693,8 +708,18 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
 
+    public S creativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+        buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator, englishTranslation);
+        return self();
+    }
+
     public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
         buildCreativeModeTab(registryName, configurator);
+        return self();
+    }
+
+    public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+        buildCreativeModeTab(registryName, configurator, englishTranslation);
         return self();
     }
 

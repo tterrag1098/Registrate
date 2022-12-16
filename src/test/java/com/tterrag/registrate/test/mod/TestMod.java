@@ -184,14 +184,7 @@ public class TestMod {
 
     private final Registrate registrate = Registrate
             .create("testmod")
-            .creativeModeTab("test_creative_mode_tab", c -> c
-                    .title(Component.translatable("itemGroup.testmod"))
-                    .icon(Items.STONE::getDefaultInstance)
-            )
-            // TODO: Auto add these when registering new CreativeModeTabs
-            //  Should also update RegistrateLangProvider to check if CreativeModeTab translation component is translatable,
-            //  they used to always be translatable in the past but this is not the case anymore
-            .addDataGenerator(ProviderType.LANG, provider -> provider.add("itemGroup.testmod", "Test Mod"));
+            .creativeModeTab("test_creative_mode_tab", c -> c.icon(Items.STONE::getDefaultInstance), "Test Mod");
 
     private final AtomicBoolean sawCallback = new AtomicBoolean();
 
