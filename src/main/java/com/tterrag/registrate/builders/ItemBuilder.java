@@ -115,19 +115,6 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
         this.factory = factory;
 
-        // delegate creative mode tab modification callback registration
-        // until after item has been registered
-        // this allows the instance of `#tab` to be modified as many times as we want
-        // during the build process
-        // and only register the handler once everything is finalized
-        //
-        // we use a map to also keep track of the modifier used to add item to the tab
-        // this allows to end user to pick and choose how & in what state to add the itemstack to the tab in
-        //
-        // using a map also allows item to be added to multiple tabs, rather than keep tacking of 1 tab and adding to that singular tab
-        // this means, if mod registers custom tab & spawn eggs the eggs will be on the mod tab & spawn eggs tab for example, rather than only on the spawn eggs tab
-        // user can modify this though, by using #removeTab() to remove item from any registered tab
-        // must pass in the *EXACT* same supplier to the method though, otherwise the map keys wont match and nothing (or something else) may get removed
         onRegister(item -> {
             creativeModeTabs.forEach(owner::modifyCreativeModeTab);
             creativeModeTabs.clear(); // this registration should only fire once, to doubly ensure this, clear the map
@@ -161,15 +148,53 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
+    /**
+     * Adds the item built from this builder into the given CreativeModeTab using the specified modifier
+     *
+     * <p>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM} registry.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
+     * <p>
+     * Calling this method with different {@link CreativeModeTab tabs} will add your item to all the specified tabs,
+     * unlike the old implementation which only allowed you to specify a single tab to display your times on.
+     * <p>
+     * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will replace any previous calls.
+     *
+     * @param tab The {@link CreativeModeTab} to add the item into
+     * @param modifier The {@link com.tterrag.registrate.AbstractRegistrate.CreativeModeTabModifier} used to build the ItemStack
+     * @return This builder
+     */
     public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab, Consumer<AbstractRegistrate.CreativeModeTabModifier> modifier) {
         creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
 
+    /**
+     * Adds the item built from this builder into the given CreativeModeTab using the default ItemStack instance
+     *
+     * <p>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM} registry.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
+     * <p>
+     * Calling this method with different {@link CreativeModeTab tabs} will add your item to all the specified tabs,
+     * unlike the old implementation which only allowed you to specify a single tab to display your times on.
+     * <p>
+     * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will replace any previous calls.
+     *
+     * @param tab The {@link CreativeModeTab} to add the item into
+     * @return This builder
+     * @see #tab(NonNullSupplier, Consumer)
+     */
     public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
         return tab(tab, modifier -> modifier.accept(get()));
     }
 
+    /**
+     * Removes the item built from this builder from the given CreativeModeTab
+     *
+     * @param tab The {@link CreativeModeTab} to remove the item from
+     * @return This builder
+     */
     public ItemBuilder<T, P> removeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
         creativeModeTabs.remove(tab);
         return this;
