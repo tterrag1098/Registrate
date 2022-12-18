@@ -12,6 +12,7 @@ import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
+import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -35,14 +36,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType.EntityFactory;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -64,7 +62,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -121,39 +122,6 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         void addRegisterCallback(NonNullConsumer<? super T> callback) {
             Preconditions.checkNotNull(callback, "Callback must not be null");
             callbacks.add(callback);
-        }
-    }
-
-    public static final class CreativeModeTabModifier implements CreativeModeTab.Output {
-        private final Supplier<FeatureFlagSet> flags;
-        private final BooleanSupplier hasPermissions;
-        private final BiConsumer<ItemStack, CreativeModeTab.TabVisibility> acceptFunc;
-
-        private CreativeModeTabModifier(Supplier<FeatureFlagSet> flags, BooleanSupplier hasPermissions, BiConsumer<ItemStack, CreativeModeTab.TabVisibility> acceptFunc) {
-            this.flags = flags;
-            this.hasPermissions = hasPermissions;
-            this.acceptFunc = acceptFunc;
-        }
-
-        public FeatureFlagSet getFlags() {
-            return flags.get();
-        }
-
-        public boolean hasPermissions() {
-            return hasPermissions.getAsBoolean();
-        }
-
-        @Override
-        public void accept(ItemStack stack, CreativeModeTab.TabVisibility visibility) {
-            acceptFunc.accept(stack, visibility);
-        }
-
-        public void accept(Supplier<? extends ItemLike> item, CreativeModeTab.TabVisibility visibility) {
-            accept(item.get(), visibility);
-        }
-
-        public void accept(Supplier<? extends ItemLike> item) {
-            accept(item.get());
         }
     }
 

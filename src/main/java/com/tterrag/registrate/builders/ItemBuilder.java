@@ -3,6 +3,7 @@ package com.tterrag.registrate.builders;
 import com.google.common.collect.Maps;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -109,7 +110,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
-    private Map<NonNullSupplier<? extends CreativeModeTab>, Consumer<AbstractRegistrate.CreativeModeTabModifier>> creativeModeTabs = Maps.newHashMap();
+    private Map<NonNullSupplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabs = Maps.newHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
@@ -161,10 +162,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will replace any previous calls.
      *
      * @param tab The {@link CreativeModeTab} to add the item into
-     * @param modifier The {@link com.tterrag.registrate.AbstractRegistrate.CreativeModeTabModifier} used to build the ItemStack
+     * @param modifier The {@link CreativeModeTabModifier} used to build the ItemStack
      * @return This builder
      */
-    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab, Consumer<AbstractRegistrate.CreativeModeTabModifier> modifier) {
+    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
         creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
