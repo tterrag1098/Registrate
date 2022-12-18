@@ -38,7 +38,6 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -58,6 +57,7 @@ import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.*;
 
 import javax.annotation.Nonnull;
@@ -158,7 +158,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     private static final class CreativeModeTabRegistration implements Supplier<CreativeModeTab> {
-        private static final Supplier<List<Object>> DEFAULT_AFTER_ENTRIES = Lazy.of(CreativeModeTabRegistration::defaultAfterEntries);
+        private static final Supplier<List<Object>> DEFAULT_AFTER_ENTRIES = Lazy.of(() -> ObfuscationReflectionHelper.getPrivateValue(CreativeModeTabEvent.class, null, "DEFAULT_AFTER_ENTRIES"));
 
         @Nullable private CreativeModeTab creativeModeTab = null;
         private final ResourceLocation registryName;
@@ -181,19 +181,6 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         @Override
         public CreativeModeTab get() {
             return Objects.requireNonNull(creativeModeTab, () -> "Attempt to obtain CreativeModeTab(%s) instance before it was registered!".formatted(registryName));
-        }
-
-        @SuppressWarnings("unchecked")
-        private static List<Object> defaultAfterEntries() {
-            try {
-                var field = CreativeModeTabEvent.class.getDeclaredField("DEFAULT_AFTER_ENTRIES");
-                field.setAccessible(true);
-                return (List<Object>) field.get(null);
-            }
-            catch(NoSuchFieldException | IllegalAccessException e) {
-                log.fatal("Error occurred while obtaining CreativeModeTabEvent#DEFAULT_AFTER_ENTRIES", e);
-                return List.of(CreativeModeTabs.SPAWN_EGGS); // Match value from CreativeModeTabEvent
-            }
         }
     }
 
