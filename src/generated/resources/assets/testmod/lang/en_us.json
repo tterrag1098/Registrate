@@ -11,7 +11,7 @@
   "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",
   "item.testmod.testitem": "Testitem",
   "item.testmod.testitem.testextra": "Magic!",
-  "itemGroup.testmod": "Test Mod",
+  "itemGroup.testmod.test_creative_mode_tab": "Test Mod",
   "testmod.custom.lang": "Test",
   "tooltip.testmod.testblock": "Egg."
 }

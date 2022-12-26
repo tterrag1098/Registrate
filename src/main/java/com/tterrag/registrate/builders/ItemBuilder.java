@@ -1,7 +1,9 @@
 package com.tterrag.registrate.builders;
 
+import com.google.common.collect.Maps;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -17,13 +19,13 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -108,12 +110,16 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
-    @Nullable private NonNullSupplier<? extends CreativeModeTab> tab = null;
-    private boolean registeredTabEvent = false;
+    private Map<NonNullSupplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabs = Maps.newHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
         this.factory = factory;
+
+        onRegister(item -> {
+            creativeModeTabs.forEach(owner::modifyCreativeModeTab);
+            creativeModeTabs.clear(); // this registration should only fire once, to doubly ensure this, clear the map
+        });
     }
 
     /**
@@ -143,22 +149,56 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
-    @Deprecated(forRemoval = true, since = "1.19.3")
-    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
-        if(!registeredTabEvent) {
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onBuildCreativeModeTabContents);
-            registeredTabEvent = true;
-        }
-
-        this.tab = tab;
+    /**
+     * Adds the item built from this builder into the given CreativeModeTab using the specified modifier
+     *
+     * <p>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM} registry.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
+     * <p>
+     * Calling this method with different {@link CreativeModeTab tabs} will add your item to all the specified tabs,
+     * unlike the old implementation which only allowed you to specify a single tab to display your times on.
+     * <p>
+     * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will replace any previous calls.
+     *
+     * @param tab The {@link CreativeModeTab} to add the item into
+     * @param modifier The {@link CreativeModeTabModifier} used to build the ItemStack
+     * @return This builder
+     */
+    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
+        creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
 
-    protected void onBuildCreativeModeTabContents(CreativeModeTabEvent.BuildContents event) {
-        if(tab == null) return;
-        var tab = this.tab.get();
-        if(tab != null) event.registerSimple(tab, getEntry());
+    /**
+     * Adds the item built from this builder into the given CreativeModeTab using the default ItemStack instance
+     *
+     * <p>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM} registry.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
+     * <p>
+     * Calling this method with different {@link CreativeModeTab tabs} will add your item to all the specified tabs,
+     * unlike the old implementation which only allowed you to specify a single tab to display your times on.
+     * <p>
+     * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will replace any previous calls.
+     *
+     * @param tab The {@link CreativeModeTab} to add the item into
+     * @return This builder
+     * @see #tab(NonNullSupplier, Consumer)
+     */
+    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        return tab(tab, modifier -> modifier.accept(get()));
+    }
+
+    /**
+     * Removes the item built from this builder from the given CreativeModeTab
+     *
+     * @param tab The {@link CreativeModeTab} to remove the item from
+     * @return This builder
+     */
+    public ItemBuilder<T, P> removeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
+        creativeModeTabs.remove(tab);
+        return this;
     }
 
     /**
