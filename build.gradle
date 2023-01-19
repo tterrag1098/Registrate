@@ -154,7 +154,12 @@ task sourceJar(type: Jar, dependsOn: classes) {
 
 javadoc {
     source = delombok
-    options.addStringOption('tag', 'apiNote:a:API Note:')
+    configure (options) {
+        tags(
+           'apiNote:a:API Note:',
+           'implNote:a:Implementation Note:'
+        )
+    }
 }
 
 publishing {

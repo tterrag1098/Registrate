@@ -48,7 +48,7 @@ public class ProtectedMethodScraper {
 
         public String printStubMethod(Class<?> source) {
             StringBuilder base = new StringBuilder();
-            base.append("/** Generated override to expose protected method: {@link ").append(className).append(isStatic ? "." : "#").append(name).append("} */\n");
+            base.append("/** Generated override to expose protected method: {@link ").append(className).append("#").append(name).append("} */\n");
             if (!isStatic) {
                 base.append("@Override\n");
             }

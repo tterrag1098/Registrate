@@ -156,7 +156,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return FMLEnvironment.naming.equals("mcp");
     }
 
-    private final Table<String, ResourceKey<? extends Registry<?>>, Registration<?, ?>> registrations = HashBasedTable.create();
+    private final Table<ResourceKey<? extends Registry<?>>, String, Registration<?, ?>> registrations = HashBasedTable.create();
     /** Expected to be emptied by the time registration occurs, is emptied by {@link #accept(String, ResourceKey, Builder, NonNullSupplier, NonNullFunction)} */
     private final Multimap<Pair<String, ResourceKey<? extends Registry<?>>>, NonNullConsumer<?>> registerCallbacks = HashMultimap.create();
     /** Entry-less callbacks that are invoked after the registry type has completely finished */
@@ -239,7 +239,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
                 throw new IllegalStateException("Found unused register callbacks, see logs");
             }
         }
-        Map<String, Registration<?, ?>> registrationsForType = registrations.column(type);
+        Map<String, Registration<?, ?>> registrationsForType = registrations.row(type);
         if (registrationsForType.size() > 0) {
             log.debug(DebugMarkers.REGISTER, "Registering {} known objects of type {}", registrationsForType.size(), type.location());
             for (Entry<String, Registration<?, ?>> e : registrationsForType.entrySet()) {
@@ -373,7 +373,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @SuppressWarnings("unchecked")
     @Nullable
     private <R, T extends R> Registration<R, T> getRegistrationUnchecked(String name, ResourceKey<? extends Registry<R>> type) {
-        return (Registration<R, T>) registrations.get(name, type);
+        return (Registration<R, T>) registrations.get(type, name);
     }
 
     private <R, T extends R> Registration<R, T> getRegistration(String name, ResourceKey<? extends Registry<R>> type) {
@@ -386,7 +386,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     @SuppressWarnings({ "null", "unchecked" })
     public <R> Collection<RegistryEntry<R>> getAll(ResourceKey<? extends Registry<R>> type) {
-        return registrations.column(type).values().stream().map(r -> (RegistryEntry<R>) r.getDelegate()).collect(Collectors.toList());
+        return registrations.row(type).values().stream().map(r -> (RegistryEntry<R>) r.getDelegate()).collect(Collectors.toList());
     }
 
     public <R, T extends R> S addRegisterCallback(String name, ResourceKey<? extends Registry<R>> registryType, NonNullConsumer<? super T> callback) {
@@ -633,13 +633,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
      * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
      * <p>
-     * Using the {@code beforeEntries} & {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
      * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
      * <p>
      * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
@@ -650,7 +650,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param beforeEntries List of entries to come before this tab
      * @param afterEntries List of entries to come after this tab
      * @param configurator The configurator used to build this tab
-     * @param englishTranslation Optional English (US) translation to auto-generate & assign as this tabs display name
+     * @param englishTranslation Optional English (US) translation to auto-generate and assign as this tabs display name
      * @return Reference to the newly registered tab
      * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
      * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
@@ -670,13 +670,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
      * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
      * <p>
-     * Using the {@code beforeEntries} & {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
      * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
      * <p>
      * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
@@ -695,7 +695,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
@@ -715,7 +715,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
@@ -737,13 +737,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
      * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
      * <p>
-     * Using the {@code beforeEntries} & {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
      * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
      * <p>
      * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
@@ -765,13 +765,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
      * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
      * <p>
-     * Using the {@code beforeEntries} & {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
      * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
      * <p>
      * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
@@ -784,7 +784,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param beforeEntries List of entries to come before this tab
      * @param afterEntries List of entries to come after this tab
      * @param configurator The configurator used to build this tab
-     * @param englishTranslation Optional English (US) translation to auto-generate & assign as this tabs display name
+     * @param englishTranslation Optional English (US) translation to auto-generate and assign as this tabs display name
      * @return This {@link AbstractRegistrate} instance, to allow method chaining
      * @see #buildCreativeModeTab(String, List, List, Consumer, String)
      * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, List, List, Consumer, String)}, but rather than returning a reference to the newly registered tab,
@@ -796,7 +796,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
@@ -819,7 +819,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Register a new CreativeModeTab with the given properties & name.
+     * Register a new CreativeModeTab with the given properties and name.
      *
      * <p>
      * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
@@ -976,7 +976,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             @Nonnull NonNullConsumer<? super T> unsafeCallback = (NonNullConsumer<? super T>) callback;
             reg.addRegisterCallback(unsafeCallback);
         });
-        registrations.put(name, type, reg);
+        registrations.put(type, name, reg);
         return reg.getDelegate();
     }
 
