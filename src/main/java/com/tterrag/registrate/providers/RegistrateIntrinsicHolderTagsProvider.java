@@ -43,7 +43,7 @@ public class RegistrateIntrinsicHolderTagsProvider<T> extends RegistrateTagsProv
     // includes all methods from IForgeIntrinsicHolderTagAppender
     // unfortunately we can not implement this interface due to
     // all the methods wanting to return a IntrinsicHolderTagsProvider.IntrinsicTagAppender
-    // which we are not an instance of (due to the above contractor issue)
+    // which we are not an instance of (due to the above constructor issue)
     public static class IntrinsicTagAppender<T> extends TagsProvider.TagAppender<T> {
         private final Function<T, ResourceKey<T>> keyExtractor;
 
