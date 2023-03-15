@@ -20,11 +20,15 @@ public class RegistrateTagsProvider<T> extends TagsProvider<T> implements Regist
     private final ProviderType<? extends RegistrateTagsProvider<T>> type;
     private final String name;
 
-    public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<? extends RegistrateTagsProvider<T>> type, String name, PackOutput packOutput, ResourceKey<? extends Registry<T>> registryIn, CompletableFuture<HolderLookup.Provider> registriesLookup, ExistingFileHelper existingFileHelper) {
-        super(packOutput, registryIn, registriesLookup, owner.getModid(), existingFileHelper);
+    public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<? extends RegistrateTagsProvider<T>> type, String name, PackOutput packOutput, ResourceKey<? extends Registry<T>> registryIn, CompletableFuture<HolderLookup.Provider> registriesLookup, CompletableFuture<TagLookup<T>> parentProvider, ExistingFileHelper existingFileHelper) {
+        super(packOutput, registryIn, registriesLookup, parentProvider, owner.getModid(), existingFileHelper);
         this.owner = owner;
         this.type = type;
         this.name = name;
+    }
+
+    public RegistrateTagsProvider(AbstractRegistrate<?> owner, ProviderType<? extends RegistrateTagsProvider<T>> type, String name, PackOutput packOutput, ResourceKey<? extends Registry<T>> registryIn, CompletableFuture<HolderLookup.Provider> registriesLookup, ExistingFileHelper existingFileHelper) {
+        this(owner, type, name, packOutput, registryIn, registriesLookup, CompletableFuture.completedFuture(TagLookup.empty()), existingFileHelper);
     }
 
     public String getName() {
