@@ -7,7 +7,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.fml.LogicalSide;
@@ -17,8 +16,6 @@ import java.util.function.Function;
 
 public interface RegistrateTagsProvider<T> extends RegistrateProvider {
     TagsProvider.TagAppender<T> addTag(TagKey<T> tag);
-
-    TagBuilder getBuilder(TagKey<T> tag);
 
     class Impl<T> extends TagsProvider<T> implements RegistrateTagsProvider<T> {
         private final AbstractRegistrate<?> owner;
@@ -51,11 +48,6 @@ public interface RegistrateTagsProvider<T> extends RegistrateProvider {
         @Override
         public TagAppender<T> addTag(TagKey<T> tag) {
             return super.tag(tag);
-        }
-
-        @Override
-        public TagBuilder getBuilder(TagKey<T> tag) {
-            return getOrCreateRawBuilder(tag);
         }
     }
 
@@ -90,11 +82,6 @@ public interface RegistrateTagsProvider<T> extends RegistrateProvider {
         @Override
         public IntrinsicTagAppender<T> addTag(TagKey<T> tag) {
             return super.tag(tag);
-        }
-
-        @Override
-        public TagBuilder getBuilder(TagKey<T> tag) {
-            return getOrCreateRawBuilder(tag);
         }
     }
 }
