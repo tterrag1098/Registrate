@@ -6,8 +6,8 @@ import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
@@ -37,10 +37,10 @@ public interface ProviderType<T extends RegistrateProvider> {
     public static final ProviderType<RegistrateRecipeProvider> RECIPE = register("recipe", (p, e) -> new RegistrateRecipeProvider(p, e.getGenerator().getPackOutput()));
     public static final ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = register("advancement", (p, e) -> new RegistrateAdvancementProvider(p, e.getGenerator().getPackOutput(), e.getLookupProvider()));
     public static final ProviderType<RegistrateLootTableProvider> LOOT = register("loot", (p, e) -> new RegistrateLootTableProvider(p, e.getGenerator().getPackOutput()));
-    public static final ProviderType<RegistrateTagsProvider<Block>> BLOCK_TAGS = register("tags/block", type -> (p, e) -> new RegistrateIntrinsicHolderTagsProvider<>(p, type, "blocks", e.getGenerator().getPackOutput(), Registries.BLOCK, e.getLookupProvider(), block -> block.builtInRegistryHolder().key(), e.getExistingFileHelper()));
-    public static final ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerDelegate("tags/item", type -> (p, e, existing) -> new RegistrateItemTagsProvider(p, type, "items", e.getGenerator().getPackOutput(), e.getLookupProvider(), ((RegistrateTagsProvider<Block>)existing.get(BLOCK_TAGS)).contentsGetter(), e.getExistingFileHelper()));
-    public static final ProviderType<RegistrateTagsProvider<Fluid>> FLUID_TAGS = register("tags/fluid", type -> (p, e) -> new RegistrateIntrinsicHolderTagsProvider<Fluid>(p, type, "fluids", e.getGenerator().getPackOutput(), Registries.FLUID, e.getLookupProvider(), fluid -> fluid.builtInRegistryHolder().key(), e.getExistingFileHelper()));
-    public static final ProviderType<RegistrateTagsProvider<EntityType<?>>> ENTITY_TAGS = register("tags/entity", type -> (p, e) -> new RegistrateIntrinsicHolderTagsProvider<EntityType<?>>(p, type, "entity_types", e.getGenerator().getPackOutput(), Registries.ENTITY_TYPE, e.getLookupProvider(), entityType -> entityType.builtInRegistryHolder().key(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateTagsProvider.IntrinsicImpl<Block>> BLOCK_TAGS = register("tags/block", type -> (p, e) -> new RegistrateTagsProvider.IntrinsicImpl<Block>(p, type, "blocks", e.getGenerator().getPackOutput(), Registries.BLOCK, e.getLookupProvider(), block -> block.builtInRegistryHolder().key(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerDelegate("tags/item", type -> (p, e, existing) -> new RegistrateItemTagsProvider(p, type, "items", e.getGenerator().getPackOutput(), e.getLookupProvider(), ((TagsProvider<Block>)existing.get(BLOCK_TAGS)).contentsGetter(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateTagsProvider.IntrinsicImpl<Fluid>> FLUID_TAGS = register("tags/fluid", type -> (p, e) -> new RegistrateTagsProvider.IntrinsicImpl<Fluid>(p, type, "fluids", e.getGenerator().getPackOutput(), Registries.FLUID, e.getLookupProvider(), fluid -> fluid.builtInRegistryHolder().key(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateTagsProvider.IntrinsicImpl<EntityType<?>>> ENTITY_TAGS = register("tags/entity", type -> (p, e) -> new RegistrateTagsProvider.IntrinsicImpl<EntityType<?>>(p, type, "entity_types", e.getGenerator().getPackOutput(), Registries.ENTITY_TYPE, e.getLookupProvider(), entityType -> entityType.builtInRegistryHolder().key(), e.getExistingFileHelper()));
 
     // CLIENT DATA
     public static final ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = register("blockstate", (p, e) -> new RegistrateBlockstateProvider(p, e.getGenerator().getPackOutput(), e.getExistingFileHelper()));
