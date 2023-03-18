@@ -29,7 +29,9 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -78,7 +80,41 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
                 .defaultLang();
     }
 
+    /**
+     * Create a new {@link EntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The entity will be assigned the following data:
+     * <ul>
+     * <li>The default translation (via {@link #defaultLang()})</li>
+     * </ul>
+     *
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the entity
+     * @param classification
+     *            The {@link MobCategory} of the entity
+     * @param bus
+     *            The event bus to use for registering
+     * @return A new {@link EntityBuilder} with reasonable default data generators.
+     */
+    public static <T extends Entity, P> EntityBuilder<T,P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification, IEventBus bus) {
+        return new EntityBuilder<>(owner, parent, name, callback, factory, classification,bus)
+                .defaultLang();
+    }
+
     private final NonNullSupplier<EntityType.Builder<T>> builder;
+    private final IEventBus bus;
 
     private NonNullConsumer<EntityType.Builder<T>> builderCallback = $ -> {};
 
@@ -88,8 +124,13 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
 
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
+        this(owner, parent, name, callback, factory, classification, FMLJavaModLoadingContext.get().getModEventBus());
+    }
+
+    protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification, IEventBus bus) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ENTITY_TYPES);
         this.builder = () -> EntityType.Builder.of(factory, classification);
+        this.bus = bus;
     }
 
     /**
@@ -122,7 +163,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     protected void registerRenderer() {
-        OneTimeEventReceiver.addModListener(EntityRenderersEvent.RegisterRenderers.class, evt -> {
+        OneTimeEventReceiver.addListener(bus,EntityRenderersEvent.RegisterRenderers.class, evt -> {
             var renderer = this.renderer;
             if (renderer != null) {
                 try {
@@ -152,7 +193,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
             throw new IllegalStateException("Cannot configure attributes more than once");
         }
         attributesConfigured = true;
-        OneTimeEventReceiver.addModListener(EntityAttributeCreationEvent.class, e -> e.put((EntityType<LivingEntity>) getEntry(), attributes.get().build()));
+        OneTimeEventReceiver.addListener(bus,EntityAttributeCreationEvent.class, e -> e.put((EntityType<LivingEntity>) getEntry(), attributes.get().build()));
         return this;
     }
 

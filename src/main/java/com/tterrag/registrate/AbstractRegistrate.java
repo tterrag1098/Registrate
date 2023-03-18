@@ -168,6 +168,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final Map<Supplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = Maps.newHashMap();
     private final List<CreativeModeTabRegistration> creativeModeTabsRegistrars = Lists.newArrayList();
     @Nullable private Supplier<? extends CreativeModeTab> defaultCreativeModeTab = null;
+    @Nullable private IEventBus bus = null;
+
 
     private final NonNullSupplier<Boolean> doDatagen = NonNullSupplier.lazy(DatagenModLoader::isRunningDataGen);
 
@@ -191,6 +193,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         this.modid = modid;
     }
 
+    protected AbstractRegistrate(String modid, IEventBus bus) {
+        this.modid = modid;
+        registerEventListeners(bus);
+    }
+
     @SuppressWarnings("unchecked")
     protected S self() {
         return (S) this;
@@ -212,6 +219,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
                 OneTimeEventReceiver.unregister(bus, onRegisterLate, RegisterEvent.class);
                 OneTimeEventReceiver.unregister(bus, onRegisterCreativeModeTabs, CreativeModeTabEvent.Register.class);
             });
+            this.bus = bus;
         } catch (IllegalArgumentException e) {
 //            log.info("Detected new forge version, registering events reflectively.");
 //            bus.register(proxy);
@@ -283,6 +291,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     @Nullable
     private RegistrateDataProvider provider;
+
 
     protected void onData(GatherDataEvent event) {
         event.getGenerator().addProvider(true, provider = new RegistrateDataProvider(this, modid, event));
@@ -943,7 +952,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The factory to create the builder
      * @return The {@link Builder} instance
      */
-    public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 entry(NonNullBiFunction<String, BuilderCallback, S2> factory) {
+    public <R, T extends R, P, S2 extends Builder<R, T, P, S2>> S2 Oentry(NonNullBiFunction<String, BuilderCallback, S2> factory) {
         return entry(currentName(), callback -> factory.apply(currentName(), callback));
     }
 
@@ -983,7 +992,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     @Beta
     public <R> ResourceKey<Registry<R>> makeRegistry(String name, Supplier<RegistryBuilder<R>> builder) {
         final ResourceKey<Registry<R>> registryId = ResourceKey.createRegistryKey(new ResourceLocation(getModid(), name));
-        OneTimeEventReceiver.addModListener(NewRegistryEvent.class, e -> e.create(builder.get().setName(registryId.location())));
+        OneTimeEventReceiver.addListener(this.bus,NewRegistryEvent.class, e -> e.create(builder.get().setName(registryId.location())));
         return registryId;
     }
 
@@ -1022,7 +1031,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, defaultCreativeModeTab == null ? null : defaultCreativeModeTab::get));
+        return entry(name, callback -> (this.bus == null) ? ItemBuilder.create(this, parent, name, callback, factory, defaultCreativeModeTab == null ? null : defaultCreativeModeTab::get) : ItemBuilder.create(this, parent, name, callback, factory, defaultCreativeModeTab == null ? null : defaultCreativeModeTab::get, bus));
     }
 
     // Blocks
@@ -1056,7 +1065,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory, material));
+        return entry(name, callback -> (bus==null) ? BlockBuilder.create(this, parent, name, callback, factory, material) : BlockBuilder.create(this, parent, name, callback, factory, material, bus));
     }
 
     // Entities
@@ -1074,7 +1083,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Entity, P> EntityBuilder<T, P> entity(P parent, String name, EntityFactory<T> factory, MobCategory classification) {
-        return entry(name, callback -> EntityBuilder.create(this, parent, name, callback, factory, classification));
+        return entry(name, callback -> (this.bus == null) ? EntityBuilder.create(this, parent, name, callback, factory, classification) : EntityBuilder.create(this, parent, name, callback, factory, classification, bus));
     }
 
     // Block Entities
@@ -1092,7 +1101,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends BlockEntity, P> BlockEntityBuilder<T, P> blockEntity(P parent, String name, BlockEntityFactory<T> factory) {
-        return entry(name, callback -> BlockEntityBuilder.create(this, parent, name, callback, factory));
+        return entry(name, callback -> (this.bus == null) ? BlockEntityBuilder.create(this, parent, name, callback, factory) : BlockEntityBuilder.create(this, parent, name, callback, factory, bus));
     }
 
     // Fluids
@@ -1227,30 +1236,30 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture));
+        return entry(name, callback -> (this.bus == null) ? FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture) : FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, bus));
     }
 
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory));
+        return entry(name, callback -> (this.bus == null) ? FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory) : FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory, bus));
     }
 
     public <P> FluidBuilder<ForgeFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType));
+        return entry(name, callback -> (this.bus == null) ? FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType) : FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType, bus));
     }
 
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
         NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidFactory));
+        return entry(name, callback -> (this.bus == null) ? FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidFactory) :  FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidFactory, bus));
     }
 
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
         FluidBuilder.FluidTypeFactory typeFactory, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory, fluidFactory));
+        return entry(name, callback -> (this.bus == null) ? FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory, fluidFactory) : FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory, fluidFactory, bus));
     }
 
     public <T extends ForgeFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
         NonNullSupplier<FluidType> fluidType, NonNullFunction<ForgeFlowingFluid.Properties, T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType, fluidFactory));
+        return entry(name, callback -> (this.bus == null) ? FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType, fluidFactory) : FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType, fluidFactory, bus));
     }
 
     // Menu

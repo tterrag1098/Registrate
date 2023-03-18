@@ -21,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagKey;
 import net.minecraftforge.common.util.NonNullFunction;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Arrays;
@@ -53,6 +54,8 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     private final BuilderCallback callback;
     @Getter(onMethod_ = {@Override})
     private final ResourceKey<Registry<R>> registryKey;
+
+
 
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, TagKey<?>> tagsByType = HashMultimap.create();
 

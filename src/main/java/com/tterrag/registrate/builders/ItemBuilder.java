@@ -11,6 +11,8 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.client.color.item.ItemColor;
@@ -64,7 +66,37 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
     public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
-        return create(owner, parent, name, callback, factory, null);
+        return create(owner, parent, name, callback, factory, (NonNullSupplier<? extends CreativeModeTab>)null);
+    }
+    /**
+     * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The item will be assigned the following data:
+     * <ul>
+     * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
+     * </ul>
+     *
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the item
+     * @param bus
+     *            The event bus to register events to
+     * @return A new {@link ItemBuilder} with reasonable default data generators.
+     */
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, IEventBus bus) {
+        return create(owner, parent, name, callback, factory, null, bus);
     }
 
     /**
@@ -102,6 +134,43 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
                 .defaultModel().defaultLang()
                 .transform(ib -> tab == null ? ib : ib.tab(tab));
     }
+    /**
+     * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The item will be assigned the following data:
+     * <ul>
+     * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
+     * <li>An {@link CreativeModeTab} set in the properties from the tab supplier parameter, if non-null</li>
+     * </ul>
+     *
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the item
+     * @param tab
+     *            The {@link CreativeModeTab} for the object, can be null for none
+     * @param bus
+     *            the event bus to register events to
+     * @return A new {@link ItemBuilder} with reasonable default data generators.
+     */
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
+    @Deprecated(forRemoval = true, since = "1.19.3")
+    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab, IEventBus bus) {
+        return new ItemBuilder<>(owner, parent, name, callback, factory,bus)
+                .defaultModel().defaultLang()
+                .transform(ib -> tab == null ? ib : ib.tab(tab));
+    }
 
     private final NonNullFunction<Item.Properties, T> factory;
 
@@ -111,8 +180,12 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
     private Map<NonNullSupplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabs = Maps.newHashMap();
+    private final IEventBus bus;
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+        this(owner, parent, name, callback, factory, FMLJavaModLoadingContext.get().getModEventBus());
+    }
+    protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, IEventBus bus) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
         this.factory = factory;
 
@@ -120,6 +193,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
             creativeModeTabs.forEach(owner::modifyCreativeModeTab);
             creativeModeTabs.clear(); // this registration should only fire once, to doubly ensure this, clear the map
         });
+        this.bus = bus;
     }
 
     /**
@@ -217,7 +291,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     protected void registerItemColor() {
-        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Item.class, e -> {
+        OneTimeEventReceiver.addListener(bus,RegisterColorHandlersEvent.Item.class, e -> {
             NonNullSupplier<Supplier<ItemColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
                 e.register(colorHandler.get().get(), getEntry());

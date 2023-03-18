@@ -24,8 +24,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -42,7 +44,6 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     public interface BlockEntityFactory<T extends BlockEntity> {
 
         public T create(BlockEntityType<T> type, BlockPos pos, BlockState state);
-
     }
 
     /**
@@ -67,17 +68,29 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      * @return A new {@link BlockEntityBuilder} with reasonable default data generators.
      */
     public static <T extends BlockEntity, P> BlockEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
-        return new BlockEntityBuilder<>(owner, parent, name, callback, factory);
+        return new BlockEntityBuilder<>(owner, parent, name, callback, factory, null);
+    }
+
+    public static <T extends BlockEntity, P> BlockEntityBuilder<T,P> create(AbstractRegistrate<?> ownder, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory, IEventBus bus) {
+        return new BlockEntityBuilder<>(ownder,parent,name,callback,factory,bus);
     }
 
     private final BlockEntityFactory<T> factory;
     private final Set<NonNullSupplier<? extends Block>> validBlocks = new HashSet<>();
+
+    private final IEventBus bus;
+
     @Nullable
     private NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer;
 
     protected BlockEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
+        this(owner,parent,name,callback,factory,FMLJavaModLoadingContext.get().getModEventBus()/* WARNING MAY CAUSE CRASH IF NOT USING JAVA*/);
+    }
+
+    protected BlockEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory, IEventBus bus) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.BLOCK_ENTITY_TYPES);
         this.factory = factory;
+        this.bus = bus;
     }
     
     /**
@@ -124,7 +137,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     }
     
     protected void registerRenderer() {
-        OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+        OneTimeEventReceiver.addListener(this.bus,FMLClientSetupEvent.class, $ -> {
             var renderer = this.renderer;
             if (renderer != null) {
                 BlockEntityRenderers.register(getEntry(), renderer.get()::apply);

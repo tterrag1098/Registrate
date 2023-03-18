@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import net.minecraftforge.eventbus.api.*;
+import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -17,10 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.EventBus;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventListenerHelper;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.event.IModBusEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -67,7 +65,17 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
         }
         getBusId = ret;
 
-        addModListener(FMLLoadCompleteEvent.class, OneTimeEventReceiver::onLoadComplete);
+//        addModListener(FMLLoadCompleteEvent.class, OneTimeEventReceiver::onLoadComplete);
+    }
+    @Mod.EventBusSubscriber
+    private final class Unsubscriber {
+        static AtomicBoolean completed = new AtomicBoolean(false);
+        @SubscribeEvent
+        void onFinishLoad(FMLLoadCompleteEvent event) {
+            if(completed.compareAndSet(false,true)) {
+                OneTimeEventReceiver.onLoadComplete(event);
+            }
+        }
     }
 
     private final IEventBus bus;

@@ -51,8 +51,10 @@ import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelBuilder;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -97,9 +99,47 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
     public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, Material material) {
-        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of(material))
+        return create(owner, parent, name, callback, factory, material, FMLJavaModLoadingContext.get().getModEventBus());
+    }
+
+    /**
+     * Create a new {@link BlockBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
+     * <p>
+     * The block will be assigned the following data:
+     * <ul>
+     * <li>A default blockstate file mapping all states to one model (via {@link #defaultBlockstate()})</li>
+     * <li>A simple cube_all model (used in the blockstate) with one texture (via {@link #defaultBlockstate()})</li>
+     * <li>A self-dropping loot table (via {@link #defaultLoot()})</li>
+     * <li>The default translation (via {@link #defaultLang()})</li>
+     * </ul>
+     *
+     * @param <T>
+     *            The type of the builder
+     * @param <P>
+     *            Parent object type
+     * @param owner
+     *            The owning {@link AbstractRegistrate} object
+     * @param parent
+     *            The parent object
+     * @param name
+     *            Name of the entry being built
+     * @param callback
+     *            A callback used to actually register the built entry
+     * @param factory
+     *            Factory to create the block
+     * @param material
+     *            The {@link Material} to use for the initial {@link Block.Properties} object
+     * @param bus
+     *            The event bus to use for registering events
+     * @return A new {@link BlockBuilder} with reasonable default data generators.
+     */
+    public static <T extends Block, P> BlockBuilder<T,P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, Material material, IEventBus bus) {
+        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of(material), bus)
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
+
+
+    private final IEventBus bus;
 
     private final NonNullFunction<BlockBehaviour.Properties, T> factory;
     
@@ -114,6 +154,13 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         super(owner, parent, name, callback, ForgeRegistries.Keys.BLOCKS);
         this.factory = factory;
         this.initialProperties = initialProperties;
+        this.bus = FMLJavaModLoadingContext.get().getModEventBus();//WARNING MAY CAUSE CRASH IF NOT USING JAVA
+    }
+    protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, NonNullSupplier<BlockBehaviour.Properties> initialProperties, IEventBus bus) {
+        super(owner, parent, name, callback, ForgeRegistries.Keys.BLOCKS);
+        this.factory = factory;
+        this.initialProperties = initialProperties;
+        this.bus = bus;
     }
 
     /**
@@ -201,7 +248,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     @SuppressWarnings("deprecation")
     protected void registerLayers(T entry) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+            OneTimeEventReceiver.addListener(this.bus,FMLClientSetupEvent.class, $ -> {
                 if (renderLayers.size() == 1) {
                     final RenderType layer = renderLayers.get(0).get().get();
                     ItemBlockRenderTypes.setRenderLayer(entry, layer);
@@ -313,7 +360,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     protected void registerBlockColor() {
-        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Block.class, e -> {
+        OneTimeEventReceiver.addListener(this.bus,RegisterColorHandlersEvent.Block.class, e -> {
             NonNullSupplier<Supplier<BlockColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
                 e.register(colorHandler.get().get(), getEntry());
