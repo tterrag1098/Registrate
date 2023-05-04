@@ -111,10 +111,10 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             this.delegate = entryFactory.apply(RegistryObject.create(name, type.location(), AbstractRegistrate.this.getModid()));
         }
 
-        void register(IForgeRegistry<R> registry) {
+        void register(RegisterEvent event) {
             T entry = creator.get();
-            registry.register(name, entry);
-            delegate.updateReference(registry);
+            event.register(type, rh -> rh.register(name, entry));
+            delegate.updateReference(event);
             callbacks.forEach(c -> c.accept(entry));
             callbacks.clear();
         }
@@ -244,7 +244,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             log.debug(DebugMarkers.REGISTER, "Registering {} known objects of type {}", registrationsForType.size(), type.location());
             for (Entry<String, Registration<?, ?>> e : registrationsForType.entrySet()) {
                 try {
-                    e.getValue().register(event.getForgeRegistry());
+                    e.getValue().register(event);
                     log.debug(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistryKey());
                 } catch (Exception ex) {
                     String err = "Unexpected error while registering entry " + e.getValue().getName() + " to registry " + event.getRegistryKey();

@@ -13,11 +13,11 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
-import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -69,26 +69,35 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
         this.delegate = delegate;
     }
 
-    private static final Method _updateReference = Util.make(() -> {
-        try {
-            var ret = RegistryObject.class.getDeclaredMethod("updateReference", IForgeRegistry.class);
-            ret.setAccessible(true);
-            return ret;
-        } catch (NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException(e);
-        }
-    });
+    private static final Method _updateReference_Registry = ObfuscationReflectionHelper.findMethod(RegistryObject.class, "updateReference", IForgeRegistry.class);
+    private static final Method _updateReference_Event = ObfuscationReflectionHelper.findMethod(RegistryObject.class, "updateReference", RegisterEvent.class);
 
     /**
      * Update the underlying entry manually from the given registry.
      * 
-     * @param registry
+     * @param event
      *            The registry to pull the entry from.
      */
-    public void updateReference(IForgeRegistry<? super T> registry) {
+    @Deprecated
+    public void updateReference(IForgeRegistry<? super T> event) {
         RegistryObject<T> delegate = this.delegate;
         try {
-            _updateReference.invoke(Objects.requireNonNull(delegate, "Registry entry is empty"), registry);
+            _updateReference_Registry.invoke(Objects.requireNonNull(delegate, "Registry entry is empty"), event);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * Update the underlying entry manually from the given registry.
+     * 
+     * @param event
+     *            The register event to pull the entry from.
+     */
+    public void updateReference(RegisterEvent event) {
+        RegistryObject<T> delegate = this.delegate;
+        try {
+            _updateReference_Event.invoke(Objects.requireNonNull(delegate, "Registry entry is empty"), event);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
