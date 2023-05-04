@@ -124,7 +124,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     }
     
     protected void registerRenderer() {
-        OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+        OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
             var renderer = this.renderer;
             if (renderer != null) {
                 BlockEntityRenderers.register(getEntry(), renderer.get()::apply);

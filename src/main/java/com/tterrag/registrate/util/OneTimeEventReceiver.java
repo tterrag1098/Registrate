@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Triple;
 
+import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.EventListenerHelper;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.event.IModBusEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -31,12 +31,26 @@ import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 @Log4j2
 public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullType T> {
     
+    @Deprecated
     public static <T extends Event & IModBusEvent> void addModListener(Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addModListener(EventPriority.NORMAL, evtClass, listener);
     }
     
+    @Deprecated
     public static <T extends Event & IModBusEvent> void addModListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addListener(FMLJavaModLoadingContext.get().getModEventBus(), priority, evtClass, listener);
+    }
+    
+    public static <T extends Event & IModBusEvent> void addModListener(AbstractRegistrate<?> owner, Class<? super T> evtClass, Consumer<? super T> listener) {
+        OneTimeEventReceiver.<T>addModListener(owner, EventPriority.NORMAL, evtClass, listener);
+    }
+    
+    public static <T extends Event & IModBusEvent> void addModListener(AbstractRegistrate<?> owner, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
+        if (!seenModBus) {
+            seenModBus = true;
+            addModListener(owner, FMLLoadCompleteEvent.class, OneTimeEventReceiver::onLoadComplete);
+        }
+        OneTimeEventReceiver.<T>addListener(owner.getModEventBus(), priority, evtClass, listener);
     }
     
     public static <T extends Event> void addForgeListener(Class<? super T> evtClass, Consumer<? super T> listener) {
@@ -56,6 +70,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
         bus.addListener(priority, false, (Class<T>) evtClass, new OneTimeEventReceiver<>(bus, listener));
     }
 
+    private static boolean seenModBus = false;
     private static final @Nullable MethodHandle getBusId;
     static {
         MethodHandle ret;
@@ -66,8 +81,6 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
             ret = null;
         }
         getBusId = ret;
-
-        addModListener(FMLLoadCompleteEvent.class, OneTimeEventReceiver::onLoadComplete);
     }
 
     private final IEventBus bus;

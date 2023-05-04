@@ -201,7 +201,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     @SuppressWarnings("deprecation")
     protected void registerLayers(T entry) {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
-            OneTimeEventReceiver.addModListener(FMLClientSetupEvent.class, $ -> {
+            OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
                 if (renderLayers.size() == 1) {
                     final RenderType layer = renderLayers.get(0).get().get();
                     ItemBlockRenderTypes.setRenderLayer(entry, layer);
@@ -313,7 +313,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     protected void registerBlockColor() {
-        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Block.class, e -> {
+        OneTimeEventReceiver.addModListener(getOwner(), RegisterColorHandlersEvent.Block.class, e -> {
             NonNullSupplier<Supplier<BlockColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
                 e.register(colorHandler.get().get(), getEntry());

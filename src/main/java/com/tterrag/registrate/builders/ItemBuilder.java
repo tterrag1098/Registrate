@@ -217,7 +217,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     protected void registerItemColor() {
-        OneTimeEventReceiver.addModListener(RegisterColorHandlersEvent.Item.class, e -> {
+        OneTimeEventReceiver.addModListener(getOwner(), RegisterColorHandlersEvent.Item.class, e -> {
             NonNullSupplier<Supplier<ItemColor>> colorHandler = this.colorHandler;
             if (colorHandler != null) {
                 e.register(colorHandler.get().get(), getEntry());

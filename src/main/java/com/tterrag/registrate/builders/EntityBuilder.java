@@ -122,7 +122,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     protected void registerRenderer() {
-        OneTimeEventReceiver.addModListener(EntityRenderersEvent.RegisterRenderers.class, evt -> {
+        OneTimeEventReceiver.addModListener(getOwner(), EntityRenderersEvent.RegisterRenderers.class, evt -> {
             var renderer = this.renderer;
             if (renderer != null) {
                 try {
@@ -152,7 +152,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
             throw new IllegalStateException("Cannot configure attributes more than once");
         }
         attributesConfigured = true;
-        OneTimeEventReceiver.addModListener(EntityAttributeCreationEvent.class, e -> e.put((EntityType<LivingEntity>) getEntry(), attributes.get().build()));
+        OneTimeEventReceiver.addModListener(getOwner(), EntityAttributeCreationEvent.class, e -> e.put((EntityType<LivingEntity>) getEntry(), attributes.get().build()));
         return this;
     }
 
