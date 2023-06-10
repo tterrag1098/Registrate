@@ -1,8 +1,18 @@
 package com.tterrag.registrate.builders;
 
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.Maps;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateItemModelProvider;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
+import com.tterrag.registrate.providers.RegistrateRecipeProvider;
 import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
@@ -11,9 +21,9 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import org.jetbrains.annotations.ApiStatus;
 
 import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -22,11 +32,6 @@ import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
@@ -64,43 +69,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
     public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
-        return create(owner, parent, name, callback, factory, null);
-    }
-
-    /**
-     * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
-     * <p>
-     * The item will be assigned the following data:
-     * <ul>
-     * <li>A simple generated model with one texture (via {@link #defaultModel()})</li>
-     * <li>The default translation (via {@link #defaultLang()})</li>
-     * <li>An {@link CreativeModeTab} set in the properties from the tab supplier parameter, if non-null</li>
-     * </ul>
-     *
-     * @param <T>
-     *            The type of the builder
-     * @param <P>
-     *            Parent object type
-     * @param owner
-     *            The owning {@link AbstractRegistrate} object
-     * @param parent
-     *            The parent object
-     * @param name
-     *            Name of the entry being built
-     * @param callback
-     *            A callback used to actually register the built entry
-     * @param factory
-     *            Factory to create the item
-     * @param tab
-     *            The {@link CreativeModeTab} for the object, can be null for none
-     * @return A new {@link ItemBuilder} with reasonable default data generators.
-     */
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.20")
-    @Deprecated(forRemoval = true, since = "1.19.3")
-    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory, @Nullable NonNullSupplier<? extends CreativeModeTab> tab) {
-        return new ItemBuilder<>(owner, parent, name, callback, factory)
-                .defaultModel().defaultLang()
-                .transform(ib -> tab == null ? ib : ib.tab(tab));
+        return new ItemBuilder<>(owner, parent, name, callback, factory);
     }
 
     private final NonNullFunction<Item.Properties, T> factory;
@@ -110,7 +79,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
-    private Map<NonNullSupplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabs = Maps.newLinkedHashMap();
+    private Map<ResourceKey<CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabs = Maps.newLinkedHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
@@ -165,7 +134,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param modifier The {@link CreativeModeTabModifier} used to build the ItemStack
      * @return This builder
      */
-    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
+    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
         creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
@@ -186,7 +155,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return This builder
      * @see #tab(NonNullSupplier, Consumer)
      */
-    public ItemBuilder<T, P> tab(NonNullSupplier<? extends CreativeModeTab> tab) {
+    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab) {
         return tab(tab, modifier -> modifier.accept(get()));
     }
 
@@ -196,7 +165,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param tab The {@link CreativeModeTab} to remove the item from
      * @return This builder
      */
-    public ItemBuilder<T, P> removeTab(NonNullSupplier<? extends CreativeModeTab> tab) {
+    public ItemBuilder<T, P> removeTab(ResourceKey<CreativeModeTab> tab) {
         creativeModeTabs.remove(tab);
         return this;
     }

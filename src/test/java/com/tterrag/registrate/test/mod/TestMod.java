@@ -3,6 +3,7 @@ package com.tterrag.registrate.test.mod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.builders.NoConfigBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.*;
@@ -181,8 +182,14 @@ public class TestMod {
     private static class TestCustomRegistryEntry {}
 
     private final Registrate registrate = Registrate
-            .create("testmod")
-            .creativeModeTab("test_creative_mode_tab", c -> c.icon(Items.STONE::getDefaultInstance), "Test Mod");
+            .create("testmod");
+    
+    private final RegistryEntry<CreativeModeTab> testCreativeTab;
+    {
+        testCreativeTab = registrate.object("test_creative_mode_tab")
+            .simple(Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder().build());
+        registrate.defaultCreativeTab(testCreativeTab.getKey());
+    }
 
     private final AtomicBoolean sawCallback = new AtomicBoolean();
 

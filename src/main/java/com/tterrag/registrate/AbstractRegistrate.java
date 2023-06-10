@@ -29,6 +29,7 @@ import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
@@ -38,17 +39,16 @@ import net.minecraft.world.entity.EntityType.EntityFactory;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.Material;
-import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.data.loading.DatagenModLoader;
-import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fluids.FluidType;
@@ -56,7 +56,6 @@ import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.*;
 
 import javax.annotation.Nonnull;
@@ -126,32 +125,32 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
     }
 
-    private static final class CreativeModeTabRegistration implements Supplier<CreativeModeTab> {
-        private static final Supplier<List<Object>> DEFAULT_AFTER_ENTRIES = Lazy.of(() -> ObfuscationReflectionHelper.getPrivateValue(CreativeModeTabEvent.class, null, "DEFAULT_AFTER_ENTRIES"));
-
-        @Nullable private CreativeModeTab creativeModeTab = null;
-        private final ResourceLocation registryName;
-        private final List<Object> beforeEntries;
-        private final List<Object> afterEntries;
-        private final Consumer<CreativeModeTab.Builder> configurator;
-
-        private CreativeModeTabRegistration(ResourceLocation registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
-            this.registryName = registryName;
-            this.beforeEntries = beforeEntries == null ? List.of() : beforeEntries;
-            this.afterEntries = afterEntries == null ? DEFAULT_AFTER_ENTRIES.get() : afterEntries;
-            this.configurator = configurator;
-        }
-
-        void register(CreativeModeTabEvent.Register event) {
-            log.debug("Registering CreativeModeTab '{}'", registryName);
-            creativeModeTab = event.registerCreativeModeTab(registryName, beforeEntries, afterEntries, configurator);
-        }
-
-        @Override
-        public CreativeModeTab get() {
-            return Objects.requireNonNull(creativeModeTab, () -> "Attempt to obtain CreativeModeTab(%s) instance before it was registered!".formatted(registryName));
-        }
-    }
+//    private static final class CreativeModeTabRegistration implements Supplier<CreativeModeTab> {
+//        private static final Supplier<List<Object>> DEFAULT_AFTER_ENTRIES = Lazy.of(() -> ObfuscationReflectionHelper.getPrivateValue(CreativeModeTabEvent.class, null, "DEFAULT_AFTER_ENTRIES"));
+//
+//        @Nullable private CreativeModeTab creativeModeTab = null;
+//        private final ResourceLocation registryName;
+//        private final List<Object> beforeEntries;
+//        private final List<Object> afterEntries;
+//        private final Consumer<CreativeModeTab.Builder> configurator;
+//
+//        private CreativeModeTabRegistration(ResourceLocation registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
+//            this.registryName = registryName;
+//            this.beforeEntries = beforeEntries == null ? List.of() : beforeEntries;
+//            this.afterEntries = afterEntries == null ? DEFAULT_AFTER_ENTRIES.get() : afterEntries;
+//            this.configurator = configurator;
+//        }
+//
+//        void register(CreativeModeTabEvent.Register event) {
+//            log.debug("Registering CreativeModeTab '{}'", registryName);
+//            creativeModeTab = event.registerCreativeModeTab(registryName, beforeEntries, afterEntries, configurator);
+//        }
+//
+//        @Override
+//        public CreativeModeTab get() {
+//            return Objects.requireNonNull(creativeModeTab, () -> "Attempt to obtain CreativeModeTab(%s) instance before it was registered!".formatted(registryName));
+//        }
+//    }
 
     public static boolean isDevEnvironment() {
         return FMLEnvironment.naming.equals("mcp");
@@ -166,9 +165,9 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     private final Table<Pair<String, ResourceKey<? extends Registry<?>>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
-    private final Multimap<Supplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = HashMultimap.create();
-    private final List<CreativeModeTabRegistration> creativeModeTabsRegistrars = Lists.newArrayList();
-    @Nullable private Supplier<? extends CreativeModeTab> defaultCreativeModeTab = null;
+    private final Multimap<ResourceKey<CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = HashMultimap.create();
+//    private final List<CreativeModeTabRegistration> creativeModeTabsRegistrars = Lists.newArrayList();
+    @Nullable private ResourceKey<CreativeModeTab> defaultCreativeModeTab = CreativeModeTabs.SEARCH;
 
     private final NonNullSupplier<Boolean> doDatagen = NonNullSupplier.lazy(DatagenModLoader::isRunningDataGen);
 
@@ -207,15 +206,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         try {
             Consumer<RegisterEvent> onRegister = this::onRegister;
             Consumer<RegisterEvent> onRegisterLate = this::onRegisterLate;
-            Consumer<CreativeModeTabEvent.Register> onRegisterCreativeModeTabs = this::onRegisterCreativeModeTabs;
+//            Consumer<CreativeModeTabEvent.Register> onRegisterCreativeModeTabs = this::onRegisterCreativeModeTabs;
             bus.addListener(onRegister);
             bus.addListener(EventPriority.LOWEST, onRegisterLate);
-            bus.addListener(onRegisterCreativeModeTabs); // OnetimeEvent : Fired once post all other registration
+//            bus.addListener(onRegisterCreativeModeTabs); // OnetimeEvent : Fired once post all other registration
             bus.addListener(this::onBuildCreativeModeTabContents); // Fired multiple times when ever tabs need contents rebuilt (changing op tab perms for example)
             OneTimeEventReceiver.addListener(bus, FMLCommonSetupEvent.class, $ -> {
                 OneTimeEventReceiver.unregister(bus, onRegister, RegisterEvent.class);
                 OneTimeEventReceiver.unregister(bus, onRegisterLate, RegisterEvent.class);
-                OneTimeEventReceiver.unregister(bus, onRegisterCreativeModeTabs, CreativeModeTabEvent.Register.class);
+//                OneTimeEventReceiver.unregister(bus, onRegisterCreativeModeTabs, CreativeModeTabEvent.Register.class);
             });
         } catch (IllegalArgumentException e) {
 //            log.info("Detected new forge version, registering events reflectively.");
@@ -271,18 +270,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         completedRegistrations.add(type);
     }
 
-    protected void onRegisterCreativeModeTabs(CreativeModeTabEvent.Register event) {
-        log.debug("Registering CreativeModeTabs...");
-        creativeModeTabsRegistrars.forEach(registrar -> registrar.register(event));
-        creativeModeTabsRegistrars.clear();
-    }
-
-    protected void onBuildCreativeModeTabContents(CreativeModeTabEvent.BuildContents event) {
-        var creativeModeTab = event.getTab();
+    protected void onBuildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
         var modifier = new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept);
 
         creativeModeTabModifiers.forEach((key, value) -> {
-            if(creativeModeTab == key.get()) value.accept(modifier);
+            if(event.getTabKey().equals(key)) value.accept(modifier);
         });
     }
 
@@ -637,216 +629,216 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
 
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
-     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
-     * <p>
-     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param beforeEntries List of entries to come before this tab
-     * @param afterEntries List of entries to come after this tab
-     * @param configurator The configurator used to build this tab
-     * @param englishTranslation Optional English (US) translation to auto-generate and assign as this tabs display name
-     * @return Reference to the newly registered tab
-     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
-     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
-     */
-    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
-        var internalName = new ResourceLocation(modid, registryName);
-
-        if(englishTranslation != null) {
-            var component = addLang("itemGroup", internalName, englishTranslation);
-            configurator = configurator.andThen(builder -> builder.title(component));
-        }
-
-        var result = new CreativeModeTabRegistration(internalName, beforeEntries, afterEntries, configurator);
-        creativeModeTabsRegistrars.add(result);
-        if(defaultCreativeModeTab == null) creativeModeTab(result);
-        return result;
-    }
-
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
-     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param beforeEntries List of entries to come before this tab
-     * @param afterEntries List of entries to come after this tab
-     * @param configurator The configurator used to build this tab
-     * @return Reference to the newly registered tab
-     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
-     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
-     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
-     */
-    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
-        return buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator, null);
-    }
-
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param configurator The configurator used to build this tab
-     * @return Reference to the newly registered tab
-     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
-     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
-     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
-     */
-    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
-        return buildCreativeModeTab(registryName, null, null, configurator);
-    }
-
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param configurator The configurator used to build this tab
-     * @return Reference to the newly registered tab
-     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
-     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
-     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
-     */
-    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
-        return buildCreativeModeTab(registryName, null, null, configurator, englishTranslation);
-    }
-
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
-     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     * <p>
-     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param beforeEntries List of entries to come before this tab
-     * @param afterEntries List of entries to come after this tab
-     * @param configurator The configurator used to build this tab
-     * @return This {@link AbstractRegistrate} instance, to allow method chaining
-     * @see #buildCreativeModeTab(String, List, List, Consumer)
-     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, List, List, Consumer)}, but rather than returning a reference to the newly registered tab,
-     * we return the registrate instance to allow method chaining
-     */
-    public S creativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
-        buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator);
-        return self();
-    }
-
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
-     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
-     * <p>
-     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     * <p>
-     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param beforeEntries List of entries to come before this tab
-     * @param afterEntries List of entries to come after this tab
-     * @param configurator The configurator used to build this tab
-     * @param englishTranslation Optional English (US) translation to auto-generate and assign as this tabs display name
-     * @return This {@link AbstractRegistrate} instance, to allow method chaining
-     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
-     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, List, List, Consumer, String)}, but rather than returning a reference to the newly registered tab,
-     * we return the registrate instance to allow method chaining
-     */
-    public S creativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
-        buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator, englishTranslation);
-        return self();
-    }
-
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     * <p>
-     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param configurator The configurator used to build this tab
-     * @return This {@link AbstractRegistrate} instance, to allow method chaining
-     * @see #buildCreativeModeTab(String, Consumer)
-     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, Consumer)}, but rather than returning a reference to the newly registered tab,
-     * we return the registrate instance to allow method chaining
-     */
-    public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
-        buildCreativeModeTab(registryName, configurator);
-        return self();
-    }
-
-    /**
-     * Register a new CreativeModeTab with the given properties and name.
-     *
-     * <p>
-     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
-     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
-     * <p>
-     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
-     * <p>
-     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
-     * <p>
-     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
-     *
-     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
-     * @param configurator The configurator used to build this tab
-     * @return This {@link AbstractRegistrate} instance, to allow method chaining
-     * @see #buildCreativeModeTab(String, Consumer, String)
-     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, Consumer, String)}, but rather than returning a reference to the newly registered tab,
-     * we return the registrate instance to allow method chaining
-     */
-    public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
-        buildCreativeModeTab(registryName, configurator, englishTranslation);
-        return self();
-    }
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+//     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
+//     * <p>
+//     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param beforeEntries List of entries to come before this tab
+//     * @param afterEntries List of entries to come after this tab
+//     * @param configurator The configurator used to build this tab
+//     * @param englishTranslation Optional English (US) translation to auto-generate and assign as this tabs display name
+//     * @return Reference to the newly registered tab
+//     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
+//     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
+//     */
+//    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+//        var internalName = new ResourceLocation(modid, registryName);
+//
+//        if(englishTranslation != null) {
+//            var component = addLang("itemGroup", internalName, englishTranslation);
+//            configurator = configurator.andThen(builder -> builder.title(component));
+//        }
+//
+//        var result = new CreativeModeTabRegistration(internalName, beforeEntries, afterEntries, configurator);
+//        creativeModeTabsRegistrars.add(result);
+//        if(defaultCreativeModeTab == null) creativeModeTab(result);
+//        return result;
+//    }
+//
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+//     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param beforeEntries List of entries to come before this tab
+//     * @param afterEntries List of entries to come after this tab
+//     * @param configurator The configurator used to build this tab
+//     * @return Reference to the newly registered tab
+//     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
+//     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
+//     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
+//     */
+//    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
+//        return buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator, null);
+//    }
+//
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param configurator The configurator used to build this tab
+//     * @return Reference to the newly registered tab
+//     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
+//     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
+//     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
+//     */
+//    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
+//        return buildCreativeModeTab(registryName, null, null, configurator);
+//    }
+//
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param configurator The configurator used to build this tab
+//     * @return Reference to the newly registered tab
+//     * @implNote The returned (lazy) {@link Supplier} will be autofilled in later during the {@link CreativeModeTabEvent.Register} event,
+//     * if you try to obtain the tab before then a {@link NullPointerException} will be thrown due to the tab being registered yet.
+//     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
+//     */
+//    public Supplier<CreativeModeTab> buildCreativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+//        return buildCreativeModeTab(registryName, null, null, configurator, englishTranslation);
+//    }
+//
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+//     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     * <p>
+//     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param beforeEntries List of entries to come before this tab
+//     * @param afterEntries List of entries to come after this tab
+//     * @param configurator The configurator used to build this tab
+//     * @return This {@link AbstractRegistrate} instance, to allow method chaining
+//     * @see #buildCreativeModeTab(String, List, List, Consumer)
+//     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, List, List, Consumer)}, but rather than returning a reference to the newly registered tab,
+//     * we return the registrate instance to allow method chaining
+//     */
+//    public S creativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator) {
+//        buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator);
+//        return self();
+//    }
+//
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * Using the {@code beforeEntries} and {@code afterEntries} you can specify what other {@link CreativeModeTab tabs} must come before or after this tab.<br>
+//     * These lists can contain the following: {@link String} | {@link ResourceLocation} in from of a tab RegistryName or a {@link CreativeModeTab} instance
+//     * <p>
+//     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     * <p>
+//     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param beforeEntries List of entries to come before this tab
+//     * @param afterEntries List of entries to come after this tab
+//     * @param configurator The configurator used to build this tab
+//     * @param englishTranslation Optional English (US) translation to auto-generate and assign as this tabs display name
+//     * @return This {@link AbstractRegistrate} instance, to allow method chaining
+//     * @see #buildCreativeModeTab(String, List, List, Consumer, String)
+//     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, List, List, Consumer, String)}, but rather than returning a reference to the newly registered tab,
+//     * we return the registrate instance to allow method chaining
+//     */
+//    public S creativeModeTab(String registryName, @Nullable List<Object> beforeEntries, @Nullable List<Object> afterEntries, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+//        buildCreativeModeTab(registryName, beforeEntries, afterEntries, configurator, englishTranslation);
+//        return self();
+//    }
+//
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     * <p>
+//     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param configurator The configurator used to build this tab
+//     * @return This {@link AbstractRegistrate} instance, to allow method chaining
+//     * @see #buildCreativeModeTab(String, Consumer)
+//     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, Consumer)}, but rather than returning a reference to the newly registered tab,
+//     * we return the registrate instance to allow method chaining
+//     */
+//    public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator) {
+//        buildCreativeModeTab(registryName, configurator);
+//        return self();
+//    }
+//
+//    /**
+//     * Register a new CreativeModeTab with the given properties and name.
+//     *
+//     * <p>
+//     * Registeres a new {@link CreativeModeTab} with the given properties and registry name [under Registrates supplied namespace].<br>
+//     * The newly registered tab is marked as Registrates default tab, if one does not already exist [This is passed onto future builders to preset their tab properties].
+//     * <p>
+//     * You can specify an optional {@code englishTranslation} translation value to be auto-generated and assigned as this tabs display name via {@link Component#translatable(String)}
+//     * <p>
+//     * Multiple calls to this method with the same registry name is not supported, and should only be called once per new tab type
+//     * <p>
+//     * This method does not return a reference to the newly registered {@link CreativeModeTab} but you can still obtain one using {@link net.minecraftforge.common.CreativeModeTabRegistry#getTab(ResourceLocation)}
+//     *
+//     * @param registryName The registry name for this tab [Must pass ResourceLocation {@code path} validation]
+//     * @param configurator The configurator used to build this tab
+//     * @return This {@link AbstractRegistrate} instance, to allow method chaining
+//     * @see #buildCreativeModeTab(String, Consumer, String)
+//     * @implNote This is functionally the same as calling {@link #buildCreativeModeTab(String, Consumer, String)}, but rather than returning a reference to the newly registered tab,
+//     * we return the registrate instance to allow method chaining
+//     */
+//    public S creativeModeTab(String registryName, Consumer<CreativeModeTab.Builder> configurator, @Nullable String englishTranslation) {
+//        buildCreativeModeTab(registryName, configurator, englishTranslation);
+//        return self();
+//    }
 
     /**
      * Set the default CreativeModeTab to be passed onto future builders.
@@ -860,7 +852,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param creativeModeTab The new default CreativeModeTab type
      * @return This {@link AbstractRegistrate} instance
      */
-    public S creativeModeTab(Supplier<? extends CreativeModeTab> creativeModeTab) {
+    public S defaultCreativeTab(ResourceKey<CreativeModeTab> creativeModeTab) {
         defaultCreativeModeTab = creativeModeTab;
         return self();
     }
@@ -878,7 +870,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param modifier The modifier callback to be registered
      * @return This {@link AbstractRegistrate} instance
      */
-    public S modifyCreativeModeTab(Supplier<? extends CreativeModeTab> creativeModeTab, Consumer<CreativeModeTabModifier> modifier) {
+    public S modifyCreativeModeTab(ResourceKey<CreativeModeTab> creativeModeTab, Consumer<CreativeModeTabModifier> modifier) {
         creativeModeTabModifiers.put(creativeModeTab, modifier);
         return self();
     }
@@ -1009,7 +1001,23 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <R, T extends R, P> RegistryEntry<T> simple(P parent, String name, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
-        return entry(name, callback -> new NoConfigBuilder<R, T, P>(this, parent, name, callback, registryType, factory)).register();
+        return generic(parent, name, registryType, factory).register();
+    }
+
+    public <R, T extends R> NoConfigBuilder<R, T, AbstractRegistrate<S>> generic(ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
+        return generic(currentName(), registryType, factory);
+    }
+
+    public <R, T extends R> NoConfigBuilder<R, T, AbstractRegistrate<S>> generic(String name, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
+        return generic(this, name, registryType, factory);
+    }
+
+    public <R, T extends R, P> NoConfigBuilder<R, T, P> generic(P parent, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
+        return generic(parent, currentName(), registryType, factory);
+    }
+
+    public <R, T extends R, P> NoConfigBuilder<R, T, P> generic(P parent, String name, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
+        return entry(name, callback -> new NoConfigBuilder<R, T, P>(this, parent, name, callback, registryType, factory));
     }
 
     // Items
@@ -1027,7 +1035,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
-        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory, defaultCreativeModeTab == null ? null : defaultCreativeModeTab::get));
+        return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory)
+                .tab(this.defaultCreativeModeTab, this.creativeModeTabModifiers.getOrDefault(this.defaultCreativeModeTab, tab -> tab.accept(get(name, Registries.ITEM)))));
     }
 
     // Blocks
@@ -1045,23 +1054,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return block(parent, name, Material.STONE, factory);
-    }
-
-    public <T extends Block> BlockBuilder<T, S> block(Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return block(self(), material, factory);
-    }
-
-    public <T extends Block> BlockBuilder<T, S> block(String name, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return block(self(), name, material, factory);
-    }
-
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return block(parent, currentName(), material, factory);
-    }
-
-    public <T extends Block, P> BlockBuilder<T, P> block(P parent, String name, Material material, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory, material));
+        return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory));
     }
 
     // Entities

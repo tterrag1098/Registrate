@@ -37,23 +37,17 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.model.generators.BlockStateProvider.ConfiguredModelList;
-import net.minecraftforge.client.model.generators.ConfiguredModel;
-import net.minecraftforge.client.model.generators.ModelBuilder;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -96,8 +90,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            The {@link Material} to use for the initial {@link Block.Properties} object
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
-    public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, Material material) {
-        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of(material))
+    public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of())
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
 
@@ -128,46 +122,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public BlockBuilder<T, P> properties(NonNullUnaryOperator<BlockBehaviour.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
-        return this;
-    }
-
-    /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
-     *
-     * @param material
-     *            The material of the initial properties
-     * @return this {@link BlockBuilder}
-     */
-    public BlockBuilder<T, P> initialProperties(Material material) {
-        initialProperties = () -> BlockBehaviour.Properties.of(material);
-        return this;
-    }
-
-    /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
-     * 
-     * @param material
-     *            The material of the initial properties
-     * @param color
-     *            The color of the intial properties
-     * @return this {@link BlockBuilder}
-     */
-    public BlockBuilder<T, P> initialProperties(Material material, DyeColor color) {
-        initialProperties = () -> BlockBehaviour.Properties.of(material, color);
-        return this;
-    }
-
-    /**
-     * Replace the initial state of the block properties, without replacing or removing any modifications done via {@link #properties(NonNullUnaryOperator)}.
-     * 
-     * @param material
-     *            The material of the initial properties
-     * @param color
-     *            The color of the intial properties
-     * @return this {@link BlockBuilder}
-     */
-    public BlockBuilder<T, P> initialProperties(Material material, MaterialColor color) {
-        initialProperties = () -> BlockBehaviour.Properties.of(material, color);
         return this;
     }
 
