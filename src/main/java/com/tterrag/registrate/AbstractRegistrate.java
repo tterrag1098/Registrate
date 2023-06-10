@@ -166,7 +166,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     private final Table<Pair<String, ResourceKey<? extends Registry<?>>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
-    private final Map<Supplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = Maps.newLinkedHashMap();
+    private final Multimap<Supplier<? extends CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = HashMultimap.create();
     private final List<CreativeModeTabRegistration> creativeModeTabsRegistrars = Lists.newArrayList();
     @Nullable private Supplier<? extends CreativeModeTab> defaultCreativeModeTab = null;
 
@@ -872,7 +872,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Registeres a new callback to be invoked during the {@link CreativeModeTabEvent.BuildContents} event and
      * used to modify what items are displayed on the given {@link CreativeModeTab}.
      * <p>
-     * Calling this method multiple times will replace previously registered callbacks.
+     * Calling this method multiple times will add additional callbacks.
      *
      * @param creativeModeTab The {@link CreativeModeTab} to register this callback for
      * @param modifier The modifier callback to be registered
