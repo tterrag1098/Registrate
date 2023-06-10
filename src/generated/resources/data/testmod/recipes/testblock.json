@@ -16,5 +16,6 @@
   ],
   "result": {
     "item": "testmod:testblock"
-  }
+  },
+  "show_notification": true
 }

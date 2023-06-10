@@ -30,5 +30,6 @@
     "recipes": [
       "testmod:diamond_block_from_testblock_smoking"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

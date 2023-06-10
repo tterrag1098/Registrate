@@ -33,5 +33,6 @@
     [
       "has_egg"
     ]
-  ]
+  ],
+  "sends_telemetry_event": true
 }

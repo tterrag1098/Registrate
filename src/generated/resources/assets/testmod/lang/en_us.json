@@ -8,10 +8,8 @@
   "entity.testmod.testentity": "Testentity",
   "entity.testmod.testitem": "Testitem",
   "fluid.testmod.testfluid": "Testfluid",
-  "item.testmod.testentity_spawn_egg": "Testentity Spawn Egg",
-  "item.testmod.testitem": "Testitem",
   "item.testmod.testitem.testextra": "Magic!",
-  "itemGroup.testmod.test_creative_mode_tab": "Test Mod",
+  "itemGroup.testmod.test_creative_mode_tab": "Test Creative Mode Tab",
   "testmod.custom.lang": "Test",
   "tooltip.testmod.testblock": "Egg."
 }

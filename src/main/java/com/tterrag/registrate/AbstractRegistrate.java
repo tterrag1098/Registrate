@@ -11,15 +11,19 @@ import com.tterrag.registrate.builders.MenuBuilder.MenuFactory;
 import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateDataProvider;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
+import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.*;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
@@ -41,9 +45,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.data.event.GatherDataEvent;
@@ -1004,12 +1011,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return generic(parent, name, registryType, factory).register();
     }
 
-    public <R, T extends R> NoConfigBuilder<R, T, AbstractRegistrate<S>> generic(ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
-        return generic(currentName(), registryType, factory);
+    public <R, T extends R> NoConfigBuilder<R, T, S> generic(ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
+        return generic(self(), registryType, factory);
     }
 
-    public <R, T extends R> NoConfigBuilder<R, T, AbstractRegistrate<S>> generic(String name, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
-        return generic(this, name, registryType, factory);
+    public <R, T extends R> NoConfigBuilder<R, T, S> generic(String name, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
+        return generic(self(), name, registryType, factory);
     }
 
     public <R, T extends R, P> NoConfigBuilder<R, T, P> generic(P parent, ResourceKey<Registry<R>> registryType, NonNullSupplier<T> factory) {
@@ -1036,7 +1043,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     public <T extends Item, P> ItemBuilder<T, P> item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
         return entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory)
-                .tab(this.defaultCreativeModeTab, this.creativeModeTabModifiers.getOrDefault(this.defaultCreativeModeTab, tab -> tab.accept(get(name, Registries.ITEM)))));
+                .transform(builder -> this.defaultCreativeModeTab == null ? builder : builder.tab(this.defaultCreativeModeTab)));
     }
 
     // Blocks
@@ -1301,5 +1308,46 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     public <T extends Enchantment, P> EnchantmentBuilder<T, P> enchantment(P parent, String name, EnchantmentCategory type, EnchantmentFactory<T> factory) {
         return entry(name, callback -> EnchantmentBuilder.create(this, parent, name, callback, type, factory));
+    }
+
+    // Creative Tab
+
+    public NoConfigBuilder<CreativeModeTab, CreativeModeTab, S> defaultCreativeTab() {
+        return defaultCreativeTab(self());
+    }
+
+    public NoConfigBuilder<CreativeModeTab, CreativeModeTab, S> defaultCreativeTab(String name) {
+        return defaultCreativeTab(self(), name);
+    }
+
+    public <P> NoConfigBuilder<CreativeModeTab, CreativeModeTab, P> defaultCreativeTab(P parent) {
+        return defaultCreativeTab(parent, currentName());
+    }
+
+    public <P> NoConfigBuilder<CreativeModeTab, CreativeModeTab, P> defaultCreativeTab(P parent, String name) {
+        return defaultCreativeTab(parent, name, tab -> {});
+    }
+
+    public NoConfigBuilder<CreativeModeTab, CreativeModeTab, S> defaultCreativeTab(Consumer<CreativeModeTab.Builder> config) {
+        return defaultCreativeTab(self(), config);
+    }
+
+    public NoConfigBuilder<CreativeModeTab, CreativeModeTab, S> defaultCreativeTab(String name, Consumer<CreativeModeTab.Builder> config) {
+        return defaultCreativeTab(self(), name, config);
+    }
+
+    public <P> NoConfigBuilder<CreativeModeTab, CreativeModeTab, P> defaultCreativeTab(P parent, Consumer<CreativeModeTab.Builder> config) {
+        return defaultCreativeTab(parent, currentName(), config);
+    }
+
+    public <P> NoConfigBuilder<CreativeModeTab, CreativeModeTab, P> defaultCreativeTab(P parent, String name, Consumer<CreativeModeTab.Builder> config) {
+        this.defaultCreativeModeTab = ResourceKey.create(Registries.CREATIVE_MODE_TAB, new ResourceLocation(this.modid, name));
+        return this.generic(parent, name, Registries.CREATIVE_MODE_TAB, () -> {
+            var builder = CreativeModeTab.builder()
+                    .icon(() -> getAll(Registries.ITEM).stream().findFirst().map(ItemEntry::cast).map(ItemEntry::asStack).orElse(new ItemStack(Items.AIR)))
+                    .title(this.addLang("itemGroup", this.defaultCreativeModeTab.location(), RegistrateLangProvider.toEnglishName(name)));
+            config.accept(builder);
+            return builder.build();
+        });
     }
 }

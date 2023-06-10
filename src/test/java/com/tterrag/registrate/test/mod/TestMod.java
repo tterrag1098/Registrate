@@ -1,13 +1,23 @@
 package com.tterrag.registrate.test.mod;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.builders.NoConfigBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
-import com.tterrag.registrate.util.entry.*;
+import com.tterrag.registrate.util.entry.BlockEntityEntry;
+import com.tterrag.registrate.util.entry.BlockEntry;
+import com.tterrag.registrate.util.entry.EntityEntry;
+import com.tterrag.registrate.util.entry.FluidEntry;
+import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
+
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
@@ -45,7 +55,12 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantment.Rarity;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -78,10 +93,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryBuilder;
-
-import javax.annotation.Nullable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 @Mod("testmod")
 public class TestMod {
@@ -184,12 +195,9 @@ public class TestMod {
     private final Registrate registrate = Registrate
             .create("testmod");
     
-    private final RegistryEntry<CreativeModeTab> testCreativeTab;
-    {
-        testCreativeTab = registrate.object("test_creative_mode_tab")
-            .simple(Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder().build());
-        registrate.defaultCreativeTab(testCreativeTab.getKey());
-    }
+    private final RegistryEntry<CreativeModeTab> testcreativetab = registrate.object("test_creative_mode_tab")
+            .defaultCreativeTab(tab -> tab.withLabelColor(0xFF00AA00))
+            .register();
 
     private final AtomicBoolean sawCallback = new AtomicBoolean();
 
