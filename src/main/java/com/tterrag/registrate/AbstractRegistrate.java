@@ -216,7 +216,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Get the mod event bus that event listeners will be registered to. Useful when Registrate is used in mods that use alternative language loaders, such as forgelin. Defaults to the event bus in
      * {@link FMLJavaModLoadingContext}.
      * 
-     * @return An {@link IEventBus} to use\
+     * @return An {@link IEventBus} to use
      */
     public IEventBus getModEventBus() {
         return FMLJavaModLoadingContext.get().getModEventBus();
@@ -239,13 +239,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         bus.addListener(this::onBuildCreativeModeTabContents); // Fired multiple times when ever tabs need contents rebuilt (changing op tab perms for example)
         
         // Register events fire multiple times, so clean them up on common setup
-        OneTimeEventReceiver.addListener(bus, FMLCommonSetupEvent.class, $ -> {
-            OneTimeEventReceiver.unregister(bus, onRegister, RegisterEvent.class);
-            OneTimeEventReceiver.unregister(bus, onRegisterLate, RegisterEvent.class);
+        OneTimeEventReceiver.addModListener(this, FMLCommonSetupEvent.class, $ -> {
+            OneTimeEventReceiver.unregister(this, onRegister, RegisterEvent.class);
+            OneTimeEventReceiver.unregister(this, onRegisterLate, RegisterEvent.class);
         });
 
         if (doDatagen.get()) {
-            OneTimeEventReceiver.addListener(bus, GatherDataEvent.class, this::onData);
+            OneTimeEventReceiver.addModListener(this, GatherDataEvent.class, this::onData);
         }
 
         return self();
