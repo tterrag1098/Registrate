@@ -153,7 +153,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *
      * @param tab The {@link CreativeModeTab} to add the item into
      * @return This builder
-     * @see #tab(NonNullSupplier, Consumer)
+     * @see #tab(ResourceKey, Consumer)
      */
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab) {
         return tab(tab, modifier -> modifier.accept(get()));

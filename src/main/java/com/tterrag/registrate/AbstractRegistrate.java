@@ -447,7 +447,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * 
      * @param <R>
      *            Registry type
-     * @param registryType
+     * @param type
      *            A {@link ResourceKey} for the registry in question
      * @return A collection of {@link RegistryEntry} objects representing all entries in the given registry which are known to this {@link AbstractRegistrate} object.
      */
@@ -736,14 +736,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Set the default CreativeModeTab to be passed onto future builders.
-     *
      * <p>
-     * This marks a {@link CreativeModeTab} as the default tab to be used when constructing new builder classes,
-     * this allows those builders to be preset with a given tab automatically, rather than needing to manually set it yourself.
-     * <p>
-     * This is called when registering a new {@link CreativeModeTab} type via {@link #buildCreativeModeTab(String, List, List, Consumer, String)}, if a default tab has not already been set.
-     *
-     * @param creativeModeTab The new default CreativeModeTab type
+     * This special case method should be used if your creative tab instance was not created by Registrate, otherwise use {@link #defaultCreativeTab()}.
+     * 
+     * @param creativeModeTab
+     *            The new default CreativeModeTab type
      * @return This {@link AbstractRegistrate} instance
      */
     public S defaultCreativeTab(ResourceKey<CreativeModeTab> creativeModeTab) {

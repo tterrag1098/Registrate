@@ -86,8 +86,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      *            A callback used to actually register the built entry
      * @param factory
      *            Factory to create the block
-     * @param material
-     *            The {@link Material} to use for the initial {@link Block.Properties} object
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
     public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory) {
