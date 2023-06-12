@@ -183,13 +183,6 @@ public class TestMod {
         }
     }
 
-//    private static class TestBiome extends Biome {
-//
-//        public TestBiome(Biome.Builder biomeBuilder) {
-//            super(biomeBuilder);
-//        }
-//    }
-
     private static class TestCustomRegistryEntry {}
 
     private final Registrate registrate = Registrate
