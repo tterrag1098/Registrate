@@ -69,7 +69,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
     public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
-        return new ItemBuilder<>(owner, parent, name, callback, factory);
+        return new ItemBuilder<>(owner, parent, name, callback, factory)
+                .defaultModel().defaultLang();
     }
 
     private final NonNullFunction<Item.Properties, T> factory;
