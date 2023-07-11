@@ -235,10 +235,8 @@ public class FluidBuilder<TSource extends ForgeFlowingFluid, TFlowing extends Fo
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     public static <TSource extends ForgeFlowingFluid, TFlowing extends ForgeFlowingFluid, P> FluidBuilder<TSource, TFlowing, P> create(
-            AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture,
-            ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType,
-            NonNullFunction<ForgeFlowingFluid.Properties, TSource> sourceFactory,
-            NonNullFunction<ForgeFlowingFluid.Properties, TFlowing> flowingFactory) {
+            AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType,
+            NonNullFunction<ForgeFlowingFluid.Properties, TSource> sourceFactory, NonNullFunction<ForgeFlowingFluid.Properties, TFlowing> flowingFactory) {
         FluidBuilder<TSource, TFlowing, P> ret = new FluidBuilder<>(owner, parent, name, callback, stillTexture, flowingTexture, fluidType, sourceFactory, flowingFactory)
                 .defaultLang().defaultBlock().defaultBucket();
         return ret;
@@ -267,8 +265,7 @@ public class FluidBuilder<TSource extends ForgeFlowingFluid, TFlowing extends Fo
     private NonNullSupplier<TFlowing> flowingFluid;
     private final List<TagKey<Fluid>> tags = new ArrayList<>();
 
-    public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture,
-                        ResourceLocation flowingTexture, FluidTypeFactory typeFactory,
+    public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory,
                         NonNullFunction<ForgeFlowingFluid.Properties, ? extends TSource> sourceFactory, NonNullFunction<ForgeFlowingFluid.Properties, ? extends TFlowing> flowingFactory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.FLUIDS);
         this.flowingName = "flowing_" + name;
@@ -286,10 +283,8 @@ public class FluidBuilder<TSource extends ForgeFlowingFluid, TFlowing extends Fo
             .block(() -> owner.<Block, LiquidBlock>get(name, ForgeRegistries.Keys.BLOCKS).get());
     }
 
-    public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture,
-                        ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType,
-                        NonNullFunction<ForgeFlowingFluid.Properties, TSource> sourceFactory,
-                        NonNullFunction<ForgeFlowingFluid.Properties, TFlowing> flowingFactory) {
+    public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType,
+                        NonNullFunction<ForgeFlowingFluid.Properties, TSource> sourceFactory, NonNullFunction<ForgeFlowingFluid.Properties, TFlowing> flowingFactory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.FLUIDS);
         this.flowingName = "flowing_" + name;
         this.bucketName = name + "_bucket";
