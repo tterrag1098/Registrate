@@ -296,8 +296,6 @@ public class FluidBuilder<TSource extends ForgeFlowingFluid, TFlowing extends Fo
         this.registerType = false; // Don't register if we have a fluid from outside.
 
         String bucketName = this.bucketName;
-
-        // TODO: I'm very not happy with how this was done.
         this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, ForgeRegistries.Keys.ITEMS).get())
                 .block(() -> owner.<Block, LiquidBlock>get(name, ForgeRegistries.Keys.BLOCKS).get());
     }
