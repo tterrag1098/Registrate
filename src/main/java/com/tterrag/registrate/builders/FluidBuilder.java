@@ -427,6 +427,9 @@ public class FluidBuilder<TSource extends ForgeFlowingFluid, TFlowing extends Fo
         if (this.defaultBlock == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
         }
+
+        // Remove block lookup
+        this.fluidProperties = p -> p.block(null);
         this.defaultBlock = false;
         return this;
     }
@@ -481,6 +484,9 @@ public class FluidBuilder<TSource extends ForgeFlowingFluid, TFlowing extends Fo
         if (this.defaultBucket == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
+
+        // Disable bucket lookup
+        fluidProperties = p -> p.bucket(null);
         this.defaultBucket = false;
         return this;
     }
