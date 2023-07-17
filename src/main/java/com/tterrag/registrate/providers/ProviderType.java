@@ -12,6 +12,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraftforge.data.event.GatherDataEvent;
+import net.minecraftforge.fml.LogicalSide;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -41,11 +42,13 @@ public interface ProviderType<T extends RegistrateProvider> {
     public static final ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerDelegate("tags/item", type -> (p, e, existing) -> new RegistrateItemTagsProvider(p, type, "items", e.getGenerator().getPackOutput(), e.getLookupProvider(), ((TagsProvider<Block>)existing.get(BLOCK_TAGS)).contentsGetter(), e.getExistingFileHelper()));
     public static final ProviderType<RegistrateTagsProvider.IntrinsicImpl<Fluid>> FLUID_TAGS = register("tags/fluid", type -> (p, e) -> new RegistrateTagsProvider.IntrinsicImpl<Fluid>(p, type, "fluids", e.getGenerator().getPackOutput(), Registries.FLUID, e.getLookupProvider(), fluid -> fluid.builtInRegistryHolder().key(), e.getExistingFileHelper()));
     public static final ProviderType<RegistrateTagsProvider.IntrinsicImpl<EntityType<?>>> ENTITY_TAGS = register("tags/entity", type -> (p, e) -> new RegistrateTagsProvider.IntrinsicImpl<EntityType<?>>(p, type, "entity_types", e.getGenerator().getPackOutput(), Registries.ENTITY_TYPE, e.getLookupProvider(), entityType -> entityType.builtInRegistryHolder().key(), e.getExistingFileHelper()));
+    public static final ProviderType<RegistrateGenericProvider> GENERIC_SERVER = ProviderType.register("registrate_generic_server_provider", providerType -> (registrate, event) -> new RegistrateGenericProvider(registrate, event, LogicalSide.SERVER, providerType));
 
     // CLIENT DATA
     public static final ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = register("blockstate", (p, e) -> new RegistrateBlockstateProvider(p, e.getGenerator().getPackOutput(), e.getExistingFileHelper()));
     public static final ProviderType<RegistrateItemModelProvider> ITEM_MODEL = register("item_model", (p, e, existing) -> new RegistrateItemModelProvider(p, e.getGenerator().getPackOutput(), ((RegistrateBlockstateProvider)existing.get(BLOCKSTATE)).getExistingFileHelper()));
     public static final ProviderType<RegistrateLangProvider> LANG = register("lang", (p, e) -> new RegistrateLangProvider(p, e.getGenerator().getPackOutput()));
+    public static final ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = ProviderType.register("registrate_generic_client_provider", providerTYpe -> (registrate, event) -> new RegistrateGenericProvider(registrate, event, LogicalSide.CLIENT, providerTYpe));
 
     T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing);
 

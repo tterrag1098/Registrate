@@ -1,5 +1,7 @@
 package com.tterrag.registrate.test.mod;
 
+import java.util.OptionalLong;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -30,6 +32,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.PigRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
@@ -39,6 +42,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -65,6 +69,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantment.Rarity;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -74,7 +80,12 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
+import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -85,6 +96,7 @@ import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.data.DatapackBuiltinEntriesProvider;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.fluids.FluidType;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
@@ -187,7 +199,7 @@ public class TestMod {
 
     private final Registrate registrate = Registrate
             .create("testmod");
-    
+
     private final RegistryEntry<CreativeModeTab> testcreativetab = registrate.object("test_creative_mode_tab")
             .defaultCreativeTab(tab -> tab.withLabelColor(0xFF00AA00))
             .register();
@@ -378,6 +390,65 @@ public class TestMod {
                         new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"), FrameType.TASK, true, true, false)
                 .save(adv, registrate.getModid() + ":root");
         });
+        registrate.addDataGenerator(ProviderType.GENERIC_SERVER, provider -> provider.add(data -> {
+            // generic server side provider to generate custom dimension
+            // to teleport to this dimension use the following command
+            // /execute as @s in testmod:test_dimension run tp @s 0 64 0
+            // you can validate you are in this dimension by checking the debug screen
+            // right underneath the `Chunks[C]` and `Chunk[S]` should be the dimension name
+            var testDimensionTypeKey = ResourceKey.create(Registries.DIMENSION_TYPE, new ResourceLocation("testmod", "test_dimension_type"));
+
+            return new DatapackBuiltinEntriesProvider(
+                    data.output(),
+                    data.registries(),
+                    new RegistrySetBuilder()
+                            // custom dimension type, just a simple overworld-like dimension
+                            .add(Registries.DIMENSION_TYPE, context -> context.register(
+                                    testDimensionTypeKey,
+                                    new DimensionType(
+                                            /* fixedTime */ OptionalLong.empty(),
+                                            /* hasSky */ true,
+                                            /* hasCeiling */ false,
+                                            /* ultraWarm */ false,
+                                            /* natural */ true,
+                                            /* coordinateScale */ 1D,
+                                            /* bedWords */ true,
+                                            /* respawnAnchorWorks */ false,
+                                            /* minY */ -64,
+                                            /* height */ 384,
+                                            /* localHeight */ 384,
+                                            /* infiniBurn */ BlockTags.INFINIBURN_OVERWORLD,
+                                            /* effectsLocation */ BuiltinDimensionTypes.OVERWORLD_EFFECTS,
+                                            /* ambientLight */ 0F,
+                                            new DimensionType.MonsterSettings(
+                                                    /* piglinSafe */ false,
+                                                    /* hasRaids */ true,
+                                                    /* monsterSpawnLightTest */ UniformInt.of(0, 7),
+                                                    /* monsterSpawnBlockLightLimit */ 0
+                                            )
+                                    )
+                            ))
+                            // register custom dimension for the dimension type
+                            // simple single biome (plains) dimension
+                            .add(Registries.LEVEL_STEM, context -> {
+                                var plains = context.lookup(Registries.BIOME).getOrThrow(Biomes.PLAINS);
+                                var testDimensionType = context.lookup(Registries.DIMENSION_TYPE).getOrThrow(testDimensionTypeKey);
+                                var overworldNoiseSettings = context.lookup(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD);
+
+                                context.register(
+                                        ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("testmod", "test_dimension")),
+                                        new LevelStem(
+                                                testDimensionType,
+                                                new NoiseBasedChunkGenerator(
+                                                        new FixedBiomeSource(plains),
+                                                        overworldNoiseSettings
+                                                )
+                                        )
+                                );
+                            }),
+                    Set.of("testmod")
+            );
+        }));
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onCommonSetup);
         MinecraftForge.EVENT_BUS.addListener(this::afterServerStart);
