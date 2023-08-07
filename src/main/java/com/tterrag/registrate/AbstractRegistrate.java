@@ -261,7 +261,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     protected void onRegister(RegisterEvent event) {
         ResourceKey<? extends Registry<?>> type = event.getRegistryKey();
         if (type == null) {
-            log.debug(DebugMarkers.REGISTER, "Skipping invalid registry with no supertype: " + event.getRegistryKey());
+            log.debug(DebugMarkers.REGISTER, "Skipping invalid registry with no supertype: " + event.getRegistryKey().location());
             return;
         }
         if (!registerCallbacks.isEmpty()) {
@@ -273,13 +273,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
         Map<String, Registration<?, ?>> registrationsForType = registrations.row(type);
         if (registrationsForType.size() > 0) {
-            log.debug(DebugMarkers.REGISTER, "Registering {} known objects of type {}", registrationsForType.size(), type.location());
+            log.debug(DebugMarkers.REGISTER, "({}) Registering {} known objects of type {}", getModid(), registrationsForType.size(), type.location());
             for (Entry<String, Registration<?, ?>> e : registrationsForType.entrySet()) {
                 try {
                     e.getValue().register(event);
-                    log.debug(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistryKey());
+                    log.debug(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistryKey().location());
                 } catch (Exception ex) {
-                    String err = "Unexpected error while registering entry " + e.getValue().getName() + " to registry " + event.getRegistryKey();
+                    String err = "Unexpected error while registering entry " + e.getValue().getName() + " to registry " + event.getRegistryKey().location();
                     if (skipErrors) {
                         log.error(DebugMarkers.REGISTER, err);
                     } else {
@@ -437,7 +437,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         if (reg != null) {
             return reg;
         }
-        throw new IllegalArgumentException("Unknown registration " + name + " for type " + type);
+        throw new IllegalArgumentException("Unknown registration " + name + " for type " + type.location());
     }
 
     /**
@@ -879,7 +879,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     protected <R, T extends R> RegistryEntry<T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<RegistryObject<T>, ? extends RegistryEntry<T>> entryFactory) {
         Registration<R, T> reg = new Registration<>(new ResourceLocation(modid, name), type, creator, entryFactory);
-        log.debug(DebugMarkers.REGISTER, "Captured registration for entry {} of type {}", name, type.location());
+        log.debug(DebugMarkers.REGISTER, "Captured registration for entry {}:{} of type {}", getModid(), name, type.location());
         registerCallbacks.removeAll(Pair.of(name, type)).forEach(callback -> {
             @SuppressWarnings({ "unchecked", "null" })
             @Nonnull NonNullConsumer<? super T> unsafeCallback = (NonNullConsumer<? super T>) callback;
