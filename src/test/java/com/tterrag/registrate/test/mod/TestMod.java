@@ -268,7 +268,7 @@ public class TestMod {
             .blockEntity(TestDummyBlockEntity::new)
             .register();
 
-    private final FluidEntry<ForgeFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
+    private final FluidEntry<ForgeFlowingFluid.Source> testfluid = registrate.object("testfluid")
             .fluid(new ResourceLocation("block/water_flow"), new ResourceLocation("block/lava_still"), (props, still, flow) -> new FluidType(props) {
                 // And now you can do custom behaviours.
                 @Override
@@ -287,7 +287,7 @@ public class TestMod {
                 }
             })
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
-            .renderType(RenderType::translucent)
+            .renderType(() -> RenderType::translucent)
             .noBucket()
 //            .bucket()
 //                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))

@@ -33,8 +33,8 @@ public class FluidEntry<T extends ForgeFlowingFluid> extends RegistryEntry<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <S extends ForgeFlowingFluid> S getSource() {
-        return (S) get().getSource();
+    public <S extends ForgeFlowingFluid> S getFlowing() {
+        return (S) get().getFlowing();
     }
 
     public FluidType getType() {
