@@ -365,7 +365,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param <T>
      *            The type of the entry to return
      * @param type
-     *            A class representing the registry type
+     *            A {@link ResourceKey} for the registry 
      * @return A {@link RegistryEntry} which will supply the requested entry, if it exists
      * @throws IllegalArgumentException
      *             if no such registration has been done
@@ -388,7 +388,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *
      * ...
      *
-     * public static final RegistryObject<BlockItem> MY_BLOCK_ITEM = REGISTRATE.get("my_block", Item.class);
+     * public static final RegistryObject<BlockItem> MY_BLOCK_ITEM = REGISTRATE.get("my_block", ForgeRegistries.ITEMS.getRegistryKey());
      * }
      * </pre>
      *
@@ -399,7 +399,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param name
      *            The name of the registry entry to request
      * @param type
-     *            A class representing the registry type
+     *            A {@link ResourceKey} for the registry
      * @return A {@link RegistryEntry} which will supply the requested entry, if it exists
      * @throws IllegalArgumentException
      *             if no such registration has been done
