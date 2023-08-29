@@ -90,7 +90,7 @@ Finally, the dependency itself must be added. First add my maven repository,
 ```groovy
 repositories {
     maven { // Registrate
-        url "http://maven.tterrag.com/"
+        url "https://maven.tterrag.com/"
     }
     mavenLocal()
 }
