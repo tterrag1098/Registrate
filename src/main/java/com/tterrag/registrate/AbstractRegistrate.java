@@ -164,7 +164,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Checks if Minecraft is running from a dev environment. Enables certain debug logging.
-     *
+     * 
      * @return {@code true} when in a dev environment (specifically, {@link FMLEnvironment#naming} == "mcp")
      */
     public static boolean isDevEnvironment() {
@@ -207,7 +207,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Use this in custom implementations to hide unsafe casts to {@link S} when returning self.
-     *
+     * 
      * @return This {@link AbstractRegistrate} object, cast to {@link S}
      */
     @SuppressWarnings("unchecked")
@@ -218,7 +218,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Get the mod event bus that event listeners will be registered to. Useful when Registrate is used in mods that use alternative language loaders, such as forgelin. Defaults to the event bus in
      * {@link FMLJavaModLoadingContext}.
-     *
+     * 
      * @return An {@link IEventBus} to use
      */
     public IEventBus getModEventBus() {
@@ -229,7 +229,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Called during {@link Registrate#create(String) creation} to initialize event listeners. Custom implementations may add their own event listeners by overriding this.
      * <p>
      * <i>Always</i> call {@code super} in your override unless you know what you are doing!
-     *
+     * 
      * @param bus
      *            The event bus
      * @return This {@link AbstractRegistrate} object
@@ -240,7 +240,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         bus.addListener(onRegister);
         bus.addListener(EventPriority.LOWEST, onRegisterLate);
         bus.addListener(this::onBuildCreativeModeTabContents); // Fired multiple times when ever tabs need contents rebuilt (changing op tab perms for example)
-
+        
         // Register events fire multiple times, so clean them up on common setup
         OneTimeEventReceiver.addModListener(this, FMLCommonSetupEvent.class, $ -> {
             OneTimeEventReceiver.unregister(this, onRegister, RegisterEvent.class);
@@ -257,7 +257,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Called once per registry to gather collected registrations and add entries to the registry. May be overriden in custom implementations to perform additional actions upon entry registration, but
      * <i>must</i> call {@code super}.
-     *
+     * 
      * @param event
      *            The {@link RegisterEvent} being fired, use {@link RegisterEvent#getRegistryKey()} to query the registry type
      */
@@ -296,7 +296,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     /**
      * Called once per registry at the {@link EventPriority#LOWEST lowest priority} to perform any actions that must happen after all other entries have been registered, including from other mods. May
      * be overriden in custom implementations to perform additional actions upon entry registration, but <i>must</i> call {@code super}.
-     *
+     * 
      * @param event
      *            The {@link RegisterEvent} being fired, use {@link RegisterEvent#getRegistryKey()} to query the registry type
      */
@@ -310,7 +310,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Called when a {@link CreativeModeTab} is being populated to fill in any entries that belong there. Can be overriden in custom implementations.
-     *
+     * 
      * @param event
      *            The event
      */
@@ -327,7 +327,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Called when datagen begins to add our provider to the generator. Can be overriden in custom implementations.
-     *
+     * 
      * @param event
      *            The event
      */
@@ -447,7 +447,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Gather a collection of all entries registered for a certain registry
      * <p>
      * Note that this can be called before registration is complete, but the {@link RegistryEntry entries} will be empty at that time.
-     *
+     * 
      * @param <R>
      *            Registry type
      * @param type
@@ -461,7 +461,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Add a callback to be invoked when a certain entry has been registered. This will be invoked <i>immediately</i> following registration, before further entries are registered.
-     *
+     * 
      * @param <R>
      *            Registry type
      * @param <T>
@@ -486,7 +486,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Add a callback to be invoked when a certain registry has fully completed registration, i.e. all objects of that type have been registered.
-     *
+     * 
      * @param <R>
      *            The registry type
      * @param registryType
@@ -502,7 +502,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     /**
      * Check if a certain registry has completed registration.
-     *
+     * 
      * @param <R>
      *            The registry type
      * @param registryType
@@ -741,7 +741,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Set the default CreativeModeTab to be passed onto future builders.
      * <p>
      * This special case method should be used if your creative tab instance was not created by Registrate, otherwise use {@link #defaultCreativeTab()}.
-     *
+     * 
      * @param creativeModeTab
      *            The new default CreativeModeTab type
      * @return This {@link AbstractRegistrate} instance
@@ -863,7 +863,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Factory method to accept a completed builder and add it to the registration queue.
      * <p>
      * Satisfies the functional interface {@link BuilderCallback}, which is typically given to new builder instances when they are constructed.
-     *
+     * 
      * @param <R>
      *            Registry type
      * @param <T>
@@ -899,7 +899,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * Alternatively, a custom {@link Builder builder} can be created.
      * <p>
      * This method will automatically subscribe to the {@link NewRegistryEvent} and create the registry at the proper time. Thus, the new registry will not exist immediately after this is called.
-     *
+     * 
      * @param <R>
      *            The type of object the new registry will contain
      * @param name
