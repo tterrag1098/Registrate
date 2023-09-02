@@ -120,19 +120,39 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Adds the item built from this builder into the given CreativeModeTab using the specified modifier
+     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created and/or added to the tab.
      *
      * <p>
-     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM} registry.<br>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
      * This means you can call this method as many times as you like during the build process with no added side effects.
      * <p>
-     * Calling this method with different {@link CreativeModeTab tabs} will add your item to all the specified tabs,
-     * unlike the old implementation which only allowed you to specify a single tab to display your times on.
+     * Calling this method with different {@link ResourceKey tab keys} will add the modifier to all the specified tabs.
      * <p>
-     * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will replace any previous calls.
+     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
      *
-     * @param tab The {@link CreativeModeTab} to add the item into
-     * @param modifier The {@link CreativeModeTabModifier} used to build the ItemStack
+     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
+     * @param modifier A {@link Consumer consumer} accepting a {@link CreativeModeTabModifier} used to update the tab
+     * @return This builder
+     * @deprecated Use {@link #tab(ResourceKey, NonNullBiConsumer)} which provides access to the registered item.
+     */
+    @Deprecated
+    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
+        return tab(tab, ($, m) -> modifier.accept(m));
+    }
+
+    /**
+     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created and/or added to the tab.
+     *
+     * <p>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
+     * <p>
+     * Calling this method with different {@link ResourceKey tab keys} will add the modifier to all the specified tabs.
+     * <p>
+     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
+     *
+     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
+     * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and {@link CreativeModeTabModifier} used to update the tab
      * @return This builder
      */
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier> modifier) {
@@ -141,18 +161,16 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Adds the item built from this builder into the given CreativeModeTab using the default ItemStack instance
-     *
+     * Adds the item built from this builder into the given CreativeModeTab using the default ItemStack instance.
      * <p>
-     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM} registry.<br>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
      * This means you can call this method as many times as you like during the build process with no added side effects.
      * <p>
-     * Calling this method with different {@link CreativeModeTab tabs} will add your item to all the specified tabs,
-     * unlike the old implementation which only allowed you to specify a single tab to display your times on.
+     * Calling this method with different {@link ResourceKey tab keys} will add the item to all the specified tabs.
      * <p>
-     * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will replace any previous calls.
+     * Calling this method multiple times with the same {@link NonNullSupplier tab supplier} will have no effect.
      *
-     * @param tab The {@link CreativeModeTab} to add the item into
+     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to add to
      * @return This builder
      * @see #tab(ResourceKey, NonNullBiConsumer)
      */
@@ -161,9 +179,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     /**
-     * Removes the item built from this builder from the given CreativeModeTab
+     * Removes the modifier from this builder from the given {@link CreativeModeTab}.
      *
-     * @param tab The {@link CreativeModeTab} to remove the item from
+     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to remove the modifier from
      * @return This builder
      */
     public ItemBuilder<T, P> removeTab(ResourceKey<CreativeModeTab> tab) {
