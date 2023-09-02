@@ -80,14 +80,14 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
 
     @Nullable
     private NonNullSupplier<Supplier<ItemColor>> colorHandler;
-    private Map<ResourceKey<CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabs = Maps.newLinkedHashMap();
+    private Map<ResourceKey<CreativeModeTab>, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier>> creativeModeTabs = Maps.newLinkedHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
         this.factory = factory;
 
         onRegister(item -> {
-            creativeModeTabs.forEach(owner::modifyCreativeModeTab);
+            creativeModeTabs.forEach((creativeModeTab, consumer) -> owner.modifyCreativeModeTab(creativeModeTab, modifier -> consumer.accept(DataGenContext.from(this, ForgeRegistries.Keys.ITEMS), modifier)));
             creativeModeTabs.clear(); // this registration should only fire once, to doubly ensure this, clear the map
         });
     }
@@ -135,7 +135,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param modifier The {@link CreativeModeTabModifier} used to build the ItemStack
      * @return This builder
      */
-    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
+    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier> modifier) {
         creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
@@ -154,10 +154,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *
      * @param tab The {@link CreativeModeTab} to add the item into
      * @return This builder
-     * @see #tab(ResourceKey, Consumer)
+     * @see #tab(ResourceKey, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab) {
-        return tab(tab, modifier -> modifier.accept(get()));
+        return tab(tab, (item, modifier) -> modifier.accept(item));
     }
 
     /**
