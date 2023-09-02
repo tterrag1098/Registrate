@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.mojang.serialization.Codec;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraftforge.registries.DataPackRegistryEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
@@ -908,6 +911,44 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public <R> ResourceKey<Registry<R>> makeRegistry(String name, Supplier<RegistryBuilder<R>> builder) {
         final ResourceKey<Registry<R>> registryId = ResourceKey.createRegistryKey(new ResourceLocation(getModid(), name));
         OneTimeEventReceiver.addModListener(this, NewRegistryEvent.class, e -> e.create(builder.get().setName(registryId.location())));
+        return registryId;
+    }
+
+    /**
+     * Registers the given registry key as an unsynced datapack registry, which will cause data to be loaded from
+     * a datapack folder based on the registry's name. The datapack registry is not required to be present
+     * on clients when connecting to servers with the mod/registry.
+     * <p>
+     * Data JSONs will be loaded from {@code data/<datapack_namespace>/modid/registryname/}, where {@code modid} is the namespace of the registry key.
+     *
+     * @param name The ID of this registry
+     * @param codec The codec to be used for loading data from datapacks on servers
+     * @see #makeDatapackRegistry(String, Codec, Codec)
+     */
+    public <R> ResourceKey<Registry<R>> makeDatapackRegistry(String name, Codec<R> codec) {
+        return makeDatapackRegistry(name, codec, null);
+    }
+
+    /**
+     * Registers the registry key as a datapack registry, which will cause data to be loaded from
+     * a datapack folder based on the registry's name.
+     * <p>
+     * Data JSONs will be loaded from {@code data/<datapack_namespace>/modid/registryname/}, where {@code modid} is the namespace of the registry key.
+     *
+     * @param name The ID of this registry
+     * @param codec The codec to be used for loading data from datapacks on servers
+     * @param networkCodec The codec to be used for syncing loaded data to clients.
+     * If {@code networkCodec} is null, data will not be synced, and clients are not required to have this
+     * datapack registry to join a server.
+     * <p>
+     * If {@code networkCodec} is not null, clients must have this datapack registry/mod
+     * when joining a server that has this datapack registry/mod.
+     * The data will be synced using the network codec and accessible via {@link ClientPacketListener#registryAccess()}.
+     * @see #makeDatapackRegistry(String, Codec)
+     */
+    public <R> ResourceKey<Registry<R>> makeDatapackRegistry(String name, Codec<R> codec, @Nullable Codec<R> networkCodec) {
+        final ResourceKey<Registry<R>> registryId = ResourceKey.createRegistryKey(new ResourceLocation(getModid(), name));
+        OneTimeEventReceiver.addModListener(this, DataPackRegistryEvent.NewRegistry.class, event -> event.dataPackRegistry(registryId, codec, networkCodec));
         return registryId;
     }
 
