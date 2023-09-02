@@ -14,7 +14,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
@@ -114,7 +113,7 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
      */
     @SuppressWarnings("unchecked")
     default <D extends RegistrateProvider> S setData(ProviderType<? extends D> type, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
-        getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this, getRegistryKey()), prov));
+        getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this), prov));
         return (S) this;
     }
 

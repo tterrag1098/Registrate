@@ -55,7 +55,7 @@ public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & Men
     @Override
     protected @NonnullType MenuType<T> createEntry() {
         ForgeMenuFactory<T> factory = this.factory;
-        NonNullSupplier<MenuType<T>> supplier = this.asSupplier();
+        final var supplier = this.asSupplier();
         MenuType<T> ret = IForgeMenuType.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             ScreenFactory<T, S> screenFactory = this.screenFactory.get();

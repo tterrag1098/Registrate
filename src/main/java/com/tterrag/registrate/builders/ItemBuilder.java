@@ -87,7 +87,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         this.factory = factory;
 
         onRegister(item -> {
-            creativeModeTabs.forEach((creativeModeTab, consumer) -> owner.modifyCreativeModeTab(creativeModeTab, modifier -> consumer.accept(DataGenContext.from(this, ForgeRegistries.Keys.ITEMS), modifier)));
+            creativeModeTabs.forEach((creativeModeTab, consumer) -> owner.modifyCreativeModeTab(creativeModeTab, modifier -> consumer.accept(DataGenContext.from(this), modifier)));
             creativeModeTabs.clear(); // this registration should only fire once, to doubly ensure this, clear the map
         });
     }
