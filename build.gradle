@@ -2,16 +2,9 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            name = "forge"
-            url = "https://maven.minecraftforge.net/"
-        }
-        maven {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
     }
 }
 plugins {
@@ -19,12 +12,12 @@ plugins {
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'org.ajoberstar.grgit' version '4.1.0'
 //    id "com.palantir.revapi" version "1.7.0"
+    id 'net.neoforged.gradle.userdev' version '[7,)'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 apply plugin: 'eclipse'
-apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
+//apply from: 'https://raw.githubusercontent.com/SizableShrimp/Forge-Class-Remapper/main/classremapper.gradle'
 
 boolean dev = System.getenv('RELEASE') == null || System.getenv('RELEASE').equals('false')
 def getVersion = {
@@ -50,59 +43,26 @@ revapi {
     tasks.revapiAnalyze.dependsOn reobf
 }
 */
-minecraft {
-    mappings channel: 'official', version: minecraft_version
 
-    runs {
-        client {
-            taskName 'testmod_client'
-            
-            workingDirectory project.file('run')
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
+        systemProperty 'forge.logging.console.level', 'debug'
 
-            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.test
+        modSource project.sourceSets.main
 
-            mods {
-                testmod {
-                    source sourceSets.test
-                    source sourceSets.main
-                }
-            }
-        }
-        server {
-            taskName 'testmod_server'
-            
-            workingDirectory project.file('run')
+    }
 
-            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                testmod {
-                    source sourceSets.test
-                    source sourceSets.main
-                }
-            }
-        }
-        data {
-            taskName 'testmod_data'
-        
-            workingDirectory project.file('run')
-            
-            environment 'target', 'fmluserdevdata'
-
-            property 'forge.logging.markers', 'REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                testmod {
-                    source sourceSets.test
-                    source sourceSets.main
-                }
-            }
-            
-            args '--mod', 'testmod', '--all', '--output', rootProject.file('src/generated/resources/'), '--existing', rootProject.file('src/test/resources') 
-        }
+    client {
+//        taskName 'testmod_client'
+    }
+    server {
+//        taskName 'testmod_server'
+    }
+    data {
+//        taskName 'testmod_data'
+        programArguments.addAll '--mod', 'testmod', '--all', '--output', file('src/generated/remodSources/').getAbsolutePath(), '--existing', file('src/test/resources').getAbsolutePath()
     }
 }
 
@@ -120,14 +80,14 @@ repositories {
 dependencies {
     implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
 
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation "net.neoforged:neoforge:${neoforge_version}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
     testRuntimeOnly    "org.junit.jupiter:junit-jupiter-engine:5.7.2"
 }
 
 lombok {
     version = "1.18.20"
-    config['lombok.addJavaxGeneratedAnnotation'] = 'true'
+//    config['lombok.addJavaxGeneratedAnnotation'] = 'true'
 }
 
 delombok {
@@ -147,7 +107,7 @@ jar {
 }
 
 task sourceJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.delombokTask
     exclude 'com.tterrag.registrate.test.*'
 }
