@@ -4,13 +4,13 @@ import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 
 public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<T>> {
 
-    public EntityEntry(AbstractRegistrate<?> owner, RegistryObject<EntityType<T>> delegate) {
+    public EntityEntry(AbstractRegistrate<?> owner, DeferredHolder<? super EntityType<T>, EntityType<T>> delegate) {
         super(owner, delegate);
     }
 

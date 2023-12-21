@@ -19,15 +19,16 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * A builder for block entities, allows for customization of the valid blocks.
@@ -76,7 +77,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     private NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer;
 
     protected BlockEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
-        super(owner, parent, name, callback, ForgeRegistries.Keys.BLOCK_ENTITY_TYPES);
+        super(owner, parent, name, callback, BuiltInRegistries.BLOCK_ENTITY_TYPE.key());
         this.factory = factory;
     }
     
@@ -117,7 +118,9 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      */
     public BlockEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
+            if(FMLEnvironment.dist == Dist.CLIENT){
+               registerRenderer();
+            }
         }
         this.renderer = renderer;
         return this;
@@ -141,7 +144,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     }
     
     @Override
-    protected RegistryEntry<BlockEntityType<T>> createEntryWrapper(RegistryObject<BlockEntityType<T>> delegate) {
+    protected RegistryEntry<BlockEntityType<T>> createEntryWrapper(DeferredHolder<? super BlockEntityType<T>,BlockEntityType<T>> delegate) {
         return new BlockEntityEntry<>(getOwner(), delegate);
     }
     

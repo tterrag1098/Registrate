@@ -20,10 +20,10 @@ import net.minecraft.advancements.critereon.EnterBlockTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
@@ -40,9 +40,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.LogicalSide;
 
 public class RegistrateRecipeProvider extends RecipeProvider implements RegistrateProvider, Consumer<FinishedRecipe> {
 
@@ -85,7 +83,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public ResourceLocation safeId(ItemLike registryEntry) {
-        return safeId(ForgeRegistries.ITEMS.getKey(registryEntry.asItem()));
+        return safeId(BuiltInRegistries.ITEM.getKey(registryEntry.asItem()));
     }
 
     public String safeName(ResourceLocation id) {
@@ -97,7 +95,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public String safeName(ItemLike registryEntry) {
-        return safeName(ForgeRegistries.ITEMS.getKey(registryEntry.asItem()));
+        return safeName(BuiltInRegistries.ITEM.getKey(registryEntry.asItem()));
     }
 
     public static final int DEFAULT_SMELT_TIME = 200;

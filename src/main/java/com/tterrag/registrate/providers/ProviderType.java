@@ -11,8 +11,8 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;

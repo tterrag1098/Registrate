@@ -3,11 +3,11 @@ package com.tterrag.registrate.util.entry;
 import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ItemEntry<T extends Item> extends ItemProviderEntry<T> {
 
-    public ItemEntry(AbstractRegistrate<?> owner, RegistryObject<T> delegate) {
+    public ItemEntry(AbstractRegistrate<?> owner, DeferredHolder<? super T,T> delegate) {
         super(owner, delegate);
     }
     

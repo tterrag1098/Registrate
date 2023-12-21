@@ -21,8 +21,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagKey;
-import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.neoforge.common.util.NonNullFunction;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.Arrays;
 
@@ -53,7 +53,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     @Getter(AccessLevel.PROTECTED)
     private final BuilderCallback callback;
     @Getter(onMethod_ = {@Override})
-    private final ResourceKey<Registry<R>> registryKey;
+    private final ResourceKey<? extends Registry<R>> registryKey;
 
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, TagKey<?>> tagsByType = HashMultimap.create();
 
@@ -73,7 +73,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
         return callback.accept(name, registryKey, this, this::createEntry, this::createEntryWrapper);
     }
 
-    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
+    protected RegistryEntry<T> createEntryWrapper(DeferredHolder<? super T,T> delegate) {
         return new RegistryEntry<>(getOwner(), delegate);
     }
 

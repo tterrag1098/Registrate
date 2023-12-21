@@ -9,6 +9,15 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import net.neoforged.bus.EventBus;
+import net.neoforged.bus.EventListenerHelper;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.IModBusEvent;
+import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -16,15 +25,6 @@ import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.EventBus;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventListenerHelper;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.event.IModBusEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -47,7 +47,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
     }
     
     public static <T extends Event> void addForgeListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
-        OneTimeEventReceiver.<T>addListener(MinecraftForge.EVENT_BUS, priority, evtClass, listener);
+        OneTimeEventReceiver.<T>addListener(NeoForge.EVENT_BUS, priority, evtClass, listener);
     }
     
     @Deprecated

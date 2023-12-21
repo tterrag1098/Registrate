@@ -16,6 +16,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.*;
@@ -25,13 +26,12 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.common.ForgeSpawnEggItem;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
@@ -88,7 +88,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
 
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
-        super(owner, parent, name, callback, ForgeRegistries.Keys.ENTITY_TYPES);
+        super(owner, parent, name, callback, BuiltInRegistries.ENTITY_TYPE.key());
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
 
@@ -115,7 +115,9 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      */
     public EntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
+            if(FMLEnvironment.dist == Dist.CLIENT){
+               registerRenderer();
+            }
         }
         this.renderer = renderer;
         return this;
@@ -227,7 +229,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
         var sup = asSupplier();
-        return getOwner().item(this, getName() + "_spawn_egg", p -> new ForgeSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) sup, primaryColor, secondaryColor, p)).tab(CreativeModeTabs.SPAWN_EGGS)
+        return getOwner().item(this, getName() + "_spawn_egg", p -> new DeferredSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) sup, primaryColor, secondaryColor, p)).tab(CreativeModeTabs.SPAWN_EGGS)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), new ResourceLocation("item/template_spawn_egg")));
     }
 
@@ -287,7 +289,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     protected void injectSpawnEggType(EntityType<T> entry) {}
 
     @Override
-    protected RegistryEntry<EntityType<T>> createEntryWrapper(RegistryObject<EntityType<T>> delegate) {
+    protected RegistryEntry<EntityType<T>> createEntryWrapper(DeferredHolder<? super EntityType<T>,EntityType<T>> delegate) {
         return new EntityEntry<>(getOwner(), delegate);
     }
 

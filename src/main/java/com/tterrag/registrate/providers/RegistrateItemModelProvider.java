@@ -3,15 +3,15 @@ package com.tterrag.registrate.providers;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.client.model.generators.ItemModelBuilder;
-import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.client.model.generators.ModelFile.UncheckedModelFile;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
+import net.neoforged.neoforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 public class RegistrateItemModelProvider extends ItemModelProvider implements RegistrateProvider {
 
@@ -38,11 +38,11 @@ public class RegistrateItemModelProvider extends ItemModelProvider implements Re
     }
 
     public String modid(NonNullSupplier<? extends ItemLike> item) {
-        return ForgeRegistries.ITEMS.getKey(item.get().asItem()).getNamespace();
+        return BuiltInRegistries.ITEM.getKey(item.get().asItem()).getNamespace();
     }
 
     public String name(NonNullSupplier<? extends ItemLike> item) {
-        return ForgeRegistries.ITEMS.getKey(item.get().asItem()).getPath();
+        return BuiltInRegistries.ITEM.getKey(item.get().asItem()).getPath();
     }
 
     public ResourceLocation itemTexture(NonNullSupplier<? extends ItemLike> item) {
@@ -74,7 +74,7 @@ public class RegistrateItemModelProvider extends ItemModelProvider implements Re
     }
 
     public ItemModelBuilder generated(NonNullSupplier<? extends ItemLike> item, ResourceLocation... layers) {
-        ItemModelBuilder ret = getBuilder(name(item)).parent(new UncheckedModelFile("item/generated"));
+        ItemModelBuilder ret = getBuilder(name(item)).parent(new ModelFile.UncheckedModelFile("item/generated"));
         for (int i = 0; i < layers.length; i++) {
             ret = ret.texture("layer" + i, layers[i]);
         }

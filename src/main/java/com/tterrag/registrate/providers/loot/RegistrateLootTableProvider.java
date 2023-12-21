@@ -19,8 +19,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -80,7 +80,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
 
     @SuppressWarnings("unchecked")
     public <T extends RegistrateLootTables> void addLootAction(LootType<T> type, NonNullConsumer<T> action) {
-        this.specialLootActions.put(type, (Consumer<? super RegistrateLootTables>) action);
+        this.specialLootActions.put(type, (Consumer<RegistrateLootTables>) action);
     }
 
     public void addLootAction(LootContextParamSet set, Consumer<BiConsumer<ResourceLocation, LootTable.Builder>> action) {

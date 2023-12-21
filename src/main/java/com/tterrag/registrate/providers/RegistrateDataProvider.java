@@ -11,8 +11,8 @@ import lombok.extern.log4j.Log4j2;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;

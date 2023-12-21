@@ -23,15 +23,15 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
@@ -83,7 +83,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     private Map<ResourceKey<CreativeModeTab>, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier>> creativeModeTabs = Maps.newLinkedHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
-        super(owner, parent, name, callback, ForgeRegistries.Keys.ITEMS);
+        super(owner, parent, name, callback, BuiltInRegistries.ITEM.key());
         this.factory = factory;
 
         onRegister(item -> {
@@ -198,7 +198,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      */
     public ItemBuilder<T, P> color(NonNullSupplier<Supplier<ItemColor>> colorHandler) {
         if (this.colorHandler == null) {
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> this::registerItemColor);
+            if(FMLEnvironment.dist == Dist.CLIENT){
+                registerItemColor();
+            }
         }
         this.colorHandler = colorHandler;
         return this;
@@ -287,7 +289,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     @Override
-    protected RegistryEntry<T> createEntryWrapper(RegistryObject<T> delegate) {
+    protected RegistryEntry<T> createEntryWrapper(DeferredHolder<? super T,T> delegate) {
         return new ItemEntry<>(getOwner(), delegate);
     }
 
