@@ -14,7 +14,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraftforge.registries.RegistryObject;
 
 /**
  * A Builder creates registry entries. A Builder instance has a constant name which will be used for the resultant object, they cannot be reused for different names. It holds a parent object that will
@@ -206,7 +205,7 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
     }
 
     /**
-     * Register the entry and return the parent object. The {@link RegistryObject} will be created but not returned. It can be retrieved later with {@link AbstractRegistrate#get(ResourceKey)} or
+     * Register the entry and return the parent object. The {@link net.neoforged.neoforge.registries.DeferredHolder} will be created but not returned. It can be retrieved later with {@link AbstractRegistrate#get(ResourceKey)} or
      * {@link AbstractRegistrate#get(String, ResourceKey)}.
      * 
      * @return the parent object

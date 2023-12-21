@@ -1,9 +1,10 @@
 package com.tterrag.registrate.util.nullness;
 
+import net.neoforged.neoforge.common.util.Lazy;
+
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import net.minecraftforge.common.util.Lazy;
 
 @FunctionalInterface
 public interface NonNullSupplier<@NonnullType T> extends Supplier<T> {

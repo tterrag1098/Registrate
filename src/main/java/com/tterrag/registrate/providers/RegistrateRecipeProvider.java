@@ -16,16 +16,19 @@ import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.critereon.EnterBlockTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
@@ -36,18 +39,25 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.BlastingRecipe;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.conditions.ICondition;
 
-public class RegistrateRecipeProvider extends RecipeProvider implements RegistrateProvider, Consumer<FinishedRecipe> {
+public class RegistrateRecipeProvider extends RecipeProvider implements RegistrateProvider, RecipeOutput {
 
     private final AbstractRegistrate<?> owner;
 
-    public RegistrateRecipeProvider(AbstractRegistrate<?> owner, PackOutput output) {
-        super(output);
+    public RegistrateRecipeProvider(AbstractRegistrate<?> owner, PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+        super(output, lookupProvider);
         this.owner = owner;
     }
 
@@ -57,19 +67,27 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     @Nullable
-    private Consumer<FinishedRecipe> callback;
+    private RecipeOutput callback;
 
     @Override
-    public void accept(@Nullable FinishedRecipe t) {
+    public void accept(ResourceLocation id, Recipe<?> recipe, @org.jetbrains.annotations.Nullable AdvancementHolder advancement, ICondition... conditions) {
         if (callback == null) {
             throw new IllegalStateException("Cannot accept recipes outside of a call to registerRecipes");
         }
-        callback.accept(t);
+        callback.accept(id, recipe, advancement);
     }
 
     @Override
-    protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
-        this.callback = consumer;
+    public Advancement.Builder advancement() {
+        if (callback == null) {
+            throw new IllegalStateException("Cannot get advancement outside of a call to registerRecipes");
+        }
+        return callback.advancement();
+    }
+
+    @Override
+    protected void buildRecipes(RecipeOutput recipeOutput) {
+        this.callback = recipeOutput;
         owner.genData(ProviderType.RECIPE, this);
         this.callback = null;
     }
@@ -112,12 +130,12 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
             .put(RecipeSerializer.CAMPFIRE_COOKING_RECIPE, "campfire")
             .build();
 
-    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, RecipeSerializer<? extends AbstractCookingRecipe> serializer) {
-        cooking(source, category, result, experience, cookingTime, COOKING_TYPE_NAMES.get(serializer), serializer);
+    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, RecipeSerializer<? extends AbstractCookingRecipe> serializer, AbstractCookingRecipe.Factory<? extends AbstractCookingRecipe> factory) {
+        cooking(source, category, result, experience, cookingTime, COOKING_TYPE_NAMES.get(serializer), serializer, factory);
     }
 
-    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, String typeName, RecipeSerializer<? extends AbstractCookingRecipe> serializer) {
-        SimpleCookingRecipeBuilder.generic(source, category, result.get(), experience, cookingTime, serializer)
+    public <T extends ItemLike> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, String typeName, RecipeSerializer<? extends AbstractCookingRecipe> serializer, AbstractCookingRecipe.Factory<? extends AbstractCookingRecipe> factory) {
+        SimpleCookingRecipeBuilder.generic(source, category, result.get(), experience, cookingTime, serializer, factory)
             .unlockedBy("has_" + safeName(source), source.getCritereon(this))
             .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
     }
@@ -127,7 +145,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void smelting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, RecipeSerializer.SMELTING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.SMELTING_RECIPE, SmeltingRecipe::new);
     }
 
     public <T extends ItemLike> void blasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
@@ -135,7 +153,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void blasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, RecipeSerializer.BLASTING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.BLASTING_RECIPE, BlastingRecipe::new);
     }
 
     public <T extends ItemLike> void smoking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
@@ -143,7 +161,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void smoking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, RecipeSerializer.SMOKING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.SMOKING_RECIPE, SmokingRecipe::new);
     }
 
     public <T extends ItemLike> void campfire(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
@@ -151,7 +169,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     }
 
     public <T extends ItemLike> void campfire(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime) {
-        cooking(source, category, result, experience, cookingTime, RecipeSerializer.CAMPFIRE_COOKING_RECIPE);
+        cooking(source, category, result, experience, cookingTime, RecipeSerializer.CAMPFIRE_COOKING_RECIPE, CampfireCookingRecipe::new);
     }
 
     public <T extends ItemLike> void stonecutting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
