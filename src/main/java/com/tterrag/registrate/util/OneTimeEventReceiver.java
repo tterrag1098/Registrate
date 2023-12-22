@@ -102,17 +102,19 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
 
     private static void onLoadComplete(FMLLoadCompleteEvent event) {
         event.enqueueWork(() -> {
-            toUnregister.forEach(t -> {
-                t.getLeft().unregister(t.getMiddle());
-                try {
-                    final MethodHandle mh = getBusId;
-                    if (mh != null) {
-                        EventListenerHelper.getListenerList(t.getRight()).getListeners((int) mh.invokeExact((EventBus) t.getLeft()));
-                    }
-                } catch (Throwable ex) {
-                    log.warn("Failed to clear listener list of one-time event receiver, so the receiver has leaked. This is not a big deal.", ex);
-                }
-            });
+            //FIXME
+            log.warn("fix me: OneTimeEventReciever");
+//            toUnregister.forEach(t -> {
+//                t.getLeft().unregister(t.getMiddle());
+//                try {
+//                    final MethodHandle mh = getBusId;
+//                    if (mh != null) {
+//                        EventListenerHelper.getListenerList(t.getRight()).getListeners((int) mh.invokeExact((EventBus) t.getLeft()));
+//                    }
+//                } catch (Throwable ex) {
+//                    log.warn("Failed to clear listener list of one-time event receiver, so the receiver has leaked. This is not a big deal.", ex);
+//                }
+//            });
             toUnregister.clear();
         });
     }

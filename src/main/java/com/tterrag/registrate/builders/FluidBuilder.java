@@ -28,7 +28,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BucketItem;
@@ -265,7 +265,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     private final List<TagKey<Fluid>> tags = new ArrayList<>();
 
     public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidTypeFactory typeFactory, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
-        super(owner, parent, "flowing_" + name, callback, BuiltInRegistries.FLUID.key());
+        super(owner, parent, "flowing_" + name, callback, Registries.FLUID);
         this.sourceName = name;
         this.bucketName = name + "_bucket";
         this.stillTexture = stillTexture;
@@ -275,12 +275,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         this.registerType = true;
 
         String bucketName = this.bucketName;
-        this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, BuiltInRegistries.ITEM.key()).get())
-            .block(() -> owner.<Block, LiquidBlock>get(name, BuiltInRegistries.BLOCK.key()).get());
+        this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, Registries.ITEM).get())
+            .block(() -> owner.<Block, LiquidBlock>get(name, Registries.BLOCK).get());
     }
 
     public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
-        super(owner, parent, "flowing_" + name, callback, BuiltInRegistries.FLUID.key());
+        super(owner, parent, "flowing_" + name, callback, Registries.FLUID);
         this.sourceName = name;
         this.bucketName = name + "_bucket";
         this.stillTexture = stillTexture;
@@ -290,8 +290,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         this.registerType = false; // Don't register if we have a fluid from outside.
 
         String bucketName = this.bucketName;
-        this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, BuiltInRegistries.ITEM.key()).get())
-                .block(() -> owner.<Block, LiquidBlock>get(name, BuiltInRegistries.BLOCK.key()).get());
+        this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, Registries.ITEM).get())
+                .block(() -> owner.<Block, LiquidBlock>get(name, Registries.BLOCK).get());
     }
 
     /**
@@ -558,7 +558,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     private FluidType.Properties makeTypeProperties() {
         FluidType.Properties properties = FluidType.Properties.create();
-        Optional<RegistryEntry<Block>> optionalBlock = getOwner().getOptional(sourceName, BuiltInRegistries.BLOCK.key());
+        Optional<RegistryEntry<Block>> optionalBlock = getOwner().getOptional(sourceName, Registries.BLOCK);
         this.typeProperties.accept(properties);
 
         // Force the translation key after the user callback runs
@@ -593,7 +593,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         if (this.fluidType != null) {
             // Register the type.
             if (this.registerType) {
-                getOwner().simple(this, this.sourceName, NeoForgeRegistries.FLUID_TYPES.key(), this.fluidType);
+                getOwner().simple(this, this.sourceName, NeoForgeRegistries.Keys.FLUID_TYPES, this.fluidType);
             }
         } else {
             throw new IllegalStateException("Fluid must have a type: " + getName());
@@ -611,7 +611,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
         NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, BuiltInRegistries.FLUID.key(), (FluidBuilder) this, source::get);
+            getCallback().accept(sourceName, Registries.FLUID, (FluidBuilder) this, source::get);
         } else {
             throw new IllegalStateException("Fluid must have a source version: " + getName());
         }

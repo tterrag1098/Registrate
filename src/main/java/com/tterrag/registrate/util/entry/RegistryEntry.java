@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
@@ -29,9 +30,10 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
 
         T get();
 
-        DeferredHolder<? super T, T> filter(Predicate<? super T> predicate);
-        
-        public void updateReference(Registry<? extends T> registry);
+        boolean is(ResourceLocation id);
+        boolean is(ResourceKey<? super T> key);
+        boolean is(Predicate<ResourceKey<? super T>> filter);
+
     }
 
     private final AbstractRegistrate<?> owner;

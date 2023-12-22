@@ -16,7 +16,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.*;
@@ -88,7 +88,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     private boolean attributesConfigured, spawnConfigured; // TODO make this more reuse friendly
 
     protected EntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
-        super(owner, parent, name, callback, BuiltInRegistries.ENTITY_TYPE.key());
+        super(owner, parent, name, callback, Registries.ENTITY_TYPE);
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
 
