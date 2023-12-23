@@ -11,6 +11,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import lombok.Getter;
 import lombok.experimental.Delegate;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,13 +42,15 @@ public final class DataIngredient extends Ingredient {
         void markValid();
         
         boolean isVanilla();
+
+        Value[] getValues();
     }
 
     @Delegate(excludes = Excludes.class)
     private final Ingredient parent;
     @Getter
     private final ResourceLocation id;
-    private final Function<RegistrateRecipeProvider, InventoryChangeTrigger.TriggerInstance> criteriaFactory;
+    private final Function<RegistrateRecipeProvider, Criterion<InventoryChangeTrigger.TriggerInstance>> criteriaFactory;
 
     private DataIngredient(Ingredient parent, ItemLike item) {
         super(Stream.empty());
@@ -70,7 +73,7 @@ public final class DataIngredient extends Ingredient {
         this.criteriaFactory = prov -> RegistrateRecipeProvider.inventoryTrigger(predicates);
     }
 
-    public InventoryChangeTrigger.TriggerInstance getCritereon(RegistrateRecipeProvider prov) {
+    public Criterion<InventoryChangeTrigger.TriggerInstance> getCritereon(RegistrateRecipeProvider prov) {
         return criteriaFactory.apply(prov);
     }
     

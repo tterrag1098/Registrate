@@ -3,18 +3,22 @@ package com.tterrag.registrate.util.entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.mojang.datafixers.util.Either;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Delegate;
+import net.minecraft.core.HolderOwner;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
@@ -26,14 +30,18 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 @EqualsAndHashCode(of = "delegate")
 public class RegistryEntry<T> implements NonNullSupplier<T> {
 
-    private interface Exclusions<T> {
+    private interface Exclusions<R, T extends R> {
 
         T get();
 
         boolean is(ResourceLocation id);
-        boolean is(ResourceKey<? super T> key);
-        boolean is(Predicate<ResourceKey<? super T>> filter);
-
+        boolean is(ResourceKey<R> key);
+        boolean is(Predicate<ResourceKey<R>> filter);
+        boolean is(TagKey<R> tag);
+        Stream<TagKey<R>> tags();
+        Either<ResourceKey<R>, R> unwrap();
+        Optional<ResourceKey<R>> unwrapKey();
+        boolean canSerializeIn(HolderOwner<R> owner);
     }
 
     private final AbstractRegistrate<?> owner;
