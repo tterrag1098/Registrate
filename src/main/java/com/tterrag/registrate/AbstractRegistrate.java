@@ -909,7 +909,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            A function to create the {@link RegistryBuilder} that defines the other properties/behaviors of the created registry
      * @return A {@link ResourceKey resource key} referencing the to-be-created registry.
      */
-    public <R> ResourceKey<Registry<R>> makeRegistry(String name, Function<ResourceKey<Registry<R>>, RegistryBuilder<Registry<R>>> builder) {
+    public <R> ResourceKey<Registry<R>> makeRegistry(String name, Function<ResourceKey<Registry<R>>, RegistryBuilder<R>> builder) {
         final ResourceKey<Registry<R>> registryId = ResourceKey.createRegistryKey(new ResourceLocation(getModid(), name));
         OneTimeEventReceiver.addModListener(this, NewRegistryEvent.class, e -> e.register(builder.apply(registryId).create()));
         return registryId;
