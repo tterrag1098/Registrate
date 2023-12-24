@@ -17,6 +17,7 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.EntityEntry;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.entry.MenuEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonnullType;
 
@@ -199,13 +200,13 @@ public class TestMod {
     private final Registrate registrate = Registrate
             .create("testmod");
 
-    private final RegistryEntry<CreativeModeTab> testcreativetab = registrate.object("test_creative_mode_tab")
+    private final RegistryEntry<CreativeModeTab ,CreativeModeTab> testcreativetab = registrate.object("test_creative_mode_tab")
             .defaultCreativeTab(tab -> tab.withLabelColor(0xFF00AA00))
             .register();
 
     private final AtomicBoolean sawCallback = new AtomicBoolean();
 
-    private final RegistryEntry<Item> testitem = registrate.object("testitem")
+    private final ItemEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationMod(0.2f).build()))
@@ -261,7 +262,7 @@ public class TestMod {
     private final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(Registries.BLOCK_ENTITY_TYPE));
 
     @SuppressWarnings("deprecation")
-    private final RegistryEntry<EntityType<TestEntity>> testentity = registrate.object("testentity")
+    private final EntityEntry<TestEntity> testentity = registrate.object("testentity")
             .entity(TestEntity::new, MobCategory.CREATURE)
             .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
@@ -306,11 +307,11 @@ public class TestMod {
 //                .build()
             .register();
 
-    private final RegistryEntry<MenuType<ChestMenu>> testmenu = registrate.object("testmenu")
+    private final MenuEntry<ChestMenu> testmenu = registrate.object("testmenu")
             .menu((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
 
-    private final RegistryEntry<TestEnchantment> testenchantment = registrate.object("testenchantment")
+    private final RegistryEntry<Enchantment,TestEnchantment> testenchantment = registrate.object("testenchantment")
             .enchantment(EnchantmentCategory.ARMOR, TestEnchantment::new)
             .rarity(Rarity.UNCOMMON)
             .addArmorSlots()
@@ -366,7 +367,7 @@ public class TestMod {
 //            .register();
 
     private final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = registrate.makeRegistry("custom", (registry) -> new RegistryBuilder<>(registry));
-    private final RegistryEntry<TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
+    private final RegistryEntry<TestCustomRegistryEntry, TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
             .simple(CUSTOM_REGISTRY, TestCustomRegistryEntry::new);
 
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")

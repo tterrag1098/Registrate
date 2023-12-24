@@ -62,7 +62,7 @@ runs {
     }
     data {
 //        taskName 'testmod_data'
-        programArguments.addAll '--mod', 'testmod', '--all', '--output', file('src/generated/remodSources/').getAbsolutePath(), '--existing', file('src/test/resources').getAbsolutePath()
+        programArguments.addAll '--mod', 'testmod', '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/test/resources').getAbsolutePath()
     }
 }
 
