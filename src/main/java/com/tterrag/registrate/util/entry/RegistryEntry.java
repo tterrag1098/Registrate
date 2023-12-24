@@ -28,7 +28,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  *            The type of the entry
  */
 @EqualsAndHashCode(of = "delegate")
-public class RegistryEntry<T> implements NonNullSupplier<T> {
+public class RegistryEntry<R, T extends R> implements NonNullSupplier<T> {
 
     private interface Exclusions<R, T extends R> {
 
@@ -46,10 +46,10 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
 
     private final AbstractRegistrate<?> owner;
     @Delegate(excludes = Exclusions.class)
-    private final @Nullable DeferredHolder<? super T, T> delegate;
+    private final @Nullable DeferredHolder<R, T> delegate;
 
     @SuppressWarnings("unused")
-    public RegistryEntry(AbstractRegistrate<?> owner, DeferredHolder<? super T, T> delegate) {
+    public RegistryEntry(AbstractRegistrate<?> owner, DeferredHolder<R, T> delegate) {
         if (owner == null)
             throw new NullPointerException("Owner must not be null");
         if (delegate == null)
@@ -94,7 +94,7 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
      */
     @Override
     public @NonnullType T get() {
-        DeferredHolder<? super T,T> delegate = this.delegate;
+        DeferredHolder<R,T> delegate = this.delegate;
         return Objects.requireNonNull(getUnchecked(), () -> delegate == null ? "Registry entry is empty" : "Registry entry not present: " + delegate.getId());
     }
 
@@ -104,15 +104,15 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
      * @return The (nullable) entry
      */
     public @Nullable T getUnchecked() {
-        DeferredHolder<? super T, T> delegate = this.delegate;
+        DeferredHolder<R, T> delegate = this.delegate;
         return delegate == null ? null : delegate.get();
     }
 
-    public <R, E extends R> RegistryEntry<E> getSibling(ResourceKey<? extends Registry<R>> registryType) {
+    public <X, Y extends X> RegistryEntry<X, Y> getSibling(ResourceKey<? extends Registry<X>> registryType) {
         return owner.get(getId().getPath(), registryType);
     }
 
-    public <R, E extends R> RegistryEntry<E> getSibling(Registry<R> registry) {
+    public <X, Y extends X> RegistryEntry<X,Y> getSibling(Registry<X> registry) {
         return getSibling(registry.key());
     }
 
@@ -125,7 +125,7 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
      * @throws NullPointerException
      *             if the predicate is null
      */
-    public Optional<RegistryEntry<T>> filter(Predicate<? super T> predicate) {
+    public Optional<RegistryEntry<R, T>> filter(Predicate<R> predicate) {
         Objects.requireNonNull(predicate);
         if (predicate.test(get())) {
             return Optional.of(this);
@@ -138,7 +138,7 @@ public class RegistryEntry<T> implements NonNullSupplier<T> {
     }
 
     @SuppressWarnings("unchecked")
-    protected static <E extends RegistryEntry<?>> E cast(Class<? super E> clazz, RegistryEntry<?> entry) {
+    protected static <E extends RegistryEntry<?,?>> E cast(Class<? super E> clazz, RegistryEntry<?,?> entry) {
         if (clazz.isInstance(entry)) {
             return (E) entry;
         }

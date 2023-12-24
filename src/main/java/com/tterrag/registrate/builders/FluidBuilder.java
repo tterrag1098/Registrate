@@ -558,7 +558,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     private FluidType.Properties makeTypeProperties() {
         FluidType.Properties properties = FluidType.Properties.create();
-        Optional<RegistryEntry<Block>> optionalBlock = getOwner().getOptional(sourceName, Registries.BLOCK);
+        Optional<RegistryEntry<Block, Block>> optionalBlock = getOwner().getOptional(sourceName, Registries.BLOCK);
         this.typeProperties.accept(properties);
 
         // Force the translation key after the user callback runs
@@ -620,7 +620,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     @Override
-    protected RegistryEntry<T> createEntryWrapper(DeferredHolder<? super T, T> delegate) {
+    protected RegistryEntry<Fluid, T> createEntryWrapper(DeferredHolder<Fluid, T> delegate) {
         return new FluidEntry<>(getOwner(), delegate);
     }
 

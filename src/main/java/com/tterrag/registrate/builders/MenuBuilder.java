@@ -65,7 +65,7 @@ public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & Men
     }
 
     @Override
-    protected RegistryEntry<MenuType<T>> createEntryWrapper(DeferredHolder<? super MenuType<T>, MenuType<T>> delegate) {
+    protected RegistryEntry<MenuType<?>, MenuType<T>> createEntryWrapper(DeferredHolder<MenuType<?>, MenuType<T>> delegate) {
         return new MenuEntry<>(getOwner(), delegate);
     }
 

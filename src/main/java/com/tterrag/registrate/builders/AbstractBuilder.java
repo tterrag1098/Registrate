@@ -58,7 +58,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     private final Multimap<ProviderType<? extends RegistrateTagsProvider<?>>, TagKey<?>> tagsByType = HashMultimap.create();
 
     /** A supplier for the entry that will discard the reference to this builder after it is resolved */
-    private final LazyRegistryEntry<T> safeSupplier = new LazyRegistryEntry<>(this);
+    private final LazyRegistryEntry<R, T> safeSupplier = new LazyRegistryEntry<>(this);
 
     /**
      * Create the built entry. This method will be lazily resolved at registration time, so it is safe to bake in values from the builder.
@@ -69,11 +69,11 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     protected abstract @NonnullType T createEntry();
 
     @Override
-    public RegistryEntry<T> register() {
+    public RegistryEntry<R, T> register() {
         return callback.accept(name, registryKey, this, this::createEntry, this::createEntryWrapper);
     }
 
-    protected RegistryEntry<T> createEntryWrapper(DeferredHolder<? super T,T> delegate) {
+    protected RegistryEntry<R, T> createEntryWrapper(DeferredHolder<R,T> delegate) {
         return new RegistryEntry<>(getOwner(), delegate);
     }
 

@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
@@ -14,21 +14,21 @@ import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-public class FluidEntry<T extends BaseFlowingFluid> extends RegistryEntry<T> {
+public class FluidEntry<T extends BaseFlowingFluid> extends RegistryEntry<Fluid,T> {
 
     private final @Nullable BlockEntry<? extends Block> block;
 
-    public FluidEntry(AbstractRegistrate<?> owner, DeferredHolder<? super T, T> delegate) {
+    public FluidEntry(AbstractRegistrate<?> owner, DeferredHolder<Fluid, T> delegate) {
         super(owner, delegate);
         BlockEntry<? extends Block> block = null;
         try {
-            block = BlockEntry.cast(getSibling(BuiltInRegistries.BLOCK));
+            block = BlockEntry.cast(getSibling(Registries.BLOCK));
         } catch (IllegalArgumentException e) {} // TODO add way to get entry optionally
         this.block = block;
     }
 
     @Override
-    public <R> boolean is(R entry) {
+    public <E> boolean is(E entry) {
         return get().isSame((Fluid) entry);
     }
 

@@ -289,7 +289,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     protected void injectSpawnEggType(EntityType<T> entry) {}
 
     @Override
-    protected RegistryEntry<EntityType<T>> createEntryWrapper(DeferredHolder<? super EntityType<T>,EntityType<T>> delegate) {
+    protected RegistryEntry<EntityType<?>, EntityType<T>> createEntryWrapper(DeferredHolder<EntityType<?>, EntityType<T>> delegate) {
         return new EntityEntry<>(getOwner(), delegate);
     }
 

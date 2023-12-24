@@ -8,9 +8,9 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 
-public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<T>> {
+public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<?>,EntityType<T>> {
 
-    public EntityEntry(AbstractRegistrate<?> owner, DeferredHolder<? super EntityType<T>, EntityType<T>> delegate) {
+    public EntityEntry(AbstractRegistrate<?> owner, DeferredHolder<EntityType<?>, EntityType<T>> delegate) {
         super(owner, delegate);
     }
 
@@ -22,7 +22,7 @@ public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<T>> 
         return t != null && t.getType() == get();
     }
 
-    public static <T extends Entity> EntityEntry<T> cast(RegistryEntry<EntityType<T>> entry) {
+    public static <T extends Entity> EntityEntry<T> cast(RegistryEntry<EntityType<?>,EntityType<T>> entry) {
         return RegistryEntry.cast(EntityEntry.class, entry);
     }
 }

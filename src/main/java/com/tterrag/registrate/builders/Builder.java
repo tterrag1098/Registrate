@@ -30,7 +30,7 @@ import net.minecraft.resources.ResourceKey;
  * @param <S>
  *            Self type
  */
-public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<RegistryEntry<T>> {
+public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> extends NonNullSupplier<RegistryEntry<R, T>> {
 
     /**
      * Complete the current entry, and return the {@link RegistryEntry} that will supply the built entry once it is available. The builder can be used afterwards, and changes made will reflect the
@@ -38,7 +38,7 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
      * 
      * @return The {@link RegistryEntry} supplying the built entry.
      */
-    RegistryEntry<T> register();
+    RegistryEntry<R, T> register();
 
     /**
      * The owning {@link AbstractRegistrate} that created this builder.
@@ -71,7 +71,7 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
      *             If this builder has not been built yet
      */
     @Override
-    default RegistryEntry<T> get() {
+    default RegistryEntry<R, T> get() {
         return getOwner().<R, T> get(getName(), getRegistryKey());
     }
     

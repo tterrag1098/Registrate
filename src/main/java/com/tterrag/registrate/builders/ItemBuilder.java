@@ -289,7 +289,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     @Override
-    protected RegistryEntry<T> createEntryWrapper(DeferredHolder<? super T,T> delegate) {
+    protected RegistryEntry<Item, T> createEntryWrapper(DeferredHolder<Item, T> delegate) {
         return new ItemEntry<>(getOwner(), delegate);
     }
 

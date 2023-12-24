@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -143,7 +142,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     }
     
     @Override
-    protected RegistryEntry<BlockEntityType<T>> createEntryWrapper(DeferredHolder<? super BlockEntityType<T>,BlockEntityType<T>> delegate) {
+    protected RegistryEntry<BlockEntityType<?>, BlockEntityType<T>> createEntryWrapper(DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> delegate) {
         return new BlockEntityEntry<>(getOwner(), delegate);
     }
     

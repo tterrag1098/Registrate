@@ -380,7 +380,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     @Override
-    protected RegistryEntry<T> createEntryWrapper(DeferredHolder<? super T,T> delegate) {
+    protected RegistryEntry<Block, T> createEntryWrapper(DeferredHolder<Block,T> delegate) {
         return new BlockEntry<>(getOwner(), delegate);
     }
     
