@@ -1,12 +1,9 @@
 package com.tterrag.registrate.providers;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.tterrag.registrate.AbstractRegistrate;
 import lombok.extern.log4j.Log4j2;
-
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -25,9 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @Log4j2
-public class RegistrateAdvancementProvider implements RegistrateProvider, Consumer<Advancement> {
-
-    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
+public class RegistrateAdvancementProvider implements RegistrateProvider, Consumer<AdvancementHolder> {
 
     private final AbstractRegistrate<?> owner;
     private final PackOutput packOutput;
@@ -74,23 +69,23 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
     }
 
     @Override
-    public void accept(@Nullable Advancement t) {
+    public void accept(@Nullable AdvancementHolder t) {
         CachedOutput cache = this.cache;
         if (cache == null) {
             throw new IllegalStateException("Cannot accept advancements outside of act");
         }
         Objects.requireNonNull(t, "Cannot accept a null advancement");
         Path path = this.packOutput.getOutputFolder();
-        if (!seenAdvancements.add(t.getId())) {
-            throw new IllegalStateException("Duplicate advancement " + t.getId());
+        if (!seenAdvancements.add(t.id())) {
+            throw new IllegalStateException("Duplicate advancement " + t.id());
         } else {
             Path path1 = getPath(path, t);
-            advancementsToSave.add(DataProvider.saveStable(cache, t.deconstruct().serializeToJson(), path1));
+            advancementsToSave.add(DataProvider.saveStable(cache, t.value().serializeToJson(), path1));
         }
     }
 
-    private static Path getPath(Path pathIn, Advancement advancementIn) {
-        return pathIn.resolve("data/" + advancementIn.getId().getNamespace() + "/advancements/" + advancementIn.getId().getPath() + ".json");
+    private static Path getPath(Path pathIn, AdvancementHolder advancementIn) {
+        return pathIn.resolve("data/" + advancementIn.id().getNamespace() + "/advancements/" + advancementIn.id().getPath() + ".json");
     }
 
     public String getName() {
