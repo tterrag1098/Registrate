@@ -1,6 +1,8 @@
 package com.tterrag.registrate.util;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -11,8 +13,11 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import lombok.Getter;
 import lombok.experimental.Delegate;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -20,7 +25,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.minecraftforge.common.crafting.IIngredientSerializer;
+import net.minecraftforge.common.crafting.ingredients.IIngredientSerializer;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /**
@@ -50,7 +55,7 @@ public final class DataIngredient extends Ingredient {
     private final Ingredient parent;
     @Getter
     private final ResourceLocation id;
-    private final Function<RegistrateRecipeProvider, InventoryChangeTrigger.TriggerInstance> criteriaFactory;
+    private final Function<RegistrateRecipeProvider, Criterion<InventoryChangeTrigger.TriggerInstance>> criteriaFactory;
 
     private DataIngredient(Ingredient parent, ItemLike item) {
         super(Stream.empty());
@@ -70,15 +75,15 @@ public final class DataIngredient extends Ingredient {
         super(Stream.empty());
         this.parent = parent;
         this.id = id;
-        this.criteriaFactory = prov -> RegistrateRecipeProvider.inventoryTrigger(predicates);
+        this.criteriaFactory = prov -> CriteriaTriggers.INVENTORY_CHANGED.createCriterion(new InventoryChangeTrigger.TriggerInstance(Optional.empty(), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, List.of(predicates)));
     }
 
     @Override
-    public IIngredientSerializer<DataIngredient> getSerializer() {
+    public IIngredientSerializer<DataIngredient> serializer() {
         throw new UnsupportedOperationException("DataIngredient should only be used for data generation!");
     }
     
-    public InventoryChangeTrigger.TriggerInstance getCritereon(RegistrateRecipeProvider prov) {
+    public Criterion<InventoryChangeTrigger.TriggerInstance> getCritereon(RegistrateRecipeProvider prov) {
         return criteriaFactory.apply(prov);
     }
     
