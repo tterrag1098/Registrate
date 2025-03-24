@@ -16,7 +16,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.fml.LogicalSide;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import javax.annotation.Nonnull;
@@ -48,13 +47,13 @@ public interface ProviderType<T extends RegistrateProvider> {
     ProviderType<RegistrateLootTableProvider> LOOT = registerServerData("loot", RegistrateLootTableProvider::new);
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<Block>> BLOCK_TAGS = registerIntrinsicTag("tags/block", "blocks", Registries.BLOCK, block -> block.builtInRegistryHolder().key());
     ProviderType<RegistrateTagsProvider.Impl<Enchantment>> ENCHANTMENT_TAGS = registerDynamicTag("tags/enchantment", "enchantments", Registries.ENCHANTMENT);
-    ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerTag("tags/item", Registries.ITEM, c -> new RegistrateItemTagsProvider(c.parent(), c.type(), "items", c.output(), c.provider(), c.get(BLOCK_TAGS).contentsGetter(), c.fileHelper()));
+    ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerTag("tags/item", Registries.ITEM, c -> new RegistrateItemTagsProvider(c.parent(), c.type(), "items", c.output(), c.provider(), c.get(BLOCK_TAGS).contentsGetter()));
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<Fluid>> FLUID_TAGS = registerIntrinsicTag("tags/fluid", "fluids", Registries.FLUID, fluid -> fluid.builtInRegistryHolder().key());
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<EntityType<?>>> ENTITY_TAGS = registerIntrinsicTag("tags/entity", "entity_types", Registries.ENTITY_TYPE, entityType -> entityType.builtInRegistryHolder().key());
     ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider",  c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.SERVER, c.type()));
 
     // CLIENT DATA
-    ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = registerProvider("blockstate", c -> new RegistrateBlockstateProvider(c.parent(), c.output(), c.fileHelper()));
+    ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = registerProvider("blockstate", c -> new RegistrateBlockstateProvider(c.parent(), c.output()));
     ProviderType<RegistrateItemModelProvider> ITEM_MODEL = registerProvider("item_model", c -> new RegistrateItemModelProvider(c.parent(), c.output(), c.get(BLOCKSTATE).getExistingFileHelper()));
     ProviderType<RegistrateLangProvider> LANG = registerProvider("lang", c -> new RegistrateLangProvider(c.parent(), c.output()));
     ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = registerProvider("registrate_generic_client_provider", c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.CLIENT, c.type()));
@@ -62,7 +61,7 @@ public interface ProviderType<T extends RegistrateProvider> {
     record Context<T extends RegistrateProvider>(ProviderType<T> type, AbstractRegistrate<?> parent,
                                                  @Deprecated GatherDataEvent event,
                                                  Map<ProviderType<?>, RegistrateProvider> existing,
-                                                 PackOutput output, ExistingFileHelper fileHelper,
+                                                 PackOutput output,
                                                  CompletableFuture<HolderLookup.Provider> provider) {
 
         public <R extends RegistrateProvider> R get(ProviderType<R> other) {
@@ -82,7 +81,7 @@ public interface ProviderType<T extends RegistrateProvider> {
 
         @Override
         default T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
-            return create(new Context<>(this, parent, event, existing, event.getGenerator().getPackOutput(), event.getExistingFileHelper(), event.getLookupProvider()));
+            return create(new Context<>(this, parent, event, existing, event.getGenerator().getPackOutput(), event.getLookupProvider()));
         }
 
         @Override
@@ -175,16 +174,16 @@ public interface ProviderType<T extends RegistrateProvider> {
 
     @Nonnull
     static <T> ProviderType<RegistrateTagsProvider.IntrinsicImpl<T>> registerIntrinsicTag(String providerName, String typeName, ResourceKey<? extends Registry<T>> registry, Function<T, ResourceKey<T>> keyExtractor) {
-        return registerTag(providerName, registry, c -> new RegistrateTagsProvider.IntrinsicImpl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider(), keyExtractor, c.fileHelper()));
+        return registerTag(providerName, registry, c -> new RegistrateTagsProvider.IntrinsicImpl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider(), keyExtractor));
     }
 
     @Nonnull
     static <T> ProviderType<RegistrateTagsProvider.Impl<T>> registerDynamicTag(String providerName, String typeName, ResourceKey<Registry<T>> registry) {
-        return registerTag(providerName, registry, c -> new RegistrateTagsProvider.Impl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider(), c.fileHelper()));
+        return registerTag(providerName, registry, c -> new RegistrateTagsProvider.Impl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider()));
     }
 
     static <T extends RegistrateProvider> T create(ProviderType<T> type, AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing, CompletableFuture<HolderLookup.Provider> provider) {
-        return type.create(new Context<>(type, parent, event, existing, event.getGenerator().getPackOutput(), event.getExistingFileHelper(), provider));
+        return type.create(new Context<>(type, parent, event, existing, event.getGenerator().getPackOutput(), provider));
     }
 
 }

@@ -42,6 +42,8 @@ public class RegistrateDataProvider implements DataProvider {
         this.mod = modid;
         this.registriesLookup = event.getLookupProvider();
 
+        // For now, generate everything together
+        /*
         EnumSet<LogicalSide> sides = EnumSet.noneOf(LogicalSide.class);
         if (event.includeServer()) {
             sides.add(LogicalSide.SERVER);
@@ -49,8 +51,10 @@ public class RegistrateDataProvider implements DataProvider {
         if (event.includeClient()) {
             sides.add(LogicalSide.CLIENT);
         }
+        */
 
-        log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
+        //log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
+        log.debug(DebugMarkers.DATA, "Gathering providers");
         Map<ProviderType<?>, RegistrateProvider> known = new HashMap<>();
         for (DataProviderInitializer.Sorted sorted :parent.getDataGenInitializer().getSortedProviders()) {
             ProviderType<?> type = sorted.type();
@@ -61,10 +65,10 @@ public class RegistrateDataProvider implements DataProvider {
 				throw new IllegalStateException("Tag providers must be registered through ProviderType::registerTag");
             }
             known.put(type, prov);
-            if (sides.contains(prov.getSide())) {
+            // if (sides.contains(prov.getSide())) {
                 log.debug(DebugMarkers.DATA, "Adding provider for type: {}", sorted.id());
                 subProviders.put(type, prov);
-            }
+            //}
         }
     }
 

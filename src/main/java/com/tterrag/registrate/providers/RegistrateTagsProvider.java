@@ -9,7 +9,6 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.neoforged.fml.LogicalSide;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -27,8 +26,8 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
         private final ProviderType<? extends Impl<T>> type;
         private final String name;
 
-        public Impl(AbstractRegistrate<?> owner, ProviderType<? extends Impl<T>> type, String name, PackOutput packOutput, ResourceKey<? extends Registry<T>> registryIn, CompletableFuture<HolderLookup.Provider> registriesLookup, ExistingFileHelper existingFileHelper) {
-            super(packOutput, registryIn, registriesLookup, owner.getModid(), existingFileHelper);
+        public Impl(AbstractRegistrate<?> owner, ProviderType<? extends Impl<T>> type, String name, PackOutput packOutput, ResourceKey<? extends Registry<T>> registryIn, CompletableFuture<HolderLookup.Provider> registriesLookup) {
+            super(packOutput, registryIn, registriesLookup, owner.getModid());
 
             this.owner = owner;
             this.type = type;
@@ -72,8 +71,8 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
         private final ProviderType<? extends IntrinsicImpl<T>> type;
         private final String name;
 
-        public IntrinsicImpl(AbstractRegistrate<?> owner, ProviderType<? extends IntrinsicImpl<T>> type, String name, PackOutput packOutput, ResourceKey<? extends Registry<T>> registryIn, CompletableFuture<HolderLookup.Provider> registriesLookup, Function<T, ResourceKey<T>> keyExtractor, ExistingFileHelper existingFileHelper) {
-            super(packOutput, registryIn, registriesLookup, keyExtractor, owner.getModid(), existingFileHelper);
+        public IntrinsicImpl(AbstractRegistrate<?> owner, ProviderType<? extends IntrinsicImpl<T>> type, String name, PackOutput packOutput, ResourceKey<? extends Registry<T>> registryIn, CompletableFuture<HolderLookup.Provider> registriesLookup, Function<T, ResourceKey<T>> keyExtractor) {
+            super(packOutput, registryIn, registriesLookup, keyExtractor, owner.getModid());
 
             this.owner = owner;
             this.type = type;
