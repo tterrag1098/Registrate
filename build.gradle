@@ -3,7 +3,7 @@ plugins {
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'org.ajoberstar.grgit' version '5.2.2'
 //    id "com.palantir.revapi" version "1.7.0"
-    id 'net.neoforged.gradle.userdev' version '7.0.142'
+    id 'net.neoforged.gradle.userdev' version '7.0.184'
 }
 
 apply plugin: 'maven-publish'
@@ -53,7 +53,7 @@ runs {
         programArguments '--nogui'
     }
 
-    data {
+    clientData {
         workingDirectory project.file('run')
 
         programArguments.addAll '--mod', 'testmod', '--all', '--output', rootProject.file('src/generated/resources/').getAbsolutePath(), '--existing', rootProject.file('src/test/resources').getAbsolutePath()
