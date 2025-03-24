@@ -1,38 +1,17 @@
 package com.tterrag.registrate.builders;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
-import com.tterrag.registrate.providers.DataGenContext;
-import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
-import com.tterrag.registrate.providers.RegistrateItemModelProvider;
-import com.tterrag.registrate.providers.RegistrateLangProvider;
-import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.providers.*;
 import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.RegistrateDistExecutor;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-
+import com.tterrag.registrate.util.nullness.*;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -54,6 +33,16 @@ import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.registries.DeferredHolder;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -358,7 +347,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
     public BlockBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateRecipeProvider> cons) {
-        return setData(ProviderType.RECIPE, cons);
+        return setData(ProviderType.RECIPE, (ctx, pvd) -> cons.accept(ctx, pvd.getRecipeProvider()));
     }
 
     @Nullable

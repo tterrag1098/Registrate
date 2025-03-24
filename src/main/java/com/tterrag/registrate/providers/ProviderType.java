@@ -43,7 +43,7 @@ public interface ProviderType<T extends RegistrateProvider> {
     // SERVER DATA
     ProviderType<RegistrateDatapackProvider> DYNAMIC = registerServerData("dynamic", RegistrateDatapackProvider::new);
     ProviderType<RegistrateDataMapProvider> DATA_MAP = registerServerData("data_map", RegistrateDataMapProvider::new);
-    ProviderType<RegistrateRecipeProvider> RECIPE = registerServerData("recipe", RegistrateRecipeProvider::new);
+    ProviderType<RegistrateRecipeProvider.Runner> RECIPE = registerServerData("recipe", RegistrateRecipeProvider.Runner::new);
     ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = registerServerData("advancement", RegistrateAdvancementProvider::new);
     ProviderType<RegistrateLootTableProvider> LOOT = registerServerData("loot", RegistrateLootTableProvider::new);
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<Block>> BLOCK_TAGS = registerIntrinsicTag("tags/block", "blocks", Registries.BLOCK, block -> block.builtInRegistryHolder().key());

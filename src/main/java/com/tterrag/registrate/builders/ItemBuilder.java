@@ -1,19 +1,8 @@
 package com.tterrag.registrate.builders;
 
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Maps;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.DataGenContext;
-import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.providers.RegistrateItemModelProvider;
-import com.tterrag.registrate.providers.RegistrateLangProvider;
-import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.providers.*;
 import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.RegistrateDistExecutor;
@@ -23,7 +12,6 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -38,6 +26,12 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * A builder for items, allows for customization of the {@link Item.Properties} and configuration of data associated with items (models, recipes, etc.).
@@ -270,7 +264,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
-        return setData(ProviderType.RECIPE, cons);
+        return setData(ProviderType.RECIPE, (ctx, pvd) -> cons.accept(ctx, pvd.getRecipeProvider()));
     }
 
     /**
