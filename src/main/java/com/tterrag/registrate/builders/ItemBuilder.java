@@ -12,14 +12,12 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -78,8 +76,6 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     private NonNullSupplier<Item.Properties> initialProperties = Item.Properties::new;
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
 
-    @Nullable
-    private NonNullSupplier<Supplier<ItemColor>> colorHandler;
     private Map<ResourceKey<CreativeModeTab>, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier>> creativeModeTabs = Maps.newLinkedHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
@@ -189,29 +185,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
-    /**
-     * Register a block color handler for this item. The {@link ItemColor} instance can be shared across many items.
-     *
-     * @param colorHandler
-     *            The color handler to register for this item
-     * @return this {@link ItemBuilder}
-     */
-    public ItemBuilder<T, P> color(NonNullSupplier<Supplier<ItemColor>> colorHandler) {
-        if (this.colorHandler == null) {
-            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerItemColor);
-        }
-        this.colorHandler = colorHandler;
-        return this;
-    }
-
-    protected void registerItemColor() {
-        OneTimeEventReceiver.addModListener(getOwner(), RegisterColorHandlersEvent.Item.class, e -> {
-            NonNullSupplier<Supplier<ItemColor>> colorHandler = this.colorHandler;
-            if (colorHandler != null) {
-                e.register(colorHandler.get().get(), getEntry());
-            }
-        });
-    }
+    // TODO alternate item coloring helper?
 
     /**
      * Assign the default model to this item, which is simply a generated model with a single texture of the same name.
