@@ -2,6 +2,7 @@ package com.tterrag.registrate.builders;
 
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -289,7 +290,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     }
 
     @Nullable
-    private NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension;
+    private Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtensionFunc;
 
     /**
      * Register a client extension for this item. The {@link IClientItemExtensions} instance can be shared across many items.
@@ -299,17 +300,26 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension) {
-        if (this.clientExtension == null) {
+        if (this.clientExtensionFunc == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
-        this.clientExtension = clientExtension;
+        this.clientExtensionFunc = item -> clientExtension;
+        return this;
+    }
+
+    @Deprecated(forRemoval = true)
+    public ItemBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtension) {
+        if (this.clientExtensionFunc == null) {
+            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
+        }
+        this.clientExtensionFunc = clientExtension;
         return this;
     }
 
     protected void registerClientExtension() {
         OneTimeEventReceiver.addModListener(getOwner(), RegisterClientExtensionsEvent.class, e -> {
-            NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension = this.clientExtension;
-            if (clientExtension != null) {
+            if (this.clientExtensionFunc != null) {
+                NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension = this.clientExtensionFunc.apply(getEntry());
                 e.registerItem(clientExtension.get().get(), getEntry());
             }
         });

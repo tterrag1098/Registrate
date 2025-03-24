@@ -134,9 +134,9 @@ publishing {
         def mavenToken = System.getenv("MAVEN_TOKEN")
         if (mavenToken != null && !mavenToken.isEmpty()) {
             maven {
-                url = "https://maven.ithundxr.dev/snapshots"
+                url = "https://mvn.devos.one/snapshots"
                 credentials {
-                    username = "registrate-fork-github"
+                    username = "ithundxr-github"
                     password = mavenToken
                 }
             }

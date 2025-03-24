@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -47,9 +48,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -361,27 +362,45 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     @Nullable
-    private NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension;
+    private Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtensionFunc;
 
     /**
-     * Register a client extension for this block. The {@link IClientBlockExtensions} instance can be shared across many items.
+     * Register a client extension for this block.
+     * The {@link IClientBlockExtensions} instance can be shared across many items.
      *
      * @param clientExtension
      *            The client extension to register for this block
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension) {
-        if (this.clientExtension == null) {
+        if (this.clientExtensionFunc == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
-        this.clientExtension = clientExtension;
+        this.clientExtensionFunc = block -> clientExtension;
+        return this;
+    }
+
+    /**
+     * Register a client extension for this block.
+     * The {@link IClientBlockExtensions} instance can be shared across many items.
+     *
+     * @param clientExtension
+     *            The client extension to register for this block
+     * @return this {@link BlockBuilder}
+     */
+    @Deprecated(forRemoval = true)
+    public BlockBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtension) {
+        if (this.clientExtensionFunc == null) {
+            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
+        }
+        this.clientExtensionFunc = clientExtension;
         return this;
     }
 
     protected void registerClientExtension() {
         OneTimeEventReceiver.addModListener(getOwner(), RegisterClientExtensionsEvent.class, e -> {
-            NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension = this.clientExtension;
-            if (clientExtension != null) {
+            if (this.clientExtensionFunc != null) {
+                NonNullSupplier<Supplier<IClientBlockExtensions>> clientExtension = this.clientExtensionFunc.apply(getEntry());
                 e.registerBlock(clientExtension.get().get(), getEntry());
             }
         });
@@ -402,6 +421,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     @Override
     protected T createEntry() {
         @Nonnull BlockBehaviour.Properties properties = this.initialProperties.get();
+        ObfuscationReflectionHelper.setPrivateValue(BlockBehaviour.Properties.class, properties, null, "drops");
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties);
     }
