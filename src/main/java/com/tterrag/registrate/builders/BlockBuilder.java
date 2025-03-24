@@ -5,6 +5,9 @@ import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.providers.generators.RegistrateBlockModelGenerator;
+import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
+import com.tterrag.registrate.providers.generators.RegistrateRecipeProvider;
 import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
@@ -163,7 +166,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Create a standard {@link BlockItem} for this block, building it immediately, and not allowing for further configuration.
      * <p>
-     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
+     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelGenerator#blockItem(NonNullSupplier)}).
      *
      * @return this {@link BlockBuilder}
      * @see #item()
@@ -175,7 +178,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Create a standard {@link BlockItem} for this block, and return the builder for it so that further customization can be done.
      * <p>
-     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
+     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelGenerator#blockItem(NonNullSupplier)}).
      * 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
@@ -186,7 +189,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Create a {@link BlockItem} for this block, which is created by the given factory, and return the builder for it so that further customization can be done.
      * <p>
-     * By default, the item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelProvider#blockItem(NonNullSupplier)}).
+     * By default, the item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelGenerator#blockItem(NonNullSupplier)}).
      * 
      * @param <I>
      *            The type of the item
@@ -268,7 +271,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign the default blockstate, which maps all states to a single model file (via {@link RegistrateBlockstateProvider#simpleBlock(Block)}). This is the default, so it is generally not necessary
+     * Assign the default blockstate, which maps all states to a single model file (via {@link RegistrateBlockModelGenerator#simpleBlock(Block)}). This is the default, so it is generally not necessary
      * to call, unless for undoing previous changes.
      * 
      * @return this {@link BlockBuilder}
@@ -285,7 +288,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
-    public BlockBuilder<T, P> blockstate(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> cons) {
+    public BlockBuilder<T, P> blockstate(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockModelGenerator> cons) {
         return setData(ProviderType.BLOCKSTATE, cons);
     }
 

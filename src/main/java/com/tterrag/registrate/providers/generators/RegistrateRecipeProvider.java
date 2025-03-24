@@ -1,7 +1,7 @@
-package com.tterrag.registrate.providers;
+package com.tterrag.registrate.providers.generators;
 
 import com.google.common.collect.ImmutableMap;
-import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.advancements.Criterion;
@@ -12,7 +12,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.BlockFamily;
-import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -24,54 +23,18 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
-import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.Tags;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 public class RegistrateRecipeProvider extends RecipeProvider {
 
-    public static class Runner extends RecipeProvider.Runner implements RegistrateProvider {
+	private final RegistrateRecipeRunner runner;
 
-        private final AbstractRegistrate<?> owner;
-
-        @org.jetbrains.annotations.Nullable
-        private RegistrateRecipeProvider provider;
-
-        protected Runner(AbstractRegistrate<?> owner, PackOutput p_365369_, CompletableFuture<HolderLookup.Provider> p_361563_) {
-            super(p_365369_, p_361563_);
-            this.owner = owner;
-        }
-
-        @Override
-        protected RecipeProvider createRecipeProvider(HolderLookup.Provider p_362946_, RecipeOutput p_365274_) {
-            return new RegistrateRecipeProvider(this, p_362946_, p_365274_);
-        }
-
-        @Override
-        public String getName() {
-            return "";
-        }
-
-        @Override
-        public LogicalSide getSide() {
-            return LogicalSide.SERVER;
-        }
-
-        public RegistrateRecipeProvider getRecipeProvider() {
-            if (provider == null) throw new IllegalStateException("Recipe Provider is not available now");
-            return provider;
-        }
-
-    }
-
-    private final Runner runner;
-
-    public RegistrateRecipeProvider(Runner runner, HolderLookup.Provider registries, RecipeOutput output) {
+    public RegistrateRecipeProvider(RegistrateRecipeRunner runner, HolderLookup.Provider registries, RecipeOutput output) {
         super(registries, output);
         this.runner = runner;
     }

@@ -1,11 +1,10 @@
 package com.tterrag.registrate.providers;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.providers.generators.RegistrateModelProvider;
+import com.tterrag.registrate.providers.generators.RegistrateRecipeRunner;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
 import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -29,7 +28,7 @@ import java.util.function.Function;
  * <p>
  * Used as a key for data generator callbacks.
  * <p>
- * This file also defines the built-in provider types, but third-party types can be created with {@link #register(String, ProviderType)}.
+ * This file also defines the built-in provider types, but third-party types can be created with {@link #registerProvider(String, ProviderType)}.
  *
  * @param <T> The type of the provider
  */
@@ -42,7 +41,7 @@ public interface ProviderType<T extends RegistrateProvider> {
     // SERVER DATA
     ProviderType<RegistrateDatapackProvider> DYNAMIC = registerServerData("dynamic", RegistrateDatapackProvider::new);
     ProviderType<RegistrateDataMapProvider> DATA_MAP = registerServerData("data_map", RegistrateDataMapProvider::new);
-    ProviderType<RegistrateRecipeProvider.Runner> RECIPE = registerServerData("recipe", RegistrateRecipeProvider.Runner::new);
+    ProviderType<RegistrateRecipeRunner> RECIPE = registerServerData("recipe", RegistrateRecipeRunner::new);
     ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = registerServerData("advancement", RegistrateAdvancementProvider::new);
     ProviderType<RegistrateLootTableProvider> LOOT = registerServerData("loot", RegistrateLootTableProvider::new);
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<Block>> BLOCK_TAGS = registerIntrinsicTag("tags/block", "blocks", Registries.BLOCK, block -> block.builtInRegistryHolder().key());
@@ -53,8 +52,7 @@ public interface ProviderType<T extends RegistrateProvider> {
     ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider",  c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.SERVER, c.type()));
 
     // CLIENT DATA
-    ProviderType<RegistrateBlockstateProvider> BLOCKSTATE = registerProvider("blockstate", c -> new RegistrateBlockstateProvider(c.parent(), c.output()));
-    ProviderType<RegistrateItemModelProvider> ITEM_MODEL = registerProvider("item_model", c -> new RegistrateItemModelProvider(c.parent(), c.output(), c.get(BLOCKSTATE).getExistingFileHelper()));
+    ProviderType<RegistrateModelProvider> MODEL = registerProvider("model", c -> new RegistrateModelProvider(c.parent(), c.output()));
     ProviderType<RegistrateLangProvider> LANG = registerProvider("lang", c -> new RegistrateLangProvider(c.parent(), c.output()));
     ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = registerProvider("registrate_generic_client_provider", c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.CLIENT, c.type()));
 
@@ -70,26 +68,9 @@ public interface ProviderType<T extends RegistrateProvider> {
 
     }
 
-    default T create(Context<T> context) {
-        return create(context.parent(), context.event(), context.existing());
-    }
+    T create(Context<T> context);
 
-    @Deprecated
-    T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing);
-
-    interface DependencyAwareProviderType<T extends RegistrateProvider> extends ProviderType<T> {
-
-        @Override
-        default T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
-            return create(new Context<>(this, parent, event, existing, event.getGenerator().getPackOutput(), event.getLookupProvider()));
-        }
-
-        @Override
-        T create(Context<T> context);
-
-    }
-
-    interface SimpleServerDataFactory<T extends RegistrateProvider> extends DependencyAwareProviderType<T> {
+    interface SimpleServerDataFactory<T extends RegistrateProvider> extends ProviderType<T> {
 
         T create(AbstractRegistrate<?> parent, PackOutput output, CompletableFuture<HolderLookup.Provider> provider);
 
@@ -104,66 +85,19 @@ public interface ProviderType<T extends RegistrateProvider> {
 
     }
 
-    // TODO this is clunky af
-    @Deprecated
-    @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> registerDelegate(String name, NonNullUnaryOperator<ProviderType<T>> type) {
-        ProviderType<T> ret = new ProviderType<T>() {
-
-            @Override
-            public T create(@Nonnull AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
-                return type.apply(this).create(parent, event, existing);
-            }
-        };
-        return register(name, ret);
-    }
-
-    @Deprecated
-    @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullFunction<ProviderType<T>, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T>> type) {
-        ProviderType<T> ret = new ProviderType<T>() {
-
-            @Override
-            public T create(@Nonnull AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
-                return type.apply(this).apply(parent, event);
-            }
-        };
-        return register(name, ret);
-    }
-
-    @Deprecated
-    @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, NonNullBiFunction<AbstractRegistrate<?>, GatherDataEvent, T> type) {
-        ProviderType<T> ret = new ProviderType<T>() {
-
-            @Override
-            public T create(AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing) {
-                return type.apply(parent, event);
-            }
-        };
-        return register(name, ret);
-    }
-
-    @Deprecated
-    @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> register(String name, ProviderType<T> type) {
-        RegistrateDataProvider.TYPES.put(name, type);
-        return type;
-    }
-
     @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerServerData(String name, SimpleServerDataFactory<T> factory) {
-        return register(name, factory.asProvider());
+        return registerProvider(name, factory.asProvider());
     }
 
     @Nonnull
-    static <T extends RegistrateProvider> ProviderType<T> registerProvider(String name, DependencyAwareProviderType<T> type) {
+    static <T extends RegistrateProvider> ProviderType<T> registerProvider(String name, ProviderType<T> type) {
         RegistrateDataProvider.TYPES.put(name, type);
         return type;
     }
 
     @Nonnull
-    static <T, R extends RegistrateTagsProvider<T>> ProviderType<R> registerTag(String name, ResourceKey<? extends Registry<T>> key, DependencyAwareProviderType<R> type) {
+    static <T, R extends RegistrateTagsProvider<T>> ProviderType<R> registerTag(String name, ResourceKey<? extends Registry<T>> key, ProviderType<R> type) {
         if (RegistrateDataProvider.TAG_TYPES.containsKey(key)) {
             return (ProviderType<R>) RegistrateDataProvider.TAG_TYPES.get(key);
         }

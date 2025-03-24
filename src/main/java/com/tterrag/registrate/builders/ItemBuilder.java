@@ -3,6 +3,8 @@ package com.tterrag.registrate.builders;
 import com.google.common.collect.Maps;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
+import com.tterrag.registrate.providers.generators.RegistrateRecipeProvider;
 import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.RegistrateDistExecutor;
@@ -204,7 +206,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
-    public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> cons) {
+    public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelGenerator> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
     }
 

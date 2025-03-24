@@ -1,15 +1,11 @@
 package com.tterrag.registrate.util;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import com.google.common.collect.ObjectArrays;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.providers.generators.RegistrateRecipeProvider;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 import lombok.Getter;
@@ -25,8 +21,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.common.crafting.ICustomIngredient;
-import net.neoforged.neoforge.common.crafting.IngredientType;
 
 /**
  * A helper for data generation when using ingredients as input(s) to recipes.<br>
