@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
@@ -43,7 +42,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -55,6 +56,34 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     @FunctionalInterface
     public interface FluidTypeFactory {
         FluidType create(FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture);
+    }
+
+
+    @Nullable
+    private NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension;
+
+    /**
+     * Register a client extension for this block. The {@link IClientBlockExtensions} instance can be shared across many items.
+     *
+     * @param clientExtension
+     *            The client extension to register for this block
+     * @return this {@link BlockBuilder}
+     */
+    public FluidBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension) {
+        if (this.clientExtension == null) {
+            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
+        }
+        this.clientExtension = clientExtension;
+        return this;
+    }
+
+    protected void registerClientExtension() {
+        OneTimeEventReceiver.addModListener(getOwner(), RegisterClientExtensionsEvent.class, e -> {
+            NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension = this.clientExtension;
+            if (clientExtension != null) {
+                e.registerFluidType(clientExtension.get().get(), fluidType.get());
+            }
+        });
     }
 
     /**
@@ -77,8 +106,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, FluidTypeFactory, NonNullFunction)
      */
+    @Deprecated(forRemoval = true)
     public static <P> FluidBuilder<BaseFlowingFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, FluidBuilder::defaultFluidType, BaseFlowingFluid.Flowing::new);
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, (prop, still, flowing) -> new FluidType(prop), BaseFlowingFluid.Flowing::new).clientExtension(()-> ()-> new DefaultFluidTypeExtension(stillTexture, flowingTexture));
     }
 
     /**
@@ -156,9 +186,10 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
+    @Deprecated(forRemoval = true)
     public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture,
         NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
-        return create(owner, parent, name, callback, stillTexture, flowingTexture, FluidBuilder::defaultFluidType, fluidFactory);
+        return create(owner, parent, name, callback, stillTexture, flowingTexture, (prop, still, flowing) -> new FluidType(prop), fluidFactory).clientExtension(()-> ()-> new DefaultFluidTypeExtension(stillTexture, flowingTexture));
     }
 
     /**
@@ -341,8 +372,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         return lang(f -> f.getFluidType().getDescriptionId(), name);
     }
 
-    
-    
+
+
     @SuppressWarnings("deprecation")
     public FluidBuilder<T, P> renderType(Supplier<Supplier<RenderType>> layer) {
         RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
@@ -626,23 +657,25 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         return new FluidEntry<>(getOwner(), delegate);
     }
 
-    // Basic default fluid type implementation.
-    private static FluidType defaultFluidType(FluidType.Properties properties, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return new FluidType(properties) {
-            @Override
-            public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
-                consumer.accept(new IClientFluidTypeExtensions() {
-                    @Override
-                    public ResourceLocation getStillTexture() {
-                        return stillTexture;
-                    }
+	public static class DefaultFluidTypeExtension implements IClientFluidTypeExtensions {
 
-                    @Override
-                    public ResourceLocation getFlowingTexture() {
-                        return flowingTexture;
-                    }
-                });
-            }
-        };
-    }
+		private final ResourceLocation stillTexture,flowingTexture;
+
+		public DefaultFluidTypeExtension(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
+			this.stillTexture = stillTexture;
+			this.flowingTexture = flowingTexture;
+		}
+
+		@Override
+		public ResourceLocation getStillTexture() {
+			return stillTexture;
+		}
+
+		@Override
+		public ResourceLocation getFlowingTexture() {
+			return flowingTexture;
+		}
+
+	}
+
 }
