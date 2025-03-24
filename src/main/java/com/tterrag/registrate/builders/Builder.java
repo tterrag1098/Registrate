@@ -5,10 +5,8 @@ import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.*;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.registries.datamaps.DataMapType;
@@ -153,6 +151,18 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
         getOwner().addDataGenerator(ProviderType.DATA_MAP, e -> {
             var ctx = DataGenContext.from(this);
             e.builder(type).add(ctx.getId(), factory.apply(ctx), false);
+        });
+        return (S) this;
+    }
+
+    /**
+     * Add data map associated with this builder, with context
+     */
+    @SuppressWarnings("unchecked")
+    default <D> S dataMap(DataMapType<R, D> type, NonNullBiFunction<DataGenContext<R, T>, HolderLookup.Provider, D> factory) {
+        getOwner().addDataGenerator(ProviderType.DATA_MAP, e -> {
+            var ctx = DataGenContext.from(this);
+            e.builder(type).add(ctx.getId(), factory.apply(ctx, e.getProvider()), false);
         });
         return (S) this;
     }
