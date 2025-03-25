@@ -7,17 +7,18 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.extern.log4j.Log4j2;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceKey;
-import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -30,12 +31,15 @@ public class RegistrateDataProvider implements DataProvider {
 
     static final Map<ResourceKey<? extends Registry<?>>, ProviderType<?>> TAG_TYPES = new ConcurrentHashMap<>();
 
-    public static @Nullable String getTypeName(ProviderType<?> type) {
-        return TYPES.inverse().get(type);
+    public static @Nullable String getTypeName(GeneratorType<?> type) {
+        if (type instanceof ProviderType<?> prov)
+            return TYPES.inverse().get(prov);
+        return type.toString();
     }
 
     private final String mod;
     private final Map<ProviderType<?>, RegistrateProvider> subProviders = new LinkedHashMap<>();
+    private final Map<GeneratorType<?>, Object> subGenerators = new LinkedHashMap<>();
     private final CompletableFuture<HolderLookup.Provider> registriesLookup;
 
     public RegistrateDataProvider(AbstractRegistrate<?> parent, String modid, GatherDataEvent event) {
@@ -92,7 +96,14 @@ public class RegistrateDataProvider implements DataProvider {
     }
 
     @SuppressWarnings("unchecked")
-    public <P extends RegistrateProvider> Optional<P> getSubProvider(ProviderType<P> type) {
-        return Optional.ofNullable((P) subProviders.get(type));
+    public <P> Optional<P> getSubProvider(GeneratorType<P> type) {
+        if (type instanceof ProviderType<?> prov)
+            return Optional.ofNullable((P) subProviders.get(prov));
+        return Optional.ofNullable((P) subGenerators.get(type));
     }
+
+    public <T> void putSubProvider(GeneratorType<? extends T> type, T gen) {
+        subGenerators.put(type, gen);
+    }
+
 }

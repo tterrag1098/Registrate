@@ -1,6 +1,7 @@
 package com.tterrag.registrate.providers.generators;
 
 import com.google.common.collect.ImmutableMap;
+import com.tterrag.registrate.providers.GeneratorType;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
@@ -42,7 +43,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
     @Override
     public void buildRecipes() {
         runner.provider = this;
-        runner.owner.genData(ProviderType.RECIPE, runner);
+        runner.owner.genData(ProviderType.RECIPE, this);
         runner.provider = null;
     }
 

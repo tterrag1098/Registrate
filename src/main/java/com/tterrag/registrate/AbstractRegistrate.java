@@ -1,27 +1,25 @@
 package com.tterrag.registrate;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.*;
 import com.mojang.serialization.Codec;
+import com.tterrag.registrate.builders.*;
+import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
+import com.tterrag.registrate.builders.MenuBuilder.ForgeMenuFactory;
+import com.tterrag.registrate.builders.MenuBuilder.MenuFactory;
+import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
 import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.util.CreativeModeTabModifier;
+import com.tterrag.registrate.util.DebugMarkers;
+import com.tterrag.registrate.util.OneTimeEventReceiver;
+import com.tterrag.registrate.util.entry.ItemEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
+import com.tterrag.registrate.util.nullness.*;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.Value;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -36,11 +34,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType.EntityFactory;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -58,40 +52,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.message.Message;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ListMultimap;
-import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.builders.BlockEntityBuilder;
-import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
-import com.tterrag.registrate.builders.Builder;
-import com.tterrag.registrate.builders.BuilderCallback;
-import com.tterrag.registrate.builders.EntityBuilder;
-import com.tterrag.registrate.builders.FluidBuilder;
-import com.tterrag.registrate.builders.ItemBuilder;
-import com.tterrag.registrate.builders.MenuBuilder;
-import com.tterrag.registrate.builders.MenuBuilder.ForgeMenuFactory;
-import com.tterrag.registrate.builders.MenuBuilder.MenuFactory;
-import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
-import com.tterrag.registrate.builders.NoConfigBuilder;
-import com.tterrag.registrate.util.CreativeModeTabModifier;
-import com.tterrag.registrate.util.DebugMarkers;
-import com.tterrag.registrate.util.OneTimeEventReceiver;
-import com.tterrag.registrate.util.entry.ItemEntry;
-import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.NonNullBiFunction;
-import com.tterrag.registrate.util.nullness.NonNullConsumer;
-import com.tterrag.registrate.util.nullness.NonNullFunction;
-import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
-import com.tterrag.registrate.util.nullness.NonnullType;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Value;
-import lombok.extern.log4j.Log4j2;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * Manages all registrations and data generators for a mod.
@@ -165,8 +133,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final Multimap<ResourceKey<? extends Registry<?>>, Runnable> afterRegisterCallbacks = HashMultimap.create();
     private final Set<ResourceKey<? extends Registry<?>>> completedRegistrations = new HashSet<>();
 
-    private final Table<Pair<String, ResourceKey<? extends Registry<?>>>, ProviderType<?>, Consumer<? extends RegistrateProvider>> datagensByEntry = HashBasedTable.create();
-    private final ListMultimap<ProviderType<?>, @NonnullType NonNullConsumer<? extends RegistrateProvider>> datagens = ArrayListMultimap.create();
+    private final Table<Pair<String, ResourceKey<? extends Registry<?>>>, GeneratorType<?>, Consumer<?>> datagensByEntry = HashBasedTable.create();
+    private final ListMultimap<GeneratorType<?>, @NonnullType NonNullConsumer<?>> datagens = ArrayListMultimap.create();
     private final Multimap<ResourceKey<CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = ArrayListMultimap.create();
     private ResourceKey<CreativeModeTab> defaultCreativeModeTab = CreativeModeTabs.SEARCH;
 
@@ -502,17 +470,17 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     /**
-     * Get the data provider instance for a given {@link ProviderType}. Only works within datagen context, not during registration or init.
+     * Get the data provider instance for a given {@link GeneratorType}. Only works within datagen context, not during registration or init.
      *
      * @param <P>
      *            The type of the provider
      * @param type
-     *            A {@link ProviderType} representing the desired provider
+     *            A {@link GeneratorType} representing the desired provider
      * @return An {@link Optional} holding the provider, or empty if this provider was not registered. This can happen if datagen is run only for client or server providers.
      * @throws IllegalStateException
      *             if datagen has not started yet
      */
-    public <P extends RegistrateProvider> Optional<P> getDataProvider(ProviderType<P> type) {
+    public <P> Optional<P> getDataProvider(GeneratorType<P> type) {
         RegistrateDataProvider provider = this.provider;
         if (provider != null) {
             return provider.getSubProvider(type);
@@ -530,13 +498,13 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param builder
      *            The builder for the entry
      * @param type
-     *            The {@link ProviderType} to generate data for
+     *            The {@link GeneratorType} to generate data for
      * @param cons
      *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
-    public <P extends RegistrateProvider, R> S setDataGenerator(Builder<R, ?, ?, ?> builder, ProviderType<? extends P> type, NonNullConsumer<? extends P> cons) {
-        return this.<P, R>setDataGenerator(builder.getName(), builder.getRegistryKey(), type, cons);
+    public <P, R> S setDataGenerator(Builder<R, ?, ?, ?> builder, GeneratorType<? extends P> type, NonNullConsumer<? extends P> cons) {
+        return this.setDataGenerator(builder.getName(), builder.getRegistryKey(), type, cons);
     }
 
     /**
@@ -551,15 +519,15 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param registryType
      *            A {@link Class} representing the registry type of the entry
      * @param type
-     *            The {@link ProviderType} to generate data for
+     *            The {@link GeneratorType} to generate data for
      * @param cons
      *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
-    public <P extends RegistrateProvider, R> S setDataGenerator(String entry, ResourceKey<? extends Registry<R>> registryType, ProviderType<? extends P> type, NonNullConsumer<? extends P> cons) {
+    public <P, R> S setDataGenerator(String entry, ResourceKey<? extends Registry<R>> registryType, GeneratorType<? extends P> type, NonNullConsumer<? extends P> cons) {
         if (!doDatagen.get()) return self();
         @SuppressWarnings("null")
-        Consumer<? extends RegistrateProvider> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
+        Consumer<?> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
         if (existing != null) {
             datagens.remove(type, existing);
         }
@@ -574,12 +542,12 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param <T>
      *            The type of provider
      * @param type
-     *            The {@link ProviderType} to generate data for
+     *            The {@link GeneratorType} to generate data for
      * @param cons
      *            A callback to be invoked during data generation
      * @return this {@link AbstractRegistrate}
      */
-    public <T extends RegistrateProvider> S addDataGenerator(ProviderType<? extends T> type, NonNullConsumer<? extends T> cons) {
+    public <T> S addDataGenerator(GeneratorType<? extends T> type, NonNullConsumer<? extends T> cons) {
         if (doDatagen.get()) {
             if (provider != null) throw new IllegalStateException("Cannot add data generator after construction of root generator");
             datagens.put(type, cons);
@@ -651,8 +619,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     @SuppressWarnings("null")
-    private Optional<Pair<String, ResourceKey<? extends Registry<?>>>> getEntryForGenerator(ProviderType<?> type, NonNullConsumer<? extends RegistrateProvider> generator) {
-        for (Map.Entry<Pair<String, ResourceKey<? extends Registry<?>>>, Consumer<? extends RegistrateProvider>> e : datagensByEntry.column(type).entrySet()) {
+    private Optional<Pair<String, ResourceKey<? extends Registry<?>>>> getEntryForGenerator(GeneratorType<?> type, NonNullConsumer<?> generator) {
+        for (Map.Entry<Pair<String, ResourceKey<? extends Registry<?>>>, Consumer<?>> e : datagensByEntry.column(type).entrySet()) {
             if (e.getValue() == generator) {
                 return Optional.of(e.getKey());
             }
@@ -671,8 +639,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The provider
      */
     @SuppressWarnings("unchecked")
-    public <T extends RegistrateProvider> void genData(ProviderType<? extends T> type, T gen) {
+    public <T> void genData(GeneratorType<? extends T> type, T gen) {
         if (!doDatagen.get()) return;
+        if (provider != null) {
+            provider.putSubProvider(type, gen);
+        }
         datagens.get(type).forEach(cons -> {
             Optional<Pair<String, ResourceKey<? extends Registry<?>>>> entry = null;
             if (log.isEnabled(Level.DEBUG, DebugMarkers.DATA)) {

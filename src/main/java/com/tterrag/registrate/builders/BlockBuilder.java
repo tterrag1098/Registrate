@@ -34,7 +34,6 @@ import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nonnull;
@@ -286,7 +285,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
-     * @see #setData(ProviderType, NonNullBiConsumer)
+     * @see #setData(GeneratorType, NonNullBiConsumer)
      */
     public BlockBuilder<T, P> blockstate(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockModelGenerator> cons) {
         return setData(ProviderType.BLOCKSTATE, cons);
@@ -347,10 +346,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link BlockBuilder}
-     * @see #setData(ProviderType, NonNullBiConsumer)
+     * @see #setData(GeneratorType, NonNullBiConsumer)
      */
     public BlockBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateRecipeProvider> cons) {
-        return setData(ProviderType.RECIPE, (ctx, pvd) -> cons.accept(ctx, pvd.getRecipeProvider()));
+        return setData(ProviderType.RECIPE, cons);
     }
 
     @Nullable

@@ -2,8 +2,8 @@ package com.tterrag.registrate.builders;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.GeneratorType;
 import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.providers.RegistrateProvider;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.*;
 import net.minecraft.core.HolderLookup;
@@ -103,13 +103,13 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
      * @param <D>
      *            The type of provider
      * @param type
-     *            The {@link ProviderType} for the desired provider
+     *            The {@link GeneratorType} for the desired provider
      * @param cons
      *            The callback to execute when the provider is run
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S setData(ProviderType<? extends D> type, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
+    default <D> S setData(GeneratorType<? extends D> type, NonNullBiConsumer<DataGenContext<R, T>, D> cons) {
         getOwner().setDataGenerator(this, type, prov -> cons.accept(DataGenContext.from(this), prov));
         return (S) this;
     }
@@ -122,13 +122,13 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
      * @param <D>
      *            The type of provider
      * @param type
-     *            The {@link ProviderType} for the desired provider
+     *            The {@link GeneratorType} for the desired provider
      * @param cons
      *            The callback to execute when the provider is run
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    default <D extends RegistrateProvider> S addMiscData(ProviderType<? extends D> type, NonNullConsumer<? extends D> cons) {
+    default <D> S addMiscData(GeneratorType<? extends D> type, NonNullConsumer<? extends D> cons) {
         getOwner().addDataGenerator(type, cons);
         return (S) this;
     }

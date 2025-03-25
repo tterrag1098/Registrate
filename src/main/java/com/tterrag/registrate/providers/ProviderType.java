@@ -1,8 +1,7 @@
 package com.tterrag.registrate.providers;
 
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.generators.RegistrateModelProvider;
-import com.tterrag.registrate.providers.generators.RegistrateRecipeRunner;
+import com.tterrag.registrate.providers.generators.*;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
 import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
 import net.minecraft.core.HolderLookup;
@@ -36,12 +35,12 @@ import java.util.function.Function;
 @SuppressWarnings("deprecation")
 @FieldsAreNonnullByDefault
 @ParametersAreNonnullByDefault
-public interface ProviderType<T extends RegistrateProvider> {
+public interface ProviderType<T extends RegistrateProvider> extends GeneratorType<T> {
 
     // SERVER DATA
     ProviderType<RegistrateDatapackProvider> DYNAMIC = registerServerData("dynamic", RegistrateDatapackProvider::new);
     ProviderType<RegistrateDataMapProvider> DATA_MAP = registerServerData("data_map", RegistrateDataMapProvider::new);
-    ProviderType<RegistrateRecipeRunner> RECIPE = registerServerData("recipe", RegistrateRecipeRunner::new);
+    ProviderType<RegistrateRecipeRunner> RECIPE_RUNNER = registerServerData("recipe_runner", RegistrateRecipeRunner::new);
     ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = registerServerData("advancement", RegistrateAdvancementProvider::new);
     ProviderType<RegistrateLootTableProvider> LOOT = registerServerData("loot", RegistrateLootTableProvider::new);
     ProviderType<RegistrateTagsProvider.IntrinsicImpl<Block>> BLOCK_TAGS = registerIntrinsicTag("tags/block", "blocks", Registries.BLOCK, block -> block.builtInRegistryHolder().key());
@@ -56,6 +55,10 @@ public interface ProviderType<T extends RegistrateProvider> {
     ProviderType<RegistrateLangProvider> LANG = registerProvider("lang", c -> new RegistrateLangProvider(c.parent(), c.output()));
     ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = registerProvider("registrate_generic_client_provider", c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.CLIENT, c.type()));
 
+    GeneratorType<RegistrateRecipeProvider> RECIPE = RECIPE_RUNNER.createGenerator("recipe");
+    GeneratorType<RegistrateBlockModelGenerator> BLOCKSTATE = MODEL.createGenerator("blockstate");
+    GeneratorType<RegistrateItemModelGenerator> ITEM_MODEL = MODEL.createGenerator("item_model");
+
     record Context<T extends RegistrateProvider>(ProviderType<T> type, AbstractRegistrate<?> parent,
                                                  @Deprecated GatherDataEvent event,
                                                  Map<ProviderType<?>, RegistrateProvider> existing,
@@ -69,6 +72,14 @@ public interface ProviderType<T extends RegistrateProvider> {
     }
 
     T create(Context<T> context);
+
+    default <R> GeneratorType<R> createGenerator(String type) {
+        return new GeneratorType<>() {
+            public String toString(){
+                return type;
+            }
+        };
+    }
 
     interface SimpleServerDataFactory<T extends RegistrateProvider> extends ProviderType<T> {
 

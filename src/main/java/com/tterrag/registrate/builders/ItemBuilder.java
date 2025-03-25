@@ -2,7 +2,10 @@ package com.tterrag.registrate.builders;
 
 import com.google.common.collect.Maps;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.GeneratorType;
+import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.tterrag.registrate.providers.generators.RegistrateRecipeProvider;
 import com.tterrag.registrate.util.CreativeModeTabModifier;
@@ -14,6 +17,7 @@ import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -195,7 +199,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> defaultModel() {
-        return model((ctx, prov) -> prov.generated(ctx::getEntry));
+        return model((ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
     }
 
     /**
@@ -204,7 +208,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data creation
      * @return this {@link ItemBuilder}
-     * @see #setData(ProviderType, NonNullBiConsumer)
+     * @see #setData(GeneratorType, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelGenerator> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
@@ -237,10 +241,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param cons
      *            The callback which will be invoked during data generation.
      * @return this {@link ItemBuilder}
-     * @see #setData(ProviderType, NonNullBiConsumer)
+     * @see #setData(GeneratorType, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
-        return setData(ProviderType.RECIPE, (ctx, pvd) -> cons.accept(ctx, pvd.getRecipeProvider()));
+        return setData(ProviderType.RECIPE, cons);
     }
 
     /**
