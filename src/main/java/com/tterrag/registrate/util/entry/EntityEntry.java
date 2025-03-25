@@ -2,6 +2,7 @@ package com.tterrag.registrate.util.entry;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -14,8 +15,8 @@ public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<?>, 
         super(owner, delegate);
     }
 
-    public @Nullable T create(Level world) {
-        return get().create(world);
+    public @Nullable T create(Level world, EntitySpawnReason reason) {
+        return get().create(world, reason);
     }
 
     public boolean is(Entity t) {

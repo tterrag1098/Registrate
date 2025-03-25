@@ -1,12 +1,13 @@
 package com.tterrag.registrate.providers.generators;
 
 import com.google.common.collect.ImmutableMap;
-import com.tterrag.registrate.providers.GeneratorType;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.critereon.EnterBlockTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -274,7 +275,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
                 .save(this.output, safeId(result.get()));
     }
 
-    // generated overrides to expose protected methods
+    // TODO generated overrides to expose protected methods
 
     @Override
     public void generateForEnabledBlockFamilies(FeatureFlagSet p_251836_) {
@@ -645,5 +646,42 @@ public class RegistrateRecipeProvider extends RecipeProvider {
     public ShapelessRecipeBuilder shapeless(RecipeCategory p_362256_, ItemLike p_363786_, int p_365368_) {
         return super.shapeless(p_362256_, p_363786_, p_365368_);
     }
-    
+
+    public static Criterion<EnterBlockTrigger.TriggerInstance> insideOf(Block p_125980_) {
+        return RecipeProvider.insideOf(p_125980_);
+    }
+
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate.Builder... p_299111_) {
+        return RecipeProvider.inventoryTrigger(p_299111_);
+    }
+
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate... p_126012_) {
+        return RecipeProvider.inventoryTrigger(p_126012_);
+    }
+
+    public static String getHasName(ItemLike p_176603_) {
+        return RecipeProvider.getHasName(p_176603_);
+    }
+
+    public static String getItemName(ItemLike p_176633_) {
+        return RecipeProvider.getItemName(p_176633_);
+    }
+
+    public static String getSimpleRecipeName(ItemLike p_176645_) {
+        return RecipeProvider.getSimpleRecipeName(p_176645_);
+    }
+
+    public static String getConversionRecipeName(ItemLike p_176518_, ItemLike p_176519_) {
+        return RecipeProvider.getConversionRecipeName(p_176518_, p_176519_);
+    }
+
+    public static String getSmeltingRecipeName(ItemLike p_176657_) {
+        return RecipeProvider.getSmeltingRecipeName(p_176657_);
+    }
+
+    public static String getBlastingRecipeName(ItemLike p_176669_) {
+        return RecipeProvider.getBlastingRecipeName(p_176669_);
+    }
+
+
 }
