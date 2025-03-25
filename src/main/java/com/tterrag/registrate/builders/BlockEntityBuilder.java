@@ -3,6 +3,7 @@ package com.tterrag.registrate.builders;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 /**
@@ -130,6 +132,17 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
                 BlockEntityRenderers.register(getEntry(), renderer.get()::apply);
             }
         });
+    }
+
+    /**
+     * Register {@link net.neoforged.neoforge.capabilities.Capabilities} for this block entity.
+     *
+     * @param registerCapabilitiesEvent A consumer for the register capabilities event
+     * @return this {@link BlockEntityBuilder}
+     */
+    public BlockEntityBuilder<T, P> registerCapability(Consumer<RegisterCapabilitiesEvent> registerCapabilitiesEvent) {
+        OneTimeEventReceiver.addModListener(getOwner(), RegisterCapabilitiesEvent.class, registerCapabilitiesEvent);
+        return this;
     }
 
     @Override
