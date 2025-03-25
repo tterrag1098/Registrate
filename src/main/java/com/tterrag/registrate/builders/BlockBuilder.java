@@ -1,12 +1,13 @@
 package com.tterrag.registrate.builders;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonElement;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
-import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.providers.DataGenContext;
+import com.tterrag.registrate.providers.GeneratorType;
+import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.generators.RegistrateBlockModelGenerator;
-import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.tterrag.registrate.providers.generators.RegistrateRecipeProvider;
 import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider.LootType;
@@ -27,7 +28,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.util.ObfuscationReflectionHelper;
@@ -40,7 +40,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -165,7 +164,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Create a standard {@link BlockItem} for this block, building it immediately, and not allowing for further configuration.
      * <p>
-     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelGenerator#blockItem(NonNullSupplier)}).
+     * The item will have no lang entry (since it would duplicate the block's)
      *
      * @return this {@link BlockBuilder}
      * @see #item()
@@ -177,7 +176,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Create a standard {@link BlockItem} for this block, and return the builder for it so that further customization can be done.
      * <p>
-     * The item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelGenerator#blockItem(NonNullSupplier)}).
+     * The item will have no lang entry (since it would duplicate the block's)
      * 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
@@ -188,7 +187,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Create a {@link BlockItem} for this block, which is created by the given factory, and return the builder for it so that further customization can be done.
      * <p>
-     * By default, the item will have no lang entry (since it would duplicate the block's) and a simple block item model (via {@link RegistrateItemModelGenerator#blockItem(NonNullSupplier)}).
+     * By default, the item will have no lang entry (since it would duplicate the block's)
      * 
      * @param <I>
      *            The type of the item
@@ -197,23 +196,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
-        final var sup = asSupplier();
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
-                .model((ctx, prov) -> {
-                    Optional<String> model = getOwner().getDataProvider(ProviderType.BLOCKSTATE)
-                            .flatMap(p -> p.getExistingVariantBuilder(getEntry()))
-                            .map(b -> b.getModels().get(b.partialState()))
-                            .map(BlockStateProvider.ConfiguredModelList::toJSON)
-                            .filter(JsonElement::isJsonObject)
-                            .map(j -> j.getAsJsonObject().get("model"))
-                            .map(JsonElement::getAsString);
-                    if (model.isPresent()) {
-                        prov.withExistingParent(ctx.getName(), model.get());
-                    } else {
-                        prov.blockItem(sup);
-                    }
-                });
+                ;
     }
 
     /**
@@ -270,13 +255,13 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
 
     /**
-     * Assign the default blockstate, which maps all states to a single model file (via {@link RegistrateBlockModelGenerator#simpleBlock(Block)}). This is the default, so it is generally not necessary
+     * Assign the default blockstate, which maps all states to a single model file (via {@link RegistrateBlockModelGenerator#createTrivialCube(Block)}). This is the default, so it is generally not necessary
      * to call, unless for undoing previous changes.
      * 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> defaultBlockstate() {
-        return blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()));
+        return blockstate((ctx, prov) -> prov.createTrivialCube(ctx.getEntry()));
     }
 
     /**
@@ -334,7 +319,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public BlockBuilder<T, P> loot(NonNullBiConsumer<RegistrateBlockLootTables, T> cons) {
         return setData(ProviderType.LOOT, (ctx, prov) -> prov.addLootAction(LootType.BLOCK, tb -> {
-            if (!ctx.getEntry().getLootTable().equals(BuiltInLootTables.EMPTY)) {
+            if (ctx.getEntry().getLootTable().isPresent()) {
                 cons.accept(tb, ctx.getEntry());
             }
         }));

@@ -1,6 +1,7 @@
 package com.tterrag.registrate.providers.generators;
 
 import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
@@ -18,6 +19,11 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
     public RegistrateItemModelGenerator(AbstractRegistrate<?> parent, ItemModelOutput output, BiConsumer<ResourceLocation, ModelInstance> model) {
         super(output, model);
         this.parent = parent;
+    }
+
+    @Override
+    public void run() {
+        parent.genData(ProviderType.ITEM_MODEL, this);
     }
 
     public String modid(NonNullSupplier<? extends ItemLike> item) {
