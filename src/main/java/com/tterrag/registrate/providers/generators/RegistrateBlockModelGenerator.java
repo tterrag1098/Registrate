@@ -4,7 +4,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
-import net.minecraft.client.data.models.blockstates.BlockStateGenerator;
+import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
 import net.minecraft.client.data.models.model.ModelInstance;
 import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.TextureMapping;
@@ -20,7 +20,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
 
     private final AbstractRegistrate<?> parent;
 
-    public RegistrateBlockModelGenerator(AbstractRegistrate<?> parent, Consumer<BlockStateGenerator> known, ItemModelOutput item, BiConsumer<ResourceLocation, ModelInstance> model) {
+    public RegistrateBlockModelGenerator(AbstractRegistrate<?> parent, Consumer<BlockModelDefinitionGenerator> known, ItemModelOutput item, BiConsumer<ResourceLocation, ModelInstance> model) {
         super(known, item, model);
         this.parent = parent;
     }
@@ -32,11 +32,11 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
 
 
     public void create(Block block, ResourceLocation model) {
-        this.blockStateOutput.accept(createSimpleBlock(block, model));
+        this.blockStateOutput.accept(createSimpleBlock(block, plainVariant(model)));
     }
 
     public void create(Block block, TexturedModel.Provider texture) {
-        this.blockStateOutput.accept(createSimpleBlock(block, texture.create(block, this.modelOutput)));
+        this.blockStateOutput.accept(createSimpleBlock(block, plainVariant(texture.create(block, this.modelOutput))));
     }
 
     public ResourceLocation mcLoc(String id) {

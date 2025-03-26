@@ -90,7 +90,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
-    private List<Supplier<Supplier<RenderType>>> renderLayers = new ArrayList<>(1);
 
     @Nullable
     private NonNullSupplier<Supplier<BlockColor>> colorHandler;
@@ -128,37 +127,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         return this;
     }
 
-    /**
-     * @deprecated Set your render type in your model's JSON ({@link net.neoforged.neoforge.client.model.generators.ModelBuilder#renderType(ResourceLocation)}) or override {@link net.minecraft.client.resources.model.BakedModel#getRenderTypes(BlockState, net.minecraft.util.RandomSource,  net.neoforged.neoforge.client.model.data.ModelData)}
-     */
-    @Deprecated(forRemoval = true)
-    public BlockBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> layer) {
-        RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            Preconditions.checkArgument(RenderType.chunkBufferLayers().contains(layer.get().get()), "Invalid block layer: " + layer);
-        });
-        if (this.renderLayers.isEmpty()) {
-            onRegister(this::registerLayers);
-        }
-        this.renderLayers.add(layer);
-        return this;
-    }
-
-    @SuppressWarnings("deprecation")
-    protected void registerLayers(T entry) {
-        RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
-                if (renderLayers.size() == 1) {
-                    final RenderType layer = renderLayers.get(0).get().get();
-                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
-                } else if (renderLayers.size() > 1) {
-                    final Set<RenderType> layers = renderLayers.stream()
-                            .map(s -> s.get().get())
-                            .collect(Collectors.toSet());
-                    ItemBlockRenderTypes.setRenderLayer(entry, layers::contains);
-                }
-            });
-        });
-    }
+    // TODO <1.21.5> block layer registration
 
     /**
      * Create a standard {@link BlockItem} for this block, building it immediately, and not allowing for further configuration.
