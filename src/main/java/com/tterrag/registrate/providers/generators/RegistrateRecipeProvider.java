@@ -58,16 +58,28 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
         return registries.lookupOrThrow(key.registryKey()).getOrThrow(key);
     }
 
-    public ResourceKey<Recipe<?>> safeId(ResourceLocation id) {
-        return ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(runner.owner.getModid(), safeName(id)));
+    public ResourceLocation safeId(ResourceLocation id) {
+        return ResourceLocation.fromNamespaceAndPath(runner.owner.getModid(), safeName(id));
     }
 
-    public ResourceKey<Recipe<?>> safeId(DataIngredient source) {
+    public ResourceLocation safeId(DataIngredient source) {
         return safeId(source.getId());
     }
 
-    public ResourceKey<Recipe<?>> safeId(ItemLike registryEntry) {
-        return safeId(BuiltInRegistries.ITEM.getKey(registryEntry.asItem()));
+    public ResourceLocation safeId(ItemLike registryEntry) {
+        return BuiltInRegistries.ITEM.getKey(registryEntry.asItem());
+    }
+
+    public ResourceKey<Recipe<?>> safeKey(ResourceLocation id) {
+        return ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(runner.owner.getModid(), safeName(id)));
+    }
+
+    public ResourceKey<Recipe<?>> safeKey(DataIngredient source) {
+        return safeKey(source.getId());
+    }
+
+    public ResourceKey<Recipe<?>> safeKey(ItemLike registryEntry) {
+        return safeKey(BuiltInRegistries.ITEM.getKey(registryEntry.asItem()));
     }
 
     public String safeName(ResourceLocation id) {
@@ -166,7 +178,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
             builder.pattern("XXX").pattern("XXX").pattern("XXX");
         }
         builder.unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(output.get()));
+                .save(this, safeKey(output.get()));
     }
 
     /**
@@ -201,13 +213,13 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
     }
 
     public <T extends ItemLike> void singleItem(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, int required, int amount) {
-        singleItemUnfinished(source, category, result, required, amount).save(this, safeId(result.get()));
+        singleItemUnfinished(source, category, result, required, amount).save(this, safeKey(result.get()));
     }
 
     public <T extends ItemLike> void planks(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
         singleItemUnfinished(source, category, result, 1, 4)
                 .group("planks")
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
     }
 
     public <T extends ItemLike> void stairs(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group, boolean stone) {
@@ -216,7 +228,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .define('X', source.toVanilla())
                 .group(group)
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
         if (stone) {
             stonecutting(source, category, result);
         }
@@ -228,7 +240,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .define('X', source.toVanilla())
                 .group(group)
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
         if (stone) {
             stonecutting(source, category, result, 2);
         }
@@ -241,7 +253,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .define('#', Tags.Items.RODS_WOODEN)
                 .group(group)
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
     }
 
     public <T extends ItemLike> void fenceGate(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
@@ -251,7 +263,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .define('#', Tags.Items.RODS_WOODEN)
                 .group(group)
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
     }
 
     public <T extends ItemLike> void wall(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
@@ -259,7 +271,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .pattern("XXX").pattern("XXX")
                 .define('X', source.toVanilla())
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
         stonecutting(source, category, result);
     }
 
@@ -269,7 +281,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .define('X', source.toVanilla())
                 .group(group)
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
     }
 
     public <T extends ItemLike> void trapDoor(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
@@ -278,7 +290,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .define('X', source.toVanilla())
                 .group(group)
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this, safeId(result.get()));
+                .save(this, safeKey(result.get()));
     }
 
     // @formatter:off

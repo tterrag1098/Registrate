@@ -170,4 +170,9 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     private S lang(NonNullFunction<T, String> langKeyProvider, NonNullBiFunction<RegistrateLangProvider, NonNullSupplier<? extends T>, String> localizedNameProvider) {
         return setData(ProviderType.LANG, (ctx, prov) -> prov.add(langKeyProvider.apply(ctx.getEntry()), localizedNameProvider.apply(prov, ctx::getEntry)));
     }
+
+    public ResourceKey<R> getResourceKey(){
+        return ResourceKey.create(getRegistryKey(), ResourceLocation.fromNamespaceAndPath(getOwner().getModid(), getName()));
+    }
+
 }

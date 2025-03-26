@@ -315,7 +315,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     protected T createEntry() {
         Item.Properties properties = this.initialProperties.get();
         properties = propertiesCallback.apply(properties);
-        return factory.apply(properties);
+        return factory.apply(properties.setId(getResourceKey()));
     }
 
     @Override

@@ -286,7 +286,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     protected EntityType<T> createEntry() {
         EntityType.Builder<T> builder = this.builder.get();
         builderCallback.accept(builder);
-        return builder.build(ResourceKey.create(getRegistryKey(), ResourceLocation.fromNamespaceAndPath(getOwner().getModid(), getName())));
+        return builder.build(getResourceKey());
     }
 
     @Deprecated

@@ -6,7 +6,12 @@ import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
 import net.minecraft.client.data.models.blockstates.BlockStateGenerator;
 import net.minecraft.client.data.models.model.ModelInstance;
+import net.minecraft.client.data.models.model.ModelTemplate;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -23,6 +28,47 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
     @Override
     public void run() {
         parent.genData(ProviderType.BLOCKSTATE, this);
+    }
+
+
+    public void create(Block block, ResourceLocation model) {
+        this.blockStateOutput.accept(createSimpleBlock(block, model));
+    }
+
+    public void create(Block block, TexturedModel.Provider texture) {
+        this.blockStateOutput.accept(createSimpleBlock(block, texture.create(block, this.modelOutput)));
+    }
+
+    public ResourceLocation mcLoc(String id) {
+        return ResourceLocation.withDefaultNamespace(id);
+    }
+
+    public ResourceLocation modLoc(String id) {
+        return ResourceLocation.fromNamespaceAndPath(parent.getModid(), id);
+    }
+
+    public RegistrateLegacyBlockModelBuilder withBuilder(ExtendedModelTemplateBuilder template, TextureMapping texture) {
+        return new RegistrateLegacyBlockModelBuilder(modelOutput, template, texture);
+    }
+
+    public RegistrateLegacyBlockModelBuilder withBuilder(ExtendedModelTemplateBuilder template) {
+        return withBuilder(template, new TextureMapping());
+    }
+
+    public RegistrateLegacyBlockModelBuilder getBuilder() {
+        return withBuilder(new ExtendedModelTemplateBuilder());
+    }
+
+    public RegistrateLegacyBlockModelBuilder withParent(ModelTemplate template) {
+        return withBuilder(ExtendedModelTemplateBuilder.of(template));
+    }
+
+    public RegistrateLegacyBlockModelBuilder withParent(ModelTemplate template, TextureMapping texture) {
+        return withBuilder(ExtendedModelTemplateBuilder.of(template), texture);
+    }
+
+    public RegistrateLegacyBlockModelBuilder withParent(TexturedModel model) {
+        return withBuilder(ExtendedModelTemplateBuilder.of(model.getTemplate()), model.getMapping());
     }
 
 }

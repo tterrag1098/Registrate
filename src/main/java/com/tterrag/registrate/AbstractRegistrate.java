@@ -204,7 +204,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         });
 
         if (doDatagen.get()) {
-            OneTimeEventReceiver.addModListener(this, GatherDataEvent.class, this::onData);
+            OneTimeEventReceiver.addModListener(this, GatherDataEvent.Client.class, this::onData);
         }
 
         return self();

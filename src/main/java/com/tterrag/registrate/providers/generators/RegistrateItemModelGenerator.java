@@ -5,9 +5,11 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
+import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 
 import java.util.function.BiConsumer;
@@ -24,6 +26,19 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
     @Override
     public void run() {
         parent.genData(ProviderType.ITEM_MODEL, this);
+    }
+
+
+    public void createWithExistingModel(Item item, ResourceLocation id) {
+        itemModelOutput.accept(item, ItemModelUtils.plainModel(id));
+    }
+
+    public ResourceLocation mcLoc(String id) {
+        return ResourceLocation.withDefaultNamespace(id);
+    }
+
+    public ResourceLocation modLoc(String id) {
+        return ResourceLocation.fromNamespaceAndPath(parent.getModid(), id);
     }
 
     public String modid(NonNullSupplier<? extends ItemLike> item) {
