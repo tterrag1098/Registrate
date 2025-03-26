@@ -185,9 +185,9 @@ public class TestMod {
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
-                .color(() -> () -> (stack, index) -> 0xFF0000FF)
+                //TODO .color(() -> () -> (stack, index) -> 0xFF0000FF)
                 .tag(ItemTags.BEDS)
-                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), ResourceLocation.withDefaultNamespace("block/stone")))
+                //TODO .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), ResourceLocation.withDefaultNamespace("block/stone")))
                 .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx))
                 .register();
 
@@ -201,11 +201,10 @@ public class TestMod {
     private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
                 .properties(p -> p.noOcclusion())
-                .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                                prov.models().withExistingParent(ctx.getName(), ResourceLocation.withDefaultNamespace("block/glass")).renderType(prov.mcLoc("cutout"))))
+                //TODO .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().withExistingParent(ctx.getName(), ResourceLocation.withDefaultNamespace("block/glass")).renderType(prov.mcLoc("cutout"))))
                 .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
-                    ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ctx.getEntry())
+                    prov.shaped(RecipeCategory.MISC, ctx.getEntry())
                             .pattern("DDD").pattern("DED").pattern("DDD")
                             .define('D', Items.DIAMOND)
                             .define('E', Items.EGG)
@@ -218,8 +217,8 @@ public class TestMod {
                 .tag(BlockTags.WITHER_IMMUNE)
                 .color(() -> () -> (state, world, pos, index) -> 0xFFFF0000)
                 .item()
-                    .color(() -> () -> (stack, index) -> 0xFFFF0000)
-                    .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), ResourceLocation.withDefaultNamespace("item/egg")))
+                    //TODO .color(() -> () -> (stack, index) -> 0xFFFF0000)
+                    //TODO .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), ResourceLocation.withDefaultNamespace("item/egg")))
                     .build()
                 .blockEntity(TestBlockEntity::new)
                     .renderer(() -> TestBlockEntityRenderer::new)
@@ -228,8 +227,7 @@ public class TestMod {
 
     private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
             .block(Block::new)
-            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(),
-                    prov.models().withExistingParent("block/subfolder/" + ctx.getName(), prov.mcLoc("block/gold_block"))))
+            //TODO .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry(), prov.models().withExistingParent("block/subfolder/" + ctx.getName(), prov.mcLoc("block/gold_block"))))
             .simpleItem()
             .register();
 
@@ -242,7 +240,7 @@ public class TestMod {
             .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR)
-            .defaultSpawnEgg(0xFF0000, 0x00FF00)
+            //TODO .defaultSpawnEgg(0xFF0000, 0x00FF00)
             .loot((prov, type) -> prov.add(type, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .setRolls(ConstantValue.exactly(1))
@@ -260,7 +258,7 @@ public class TestMod {
     private final FluidEntry<BaseFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(ResourceLocation.withDefaultNamespace("block/water_flow"), ResourceLocation.withDefaultNamespace("block/lava_still"), (props, still, flow) -> new FluidType(props) {
                 // And now you can do custom behaviours.
-                @Override
+                //TODO @Override
                 public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
                     consumer.accept(new IClientFluidTypeExtensions() {
                         @Override

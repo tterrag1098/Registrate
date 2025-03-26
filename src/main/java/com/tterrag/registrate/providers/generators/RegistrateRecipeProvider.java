@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import lombok.experimental.Delegate;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.EnterBlockTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
@@ -32,13 +33,17 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class RegistrateRecipeProvider extends RecipeProvider {
+public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOutput {
 
 	private final RegistrateRecipeRunner runner;
+
+    @Delegate
+    private final RecipeOutput outputDelegated;
 
     public RegistrateRecipeProvider(RegistrateRecipeRunner runner, HolderLookup.Provider registries, RecipeOutput output) {
         super(registries, output);
         this.runner = runner;
+        this.outputDelegated = output;
     }
 
     @Override
@@ -95,7 +100,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
     public <T extends ItemLike, S extends AbstractCookingRecipe> void cooking(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience, int cookingTime, String typeName, RecipeSerializer<S> serializer, AbstractCookingRecipe.Factory<S> factory) {
         SimpleCookingRecipeBuilder.generic(source.toVanilla(), category, result.get(), experience, cookingTime, serializer, factory)
                 .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
+                .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_" + typeName);
     }
 
     public <T extends ItemLike> void smelting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float experience) {
@@ -137,7 +142,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
     public <T extends ItemLike> void stonecutting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, int resultAmount) {
         SingleItemRecipeBuilder.stonecutting(source.toVanilla(), category, result.get(), resultAmount)
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()) + "_from_" + safeName(source) + "_stonecutting");
+                .save(this, safeId(result.get()) + "_from_" + safeName(source) + "_stonecutting");
     }
 
     public <T extends ItemLike> void smeltingAndBlasting(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, float xp) {
@@ -160,7 +165,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             builder.pattern("XXX").pattern("XXX").pattern("XXX");
         }
         builder.unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(output.get()));
+                .save(this, safeId(output.get()));
     }
 
     /**
@@ -174,7 +179,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
         square(source, category, output, false);
         // This is backwards, but leaving in for binary compat
         singleItemUnfinished(source, category, output, 1, 9)
-                .save(this.output, safeId(source) + "_from_" + safeName(output.get()));
+                .save(this, safeId(source) + "_from_" + safeName(output.get()));
     }
 
     public <T extends ItemLike> void storage(NonNullSupplier<? extends T> source, RecipeCategory category, NonNullSupplier<? extends T> output) {
@@ -184,7 +189,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
     public <T extends ItemLike> void storage(DataIngredient sourceIngredient, RecipeCategory category, NonNullSupplier<? extends T> source, DataIngredient outputIngredient, NonNullSupplier<? extends T> output) {
         square(sourceIngredient, category, output, false);
         singleItemUnfinished(outputIngredient, category, source, 1, 9)
-                .save(this.output, safeId(sourceIngredient) + "_from_" + safeName(output.get()));
+                .save(this, safeId(sourceIngredient) + "_from_" + safeName(output.get()));
     }
 
     @CheckReturnValue
@@ -195,13 +200,13 @@ public class RegistrateRecipeProvider extends RecipeProvider {
     }
 
     public <T extends ItemLike> void singleItem(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, int required, int amount) {
-        singleItemUnfinished(source, category, result, required, amount).save(this.output, safeId(result.get()));
+        singleItemUnfinished(source, category, result, required, amount).save(this, safeId(result.get()));
     }
 
     public <T extends ItemLike> void planks(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
         singleItemUnfinished(source, category, result, 1, 4)
             .group("planks")
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
     }
 
     public <T extends ItemLike> void stairs(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group, boolean stone) {
@@ -210,7 +215,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             .define('X', source.toVanilla())
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
         if (stone) {
             stonecutting(source, category, result);
         }
@@ -222,7 +227,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             .define('X', source.toVanilla())
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
         if (stone) {
             stonecutting(source, category, result, 2);
         }
@@ -235,7 +240,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             .define('#', Tags.Items.RODS_WOODEN)
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
     }
 
     public <T extends ItemLike> void fenceGate(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
@@ -245,7 +250,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             .define('#', Tags.Items.RODS_WOODEN)
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
     }
 
     public <T extends ItemLike> void wall(DataIngredient source, RecipeCategory category, Supplier<? extends T> result) {
@@ -253,7 +258,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             .pattern("XXX").pattern("XXX")
             .define('X', source.toVanilla())
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
         stonecutting(source, category, result);
     }
 
@@ -263,7 +268,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             .define('X', source.toVanilla())
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
     }
 
     public <T extends ItemLike> void trapDoor(DataIngredient source, RecipeCategory category, Supplier<? extends T> result, @Nullable String group) {
@@ -272,7 +277,7 @@ public class RegistrateRecipeProvider extends RecipeProvider {
             .define('X', source.toVanilla())
             .group(group)
             .unlockedBy("has_" + safeName(source), source.getCriterion(this))
-                .save(this.output, safeId(result.get()));
+                .save(this, safeId(result.get()));
     }
 
     // TODO generated overrides to expose protected methods

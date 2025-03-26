@@ -1,5 +1,5 @@
 plugins {
-    id "io.freefair.lombok" version "8.6"
+    id "io.freefair.lombok" version "8.13"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'org.ajoberstar.grgit' version '5.2.2'
 //    id "com.palantir.revapi" version "1.7.0"
@@ -81,7 +81,7 @@ dependencies {
 }
 
 lombok {
-    version = "1.18.30"
+    version = "1.18.36"
 }
 
 delombok {

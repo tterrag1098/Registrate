@@ -167,7 +167,7 @@ public class RegistrateBlockLootTables extends VanillaBlockLoot implements Regis
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createShearsOnlyDrop} */
     @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Tue, 18 Jun 2024 17:52:52 GMT")
-    public static LootTable.Builder createShearsOnlyDrop(ItemLike p_250684_) { return BlockLootSubProvider.createShearsOnlyDrop(p_250684_); }
+    public LootTable.Builder createShearsOnlyDrop(ItemLike p_250684_) { return super.createShearsOnlyDrop(p_250684_); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createMultifaceBlockDrops} */
     @Override
