@@ -228,7 +228,7 @@ public class TestMod {
                             .transformTemplate(t -> t
                                     .parent(prov.mcLoc("block/gold_block"))
                             ).build(prov.modLoc("block/subfolder/" + ctx.getName()))))
-            .simpleItem()
+            .simpleItem()//TODO <1.21.4> automatic inheritance of block model is not supported yet
             .register();
 
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registries.ITEM);

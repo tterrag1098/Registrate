@@ -198,7 +198,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
-                ;
+                ;//TODO <1.21.4> automatic inheritance of block model is not supported yet
     }
 
     /**

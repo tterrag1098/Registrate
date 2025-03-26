@@ -67,7 +67,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
     }
 
     public ResourceLocation safeId(ItemLike registryEntry) {
-        return BuiltInRegistries.ITEM.getKey(registryEntry.asItem());
+        return safeId(BuiltInRegistries.ITEM.getKey(registryEntry.asItem()));
     }
 
     public ResourceKey<Recipe<?>> safeKey(ResourceLocation id) {
