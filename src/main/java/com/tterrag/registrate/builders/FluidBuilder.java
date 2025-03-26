@@ -446,7 +446,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
             .properties(p -> BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable())
             .properties(p -> p.lightLevel(lightLevelInt))
-            .blockstate((ctx, prov) -> prov.createNonTemplateModelBlock(ctx.get()));
+                .blockstate(() -> (ctx, prov) -> prov.createNonTemplateModelBlock(ctx.get()));
     }
 
     @Beta
@@ -504,7 +504,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         }
         return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
             .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
-                .model((ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
+                .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
     }
 
     @Beta

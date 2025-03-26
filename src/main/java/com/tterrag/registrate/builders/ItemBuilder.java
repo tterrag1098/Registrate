@@ -199,7 +199,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     public ItemBuilder<T, P> defaultModel() {
-        return model((ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
+        return model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
     }
 
     /**
@@ -210,8 +210,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(GeneratorType, NonNullBiConsumer)
      */
-    public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelGenerator> cons) {
-        return setData(ProviderType.ITEM_MODEL, cons);
+    public ItemBuilder<T, P> model(NonNullSupplier<NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelGenerator>> cons) {
+        if (!getOwner().doDatagen().get()) return this;
+        return setData(ProviderType.ITEM_MODEL, cons.get());
     }
 
     /**

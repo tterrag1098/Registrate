@@ -3,7 +3,6 @@ package com.tterrag.registrate.test.mod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
-import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.*;
@@ -178,7 +177,7 @@ public class TestMod {
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
                 //TODO <1.21.4> .color(() -> () -> (stack, index) -> 0xFF0000FF)
                 .tag(ItemTags.BEDS)
-            .model((ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
+            .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
                 .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx))
                 .register();
 
@@ -192,7 +191,7 @@ public class TestMod {
     private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
                 .properties(p -> p.noOcclusion())
-            .blockstate((ctx, prov) -> prov.create(ctx.getEntry(),
+            .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(),
                     prov.getBuilder().transformTemplate(template -> template
                             .parent(prov.mcLoc("block/glass"))
                             .renderType(prov.mcLoc("cutout"))).build(ctx.getEntry())
@@ -213,7 +212,7 @@ public class TestMod {
                 .color(() -> () -> (state, world, pos, index) -> 0xFFFF0000)
                 .item()
                     //TODO <1.21.4> .color(() -> () -> (stack, index) -> 0xFFFF0000)
-            .model((ctx, prov) -> prov.createWithExistingModel(ctx.get(), prov.mcLoc("item/egg")))
+            .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.get(), prov.mcLoc("item/egg")))
                     .build()
                 .blockEntity(TestBlockEntity::new)
                     .renderer(() -> TestBlockEntityRenderer::new)
@@ -222,7 +221,7 @@ public class TestMod {
 
     private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
             .block(Block::new)
-            .blockstate((ctx, prov) ->
+            .blockstate(() -> (ctx, prov) ->
                     prov.create(ctx.getEntry(), prov.getBuilder()
                             .transformTemplate(t -> t
                                     .parent(prov.mcLoc("block/gold_block"))

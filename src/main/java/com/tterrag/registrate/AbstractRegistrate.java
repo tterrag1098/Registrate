@@ -19,6 +19,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.Accessors;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.Util;
 import net.minecraft.client.gui.screens.Screen;
@@ -138,6 +139,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     private final Multimap<ResourceKey<CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = ArrayListMultimap.create();
     private ResourceKey<CreativeModeTab> defaultCreativeModeTab = CreativeModeTabs.SEARCH;
 
+    @Accessors(fluent = true)
+    @Getter
     private final NonNullSupplier<Boolean> doDatagen = NonNullSupplier.lazy(DatagenModLoader::isRunningDataGen);
 
     /**
@@ -555,12 +558,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return self();
     }
 
-    private final DataProviderInitializer initializer = new DataProviderInitializer();
+    @Nullable
+    private DataProviderInitializer initializer;
 
     /**
      * Access datapack registry and data provider dependency settings
      */
     public DataProviderInitializer getDataGenInitializer() {
+        if (initializer == null) {
+            initializer = new DataProviderInitializer();
+        }
         return initializer;
     }
 

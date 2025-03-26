@@ -30,7 +30,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -261,7 +260,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      */
     public BlockBuilder<T, P> defaultBlockstate() {
-        return blockstate((ctx, prov) -> prov.createTrivialCube(ctx.getEntry()));
+        return blockstate(() -> (ctx, prov) -> prov.createTrivialCube(ctx.getEntry()));
     }
 
     /**
@@ -272,8 +271,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return this {@link BlockBuilder}
      * @see #setData(GeneratorType, NonNullBiConsumer)
      */
-    public BlockBuilder<T, P> blockstate(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockModelGenerator> cons) {
-        return setData(ProviderType.BLOCKSTATE, cons);
+    public BlockBuilder<T, P> blockstate(NonNullSupplier<NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockModelGenerator>> cons) {
+        if (!getOwner().doDatagen().get()) return this;
+        return setData(ProviderType.BLOCKSTATE, cons.get());
     }
 
     /**

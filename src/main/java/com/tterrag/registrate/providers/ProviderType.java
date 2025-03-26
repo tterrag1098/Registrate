@@ -4,6 +4,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.generators.*;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
 import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -15,8 +16,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.data.loading.DatagenModLoader;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -51,9 +54,9 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
     ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider",  c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.SERVER, c.type()));
 
     // CLIENT DATA
-    ProviderType<RegistrateModelProvider> MODEL = registerProvider("model", c -> new RegistrateModelProvider(c.parent(), c.output()));
-    ProviderType<RegistrateLangProvider> LANG = registerProvider("lang", c -> new RegistrateLangProvider(c.parent(), c.output()));
-    ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = registerProvider("registrate_generic_client_provider", c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.CLIENT, c.type()));
+    ProviderType<RegistrateModelProvider> MODEL = registerClientProvider("model", () -> c -> new RegistrateModelProvider(c.parent(), c.output()));
+    ProviderType<RegistrateLangProvider> LANG = registerClientProvider("lang", () -> c -> new RegistrateLangProvider(c.parent(), c.output()));
+    ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = registerClientProvider("registrate_generic_client_provider", () -> c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.CLIENT, c.type()));
 
     GeneratorType<RegistrateRecipeProvider> RECIPE = RECIPE_RUNNER.createGenerator("recipe");
     GeneratorType<RegistrateBlockModelGenerator> BLOCKSTATE = MODEL.createGenerator("blockstate");
@@ -103,6 +106,14 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
 
     @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerProvider(String name, ProviderType<T> type) {
+        RegistrateDataProvider.TYPES.put(name, type);
+        return type;
+    }
+
+    @Nonnull
+    static <T extends RegistrateProvider> ProviderType<T> registerClientProvider(String name, NonNullSupplier<ProviderType<T>> supplier) {
+        if (!DatagenModLoader.isRunningDataGen()) return context -> null;
+        var type = supplier.get();
         RegistrateDataProvider.TYPES.put(name, type);
         return type;
     }
