@@ -3,6 +3,7 @@ package com.tterrag.registrate.test.mod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.builders.FluidBuilder;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.*;
@@ -73,7 +74,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
@@ -84,7 +84,6 @@ import javax.annotation.Nullable;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 @Mod("testmod")
 public class TestMod {
@@ -255,25 +254,11 @@ public class TestMod {
             .validBlock(() -> Blocks.DIRT)//TODO <1.21.4> now empty valid block is not allowed
             .register();
 
-    @SuppressWarnings("Convert2MethodRef")
     private final FluidEntry<BaseFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
-            .fluid(ResourceLocation.withDefaultNamespace("block/water_flow"), ResourceLocation.withDefaultNamespace("block/lava_still"), (props, still, flow) -> new FluidType(props) {
-                // And now you can do custom behaviours.
-                //TODO @Override
-                public void initializeClient(Consumer<IClientFluidTypeExtensions> consumer) {
-                    consumer.accept(new IClientFluidTypeExtensions() {
-                        @Override
-                        public ResourceLocation getStillTexture() {
-                            return still;
-                        }
-
-                        @Override
-                        public ResourceLocation getFlowingTexture() {
-                            return flow;
-                        }
-                    });
-                }
-            })
+            .fluid(
+                    ResourceLocation.withDefaultNamespace("block/water_flow"),
+                    ResourceLocation.withDefaultNamespace("block/lava_still"),
+					FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
             .renderType(() -> RenderType::translucent)
             .noBucket()

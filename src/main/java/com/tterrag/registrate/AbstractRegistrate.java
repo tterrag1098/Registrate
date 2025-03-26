@@ -1057,17 +1057,17 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-            NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+                                                                 FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        FluidBuilder.FluidTypeFactory typeFactory, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullSupplier<FluidType> fluidType, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
@@ -1096,17 +1096,17 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+                                                                 FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        FluidBuilder.FluidTypeFactory typeFactory, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid> FluidBuilder<T, S> fluid(String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullSupplier<FluidType> fluidType, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
@@ -1135,17 +1135,17 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+                                                                    FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        FluidBuilder.FluidTypeFactory typeFactory, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullSupplier<FluidType> fluidType, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
@@ -1162,30 +1162,30 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture));
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, FluidType::new)).clientExtension(stillTexture, flowingTexture);
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory));
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, typeFactory)).clientExtension(stillTexture, flowingTexture);
     }
 
     public <P> FluidBuilder<BaseFlowingFluid.Flowing, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullSupplier<FluidType> fluidType) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType));
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidType)).clientExtension(stillTexture, flowingTexture);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidFactory));
+                                                                    FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidFactory)).clientExtension(stillTexture, flowingTexture);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        FluidBuilder.FluidTypeFactory typeFactory, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, typeFactory, fluidFactory));
+        FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, typeFactory, fluidFactory)).clientExtension(stillTexture, flowingTexture);
     }
 
     public <T extends BaseFlowingFluid, P> FluidBuilder<T, P> fluid(P parent, String name, ResourceLocation stillTexture, ResourceLocation flowingTexture,
-        NonNullSupplier<FluidType> fluidType, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
-        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, stillTexture, flowingTexture, fluidType, fluidFactory));
+        NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.create(this, parent, name, callback, fluidType, fluidFactory)).clientExtension(stillTexture, flowingTexture);
     }
 
     // Menu

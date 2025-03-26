@@ -26,6 +26,7 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
     @Override
     public void run() {
         parent.genData(ProviderType.ITEM_MODEL, this);
+        //TODO check if an item actually has a valid model
     }
 
 
