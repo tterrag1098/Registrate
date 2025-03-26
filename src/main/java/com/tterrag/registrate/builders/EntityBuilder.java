@@ -206,7 +206,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The secondary color of the egg
      * @return this {@link EntityBuilder}
      */
-    /* TODO spawn egg
+    /* TODO <1.21.4> spawn egg
     @Deprecated
     public EntityBuilder<T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
         return spawnEgg(primaryColor, secondaryColor).build();
@@ -227,7 +227,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The secondary color of the egg
      * @return the {@link ItemBuilder} for the egg item
      */
-    /* TODO spawn egg
+    /* TODO <1.21.4> spawn egg
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Deprecated
     public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {

@@ -191,7 +191,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return this;
     }
 
-    // TODO alternate item coloring helper?
+    // TODO <1.21.4> alternate item coloring helper?
 
     /**
      * Assign the default model to this item, which is simply a generated model with a single texture of the same name.
