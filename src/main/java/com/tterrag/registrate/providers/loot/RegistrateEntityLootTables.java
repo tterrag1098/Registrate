@@ -9,6 +9,7 @@ import javax.annotation.Generated;
 import com.tterrag.registrate.AbstractRegistrate;
 
 import lombok.RequiredArgsConstructor;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.EntityLootSubProvider;
@@ -49,14 +50,24 @@ public class RegistrateEntityLootTables extends VanillaEntityLoot implements Reg
     // @formatter:off
     // GENERATED START - DO NOT EDIT BELOW THIS LINE
 
+    /** Generated override to expose protected method: {@link EntityLootSubProvider#killedByFrog} */
+    @Override
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 01:27:30 GMT")
+    public LootItemCondition.Builder killedByFrog(HolderGetter<EntityType<?>> p_361765_) { return super.killedByFrog(p_361765_); }
+
+    /** Generated override to expose protected method: {@link EntityLootSubProvider#killedByFrogVariant} */
+    @Override
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 01:27:30 GMT")
+    public LootItemCondition.Builder killedByFrogVariant(HolderGetter<EntityType<?>> p_362844_, ResourceKey<FrogVariant> p_335676_) { return super.killedByFrogVariant(p_362844_, p_335676_); }
+
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 18 Jun 2024 17:49:13 GMT")
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 01:27:30 GMT")
     public void add(EntityType<?> p_248740_, LootTable.Builder p_249440_) { super.add(p_248740_, p_249440_); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 18 Jun 2024 17:49:13 GMT")
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 01:27:30 GMT")
     public void add(EntityType<?> p_252130_, ResourceKey<LootTable> p_335943_, LootTable.Builder p_249357_) { super.add(p_252130_, p_335943_, p_249357_); }
 
     // GENERATED END
