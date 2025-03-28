@@ -1,6 +1,15 @@
 package com.tterrag.registrate.builders;
 
-import com.google.common.base.Preconditions;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import com.google.gson.JsonElement;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JavaOps;
+import com.mojang.serialization.JsonOps;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -15,10 +24,14 @@ import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.RegistrateDistExecutor;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
-import com.tterrag.registrate.util.nullness.*;
+import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
+import com.tterrag.registrate.util.nullness.NonNullBiFunction;
+import com.tterrag.registrate.util.nullness.NonNullFunction;
+import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
+
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BlockStateModel.Unbaked;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -27,22 +40,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * A builder for blocks, allows for customization of the {@link Block.Properties}, creation of block items, and configuration of data associated with blocks (loot tables, recipes, etc.).
@@ -166,7 +168,19 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
-                ;//TODO <1.21.4> automatic inheritance of block model is not supported yet
+                .model(() -> (ctx, prov) -> {
+                    var model = getOwner().getDataProvider(ProviderType.BLOCKSTATE)
+                            .map(g -> g.seenBlockstates.get(getEntry()))
+                            .flatMap(b -> b.simpleModels())
+                            .map(b -> b.models().get(""))
+                            .flatMap(ub -> Unbaked.CODEC.encodeStart(JsonOps.INSTANCE, ub).result())
+                            .filter(JsonElement::isJsonObject)
+                            .map(j -> j.getAsJsonObject().get("model"))
+                            .map(JsonElement::getAsString);
+                    if (model.isPresent()) {
+                        prov.createWithExistingModel(ctx.get(), ResourceLocation.parse(model.get()));
+                    }
+                });
     }
 
     /**

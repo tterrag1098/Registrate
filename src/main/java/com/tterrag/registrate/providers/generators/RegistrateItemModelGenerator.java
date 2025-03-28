@@ -3,6 +3,9 @@ package com.tterrag.registrate.providers.generators;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import com.tterrag.registrate.util.nullness.NonnullType;
+
+import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
 import net.minecraft.client.data.models.model.ItemModelUtils;
@@ -50,4 +53,7 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
         return BuiltInRegistries.ITEM.getKey(item.get().asItem()).getPath();
     }
 
+    public void generateTintedModel(@NonnullType Item entry, ResourceLocation model, ItemTintSource tint) {
+        this.itemModelOutput.accept(entry, ItemModelUtils.tintedModel(model, tint));
+    }
 }

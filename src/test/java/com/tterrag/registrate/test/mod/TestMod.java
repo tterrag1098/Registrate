@@ -11,6 +11,9 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.item.Constant;
+import net.minecraft.client.color.item.ItemTintSource;
+import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -176,7 +179,6 @@ public class TestMod {
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
-                //TODO <1.21.4> .color(() -> () -> (stack, index) -> 0xFF0000FF)
                 .tag(ItemTags.BEDS)
             .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
                 .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx))
@@ -212,8 +214,7 @@ public class TestMod {
                 .tag(BlockTags.WITHER_IMMUNE)
                 .color(() -> () -> (state, world, pos, index) -> 0xFFFF0000)
                 .item()
-                    //TODO <1.21.4> .color(() -> () -> (stack, index) -> 0xFFFF0000)
-            .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.get(), prov.mcLoc("item/egg")))
+            .model(() -> (ctx, prov) -> prov.generateTintedModel(ctx.get(), prov.mcLoc("item/egg"), new Constant(0xFFFF0000)))
                     .build()
                 .blockEntity(TestBlockEntity::new)
                     .renderer(() -> TestBlockEntityRenderer::new)

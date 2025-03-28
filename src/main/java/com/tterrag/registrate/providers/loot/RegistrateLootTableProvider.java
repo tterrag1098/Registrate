@@ -42,7 +42,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
 
         ContextKeySet getLootSet();
 
-        static <T extends RegistrateLootTables> LootType<T> register(String name, ContextKeySet set, TriFunction<HolderLookup.Provider, AbstractRegistrate, Consumer<T>, T> factory) {
+        static <T extends RegistrateLootTables> LootType<T> register(String name, ContextKeySet set, TriFunction<HolderLookup.Provider, AbstractRegistrate<?>, Consumer<T>, T> factory) {
             LootType<T> type = new LootType<T>() {
                 @Override
                 public T getLootCreator(HolderLookup.Provider provider, AbstractRegistrate<?> parent, Consumer<T> callback) {

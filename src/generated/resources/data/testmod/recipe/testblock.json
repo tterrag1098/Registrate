@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "D": {
-      "item": "minecraft:diamond"
-    },
-    "E": {
-      "item": "minecraft:egg"
-    }
+    "D": "minecraft:diamond",
+    "E": "minecraft:egg"
   },
   "pattern": [
     "DDD",

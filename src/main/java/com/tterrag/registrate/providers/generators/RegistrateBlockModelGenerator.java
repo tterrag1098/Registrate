@@ -1,7 +1,13 @@
 package com.tterrag.registrate.providers.generators;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.ProviderType;
+
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelOutput;
 import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
@@ -9,19 +15,23 @@ import net.minecraft.client.data.models.model.ModelInstance;
 import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TexturedModel;
+import net.minecraft.client.renderer.block.model.BlockModelDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
 import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
-
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class RegistrateBlockModelGenerator extends BlockModelGenerators {
 
     private final AbstractRegistrate<?> parent;
+    public final Map<Block, BlockModelDefinition> seenBlockstates = new HashMap<>();
 
     public RegistrateBlockModelGenerator(AbstractRegistrate<?> parent, Consumer<BlockModelDefinitionGenerator> known, ItemModelOutput item, BiConsumer<ResourceLocation, ModelInstance> model) {
         super(known, item, model);
+        ObfuscationReflectionHelper.<BlockModelGenerators, Consumer<BlockModelDefinitionGenerator>>setPrivateValue(BlockModelGenerators.class, this, g -> {
+            this.seenBlockstates.put(g.block(), g.create());
+            known.accept(g);
+        }, "blockStateOutput");
         this.parent = parent;
     }
 
