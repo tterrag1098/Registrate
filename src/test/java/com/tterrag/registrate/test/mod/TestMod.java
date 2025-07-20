@@ -3,7 +3,9 @@ package com.tterrag.registrate.test.mod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.*;
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -12,8 +14,6 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.Constant;
-import net.minecraft.client.color.item.ItemTintSource;
-import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -215,7 +215,7 @@ public class TestMod {
                 .tag(BlockTags.WITHER_IMMUNE)
                 .color(() -> () -> (state, world, pos, index) -> 0xFFFF0000)
                 .item()
-            .model(() -> (ctx, prov) -> prov.generateTintedModel(ctx.get(), prov.mcLoc("item/egg"), new Constant(0xFFFF0000)))
+            .model(() -> Client::testBlockModel)
                     .build()
                 .blockEntity(TestBlockEntity::new)
                     .renderer(() -> TestBlockEntityRenderer::new)
@@ -421,5 +421,11 @@ public class TestMod {
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
+    }
+
+    private static class Client {
+        private static void testBlockModel(DataGenContext<Item, BlockItem> ctx, RegistrateItemModelGenerator prov) {
+            prov.generateTintedModel(ctx.get(), prov.mcLoc("item/egg"), new Constant(0xFFFF0000));
+        }
     }
 }
