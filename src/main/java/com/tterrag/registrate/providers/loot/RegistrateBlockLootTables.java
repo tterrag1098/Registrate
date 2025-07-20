@@ -50,222 +50,222 @@ public class RegistrateBlockLootTables extends BlockLootSubProvider implements R
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#applyExplosionDecay} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public <T extends FunctionUserBuilder<T>> T applyExplosionDecay(ItemLike p_248695_, FunctionUserBuilder<T> p_248548_) { return super.applyExplosionDecay(p_248695_, p_248548_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public <T extends FunctionUserBuilder<T>> T applyExplosionDecay(ItemLike item, FunctionUserBuilder<T> functionBuilder) { return super.applyExplosionDecay(item, functionBuilder); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#applyExplosionCondition} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public <T extends ConditionUserBuilder<T>> T applyExplosionCondition(ItemLike p_249717_, ConditionUserBuilder<T> p_248851_) { return super.applyExplosionCondition(p_249717_, p_248851_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public <T extends ConditionUserBuilder<T>> T applyExplosionCondition(ItemLike item, ConditionUserBuilder<T> conditionBuilder) { return super.applyExplosionCondition(item, conditionBuilder); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createSilkTouchDispatchTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createSilkTouchDispatchTable(Block p_250203_, LootPoolEntryContainer.Builder<?> p_252089_) { return super.createSilkTouchDispatchTable(p_250203_, p_252089_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createSilkTouchDispatchTable(Block block, LootPoolEntryContainer.Builder<?> builder) { return super.createSilkTouchDispatchTable(block, builder); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createShearsDispatchTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createShearsDispatchTable(Block p_252195_, LootPoolEntryContainer.Builder<?> p_250102_) { return super.createShearsDispatchTable(p_252195_, p_250102_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createShearsDispatchTable(Block block, LootPoolEntryContainer.Builder<?> builder) { return super.createShearsDispatchTable(block, builder); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createSilkTouchOrShearsDispatchTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createSilkTouchOrShearsDispatchTable(Block p_250539_, LootPoolEntryContainer.Builder<?> p_251459_) { return super.createSilkTouchOrShearsDispatchTable(p_250539_, p_251459_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createSilkTouchOrShearsDispatchTable(Block block, LootPoolEntryContainer.Builder<?> builder) { return super.createSilkTouchOrShearsDispatchTable(block, builder); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createSingleItemTableWithSilkTouch} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createSingleItemTableWithSilkTouch(Block p_249305_, ItemLike p_251905_) { return super.createSingleItemTableWithSilkTouch(p_249305_, p_251905_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createSingleItemTableWithSilkTouch(Block block, ItemLike item) { return super.createSingleItemTableWithSilkTouch(block, item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createSingleItemTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createSingleItemTable(ItemLike p_251584_, NumberProvider p_249865_) { return super.createSingleItemTable(p_251584_, p_249865_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createSingleItemTable(ItemLike item, NumberProvider count) { return super.createSingleItemTable(item, count); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createSingleItemTableWithSilkTouch} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createSingleItemTableWithSilkTouch(Block p_251449_, ItemLike p_248558_, NumberProvider p_250047_) { return super.createSingleItemTableWithSilkTouch(p_251449_, p_248558_, p_250047_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createSingleItemTableWithSilkTouch(Block block, ItemLike item, NumberProvider count) { return super.createSingleItemTableWithSilkTouch(block, item, count); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createSilkTouchOnlyTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createSilkTouchOnlyTable(ItemLike p_252216_) { return super.createSilkTouchOnlyTable(p_252216_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createSilkTouchOnlyTable(ItemLike item) { return super.createSilkTouchOnlyTable(item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createPotFlowerItemTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createPotFlowerItemTable(ItemLike p_249395_) { return super.createPotFlowerItemTable(p_249395_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createPotFlowerItemTable(ItemLike item) { return super.createPotFlowerItemTable(item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createSlabItemTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createSlabItemTable(Block p_251313_) { return super.createSlabItemTable(p_251313_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createSlabItemTable(Block block) { return super.createSlabItemTable(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createNameableBlockEntityTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createNameableBlockEntityTable(Block p_252291_) { return super.createNameableBlockEntityTable(p_252291_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createNameableBlockEntityTable(Block block) { return super.createNameableBlockEntityTable(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createShulkerBoxDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createShulkerBoxDrop(Block p_252164_) { return super.createShulkerBoxDrop(p_252164_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createShulkerBoxDrop(Block block) { return super.createShulkerBoxDrop(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createCopperOreDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createCopperOreDrops(Block p_251306_) { return super.createCopperOreDrops(p_251306_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createCopperOreDrops(Block block) { return super.createCopperOreDrops(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createLapisOreDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createLapisOreDrops(Block p_251511_) { return super.createLapisOreDrops(p_251511_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createLapisOreDrops(Block block) { return super.createLapisOreDrops(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createRedstoneOreDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createRedstoneOreDrops(Block p_251906_) { return super.createRedstoneOreDrops(p_251906_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createRedstoneOreDrops(Block block) { return super.createRedstoneOreDrops(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createBannerDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createBannerDrop(Block p_249810_) { return super.createBannerDrop(p_249810_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createBannerDrop(Block block) { return super.createBannerDrop(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createBeeNestDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createBeeNestDrop(Block p_250988_) { return super.createBeeNestDrop(p_250988_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createBeeNestDrop(Block block) { return super.createBeeNestDrop(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createBeeHiveDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createBeeHiveDrop(Block p_248770_) { return super.createBeeHiveDrop(p_248770_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createBeeHiveDrop(Block block) { return super.createBeeHiveDrop(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createCaveVinesDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createCaveVinesDrop(Block p_251070_) { return super.createCaveVinesDrop(p_251070_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createCaveVinesDrop(Block block) { return super.createCaveVinesDrop(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createOreDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createOreDrop(Block p_250450_, Item p_249745_) { return super.createOreDrop(p_250450_, p_249745_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createOreDrop(Block block, Item item) { return super.createOreDrop(block, item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createMushroomBlockDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createMushroomBlockDrop(Block p_249959_, ItemLike p_249315_) { return super.createMushroomBlockDrop(p_249959_, p_249315_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createMushroomBlockDrop(Block block, ItemLike item) { return super.createMushroomBlockDrop(block, item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createGrassDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createGrassDrops(Block p_252139_) { return super.createGrassDrops(p_252139_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createGrassDrops(Block block) { return super.createGrassDrops(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createShearsOnlyDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createShearsOnlyDrop(ItemLike p_250684_) { return super.createShearsOnlyDrop(p_250684_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createShearsOnlyDrop(ItemLike item) { return super.createShearsOnlyDrop(item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createShearsOrSilkTouchOnlyDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createShearsOrSilkTouchOnlyDrop(ItemLike p_381618_) { return super.createShearsOrSilkTouchOnlyDrop(p_381618_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createShearsOrSilkTouchOnlyDrop(ItemLike item) { return super.createShearsOrSilkTouchOnlyDrop(item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createMultifaceBlockDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createMultifaceBlockDrops(Block p_249088_, LootItemCondition.Builder p_251535_) { return super.createMultifaceBlockDrops(p_249088_, p_251535_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createMultifaceBlockDrops(Block block, LootItemCondition.Builder builder) { return super.createMultifaceBlockDrops(block, builder); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createMultifaceBlockDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createMultifaceBlockDrops(Block p_383229_) { return super.createMultifaceBlockDrops(p_383229_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createMultifaceBlockDrops(Block block) { return super.createMultifaceBlockDrops(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createMossyCarpetBlockDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createMossyCarpetBlockDrops(Block p_380250_) { return super.createMossyCarpetBlockDrops(p_380250_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createMossyCarpetBlockDrops(Block block) { return super.createMossyCarpetBlockDrops(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createLeavesDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createLeavesDrops(Block p_250088_, Block p_250731_, float... p_248949_) { return super.createLeavesDrops(p_250088_, p_250731_, p_248949_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createLeavesDrops(Block leavesBlock, Block saplingBlock, float... chances) { return super.createLeavesDrops(leavesBlock, saplingBlock, chances); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createOakLeavesDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createOakLeavesDrops(Block p_249535_, Block p_251505_, float... p_250753_) { return super.createOakLeavesDrops(p_249535_, p_251505_, p_250753_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createOakLeavesDrops(Block oakLeavesBlock, Block saplingBlock, float... chances) { return super.createOakLeavesDrops(oakLeavesBlock, saplingBlock, chances); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createMangroveLeavesDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createMangroveLeavesDrops(Block p_251103_) { return super.createMangroveLeavesDrops(p_251103_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createMangroveLeavesDrops(Block block) { return super.createMangroveLeavesDrops(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createCropDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createCropDrops(Block p_249457_, Item p_248599_, Item p_251915_, LootItemCondition.Builder p_252202_) { return super.createCropDrops(p_249457_, p_248599_, p_251915_, p_252202_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createCropDrops(Block cropBlock, Item grownCropItem, Item seedsItem, LootItemCondition.Builder dropGrownCropCondition) { return super.createCropDrops(cropBlock, grownCropItem, seedsItem, dropGrownCropCondition); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createDoublePlantShearsDrop} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createDoublePlantShearsDrop(Block p_248678_) { return super.createDoublePlantShearsDrop(p_248678_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createDoublePlantShearsDrop(Block sheared) { return super.createDoublePlantShearsDrop(sheared); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createDoublePlantWithSeedDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createDoublePlantWithSeedDrops(Block p_248590_, Block p_248735_) { return super.createDoublePlantWithSeedDrops(p_248590_, p_248735_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createDoublePlantWithSeedDrops(Block block, Block sheared) { return super.createDoublePlantWithSeedDrops(block, sheared); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createCandleDrops} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createCandleDrops(Block p_250896_) { return super.createCandleDrops(p_250896_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createCandleDrops(Block candleBlock) { return super.createCandleDrops(candleBlock); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createCandleCakeDrops} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public static LootTable.Builder createCandleCakeDrops(Block p_250280_) { return BlockLootSubProvider.createCandleCakeDrops(p_250280_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public static LootTable.Builder createCandleCakeDrops(Block candleCakeBlock) { return BlockLootSubProvider.createCandleCakeDrops(candleCakeBlock); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#addNetherVinesDropTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public void addNetherVinesDropTable(Block p_252269_, Block p_250696_) { super.addNetherVinesDropTable(p_252269_, p_250696_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public void addNetherVinesDropTable(Block vines, Block plant) { super.addNetherVinesDropTable(vines, plant); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#createDoorTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public LootTable.Builder createDoorTable(Block p_252166_) { return super.createDoorTable(p_252166_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public LootTable.Builder createDoorTable(Block doorBlock) { return super.createDoorTable(doorBlock); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#dropPottedContents} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public void dropPottedContents(Block p_251064_) { super.dropPottedContents(p_251064_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public void dropPottedContents(Block flowerPot) { super.dropPottedContents(flowerPot); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#otherWhenSilkTouch} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public void otherWhenSilkTouch(Block p_249932_, Block p_252053_) { super.otherWhenSilkTouch(p_249932_, p_252053_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public void otherWhenSilkTouch(Block block, Block other) { super.otherWhenSilkTouch(block, other); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#dropOther} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public void dropOther(Block p_248885_, ItemLike p_251883_) { super.dropOther(p_248885_, p_251883_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public void dropOther(Block block, ItemLike item) { super.dropOther(block, item); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#dropWhenSilkTouch} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public void dropWhenSilkTouch(Block p_250855_) { super.dropWhenSilkTouch(p_250855_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public void dropWhenSilkTouch(Block block) { super.dropWhenSilkTouch(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#dropSelf} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public void dropSelf(Block p_249181_) { super.dropSelf(p_249181_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public void dropSelf(Block block) { super.dropSelf(block); }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Wed, 26 Mar 2025 08:34:18 GMT")
-    public void add(Block p_250610_, LootTable.Builder p_249817_) { super.add(p_250610_, p_249817_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sun, 20 Jul 2025 07:02:21 GMT")
+    public void add(Block block, LootTable.Builder builder) { super.add(block, builder); }
 
     // GENERATED END
 }

@@ -46,18 +46,18 @@ public class RegistrateEntityLootTables extends EntityLootSubProvider implements
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#killedByFrog} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 08:35:35 GMT")
-    public LootItemCondition.Builder killedByFrog(HolderGetter<EntityType<?>> p_361765_) { return super.killedByFrog(p_361765_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Sun, 20 Jul 2025 07:02:04 GMT")
+    public LootItemCondition.Builder killedByFrog(HolderGetter<EntityType<?>> entityTypeRegistry) { return super.killedByFrog(entityTypeRegistry); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 08:35:35 GMT")
-    public void add(EntityType<?> p_248740_, LootTable.Builder p_249440_) { super.add(p_248740_, p_249440_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Sun, 20 Jul 2025 07:02:04 GMT")
+    public void add(EntityType<?> entityType, LootTable.Builder builder) { super.add(entityType, builder); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 08:35:35 GMT")
-    public void add(EntityType<?> p_252130_, ResourceKey<LootTable> p_335943_, LootTable.Builder p_249357_) { super.add(p_252130_, p_335943_, p_249357_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Sun, 20 Jul 2025 07:02:04 GMT")
+    public void add(EntityType<?> entityType, ResourceKey<LootTable> defaultLootTable, LootTable.Builder builder) { super.add(entityType, defaultLootTable, builder); }
 
     // GENERATED END
 }

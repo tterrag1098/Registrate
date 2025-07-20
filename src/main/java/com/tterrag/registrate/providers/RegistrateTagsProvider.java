@@ -5,8 +5,11 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.IntrinsicHolderTagsProvider;
+import net.minecraft.data.tags.KeyTagProvider;
+import net.minecraft.data.tags.TagAppender;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.neoforged.fml.LogicalSide;
 
@@ -15,13 +18,21 @@ import java.util.function.Function;
 
 public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvider {
 
-    TagsProvider.TagAppender<T> addTag(TagKey<T> tag);
-
     CompletableFuture<TagsProvider.TagLookup<T>> contentsGetter();
 
 	ResourceKey<? extends Registry<T>> registry();
 
-    class Impl<T> extends TagsProvider<T> implements RegistrateTagsProvider<T> {
+    TagBuilder rawBuilder(TagKey<T> key);
+
+    interface Key<T> extends RegistrateTagsProvider<T> {
+        TagAppender<ResourceKey<T>, T> tag(TagKey<T> key);
+    }
+
+    interface Intrinsic<T> extends RegistrateTagsProvider<T> {
+        TagAppender<T, T> tag(TagKey<T> key);
+    }
+
+    class Impl<T> extends KeyTagProvider<T> implements RegistrateTagsProvider.Key<T> {
         private final AbstractRegistrate<?> owner;
         private final ProviderType<? extends Impl<T>> type;
         private final String name;
@@ -50,8 +61,13 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
         }
 
         @Override
-        public TagAppender<T> addTag(TagKey<T> tag) {
-            return super.tag(tag);
+        public TagBuilder rawBuilder(final TagKey<T> key) {
+            return super.getOrCreateRawBuilder(key);
+        }
+
+        @Override
+        public TagAppender<ResourceKey<T>, T> tag(TagKey<T> key) {
+            return super.tag(key);
         }
 
         @Override
@@ -59,14 +75,14 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
             return createContentsProvider();
         }
 
-		@Override
+        @Override
 		public ResourceKey<? extends Registry<T>> registry() {
 			return registryKey;
 		}
 
 	}
 
-    class IntrinsicImpl<T> extends IntrinsicHolderTagsProvider<T> implements RegistrateTagsProvider<T> {
+    class IntrinsicImpl<T> extends IntrinsicHolderTagsProvider<T> implements RegistrateTagsProvider.Intrinsic<T> {
         private final AbstractRegistrate<?> owner;
         private final ProviderType<? extends IntrinsicImpl<T>> type;
         private final String name;
@@ -95,8 +111,13 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
         }
 
         @Override
-        public IntrinsicTagAppender<T> addTag(TagKey<T> tag) {
-            return super.tag(tag);
+        public TagBuilder rawBuilder(TagKey<T> key) {
+            return super.getOrCreateRawBuilder(key);
+        }
+
+        @Override
+        public TagAppender<T, T> tag(final TagKey<T> key) {
+            return super.tag(key);
         }
 
         @Override
@@ -108,6 +129,5 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
 		public ResourceKey<? extends Registry<T>> registry() {
 			return registryKey;
 		}
-
-	}
+    }
 }

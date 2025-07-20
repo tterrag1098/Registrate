@@ -16,9 +16,9 @@ import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.entity.PigRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -84,6 +84,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -261,7 +262,7 @@ public class TestMod {
                     ResourceLocation.withDefaultNamespace("block/lava_still"),
 					FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
-            .renderType(() -> RenderType::translucent)
+            .renderType(() -> () -> ChunkSectionLayer.TRANSLUCENT)
             .noBucket()
 //            .bucket()
 //                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
@@ -376,6 +377,7 @@ public class TestMod {
                                             /* infiniBurn */ BlockTags.INFINIBURN_OVERWORLD,
                                             /* effectsLocation */ BuiltinDimensionTypes.OVERWORLD_EFFECTS,
                                             /* ambientLight */ 0F,
+                                            /* cloudHeight */ Optional.of(192),
                                             new DimensionType.MonsterSettings(
                                                     /* piglinSafe */ false,
                                                     /* hasRaids */ true,
