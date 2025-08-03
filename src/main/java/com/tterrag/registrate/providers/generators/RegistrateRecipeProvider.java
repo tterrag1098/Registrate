@@ -19,6 +19,7 @@ import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -42,10 +43,17 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
     @Delegate
     private final RecipeOutput outputDelegated;
 
+    private final HolderLookup<Item> itemLookup;
+    private final HolderLookup<Block> blockLookup;
+    private final HolderLookup<EntityType<?>> entityLookup;
+
     public RegistrateRecipeProvider(RegistrateRecipeRunner runner, HolderLookup.Provider registries, RecipeOutput output) {
         super(registries, output);
         this.runner = runner;
         this.outputDelegated = output;
+        itemLookup = registries.lookupOrThrow(Registries.ITEM);
+        blockLookup = registries.lookupOrThrow(Registries.BLOCK);
+        entityLookup = registries.lookupOrThrow(Registries.ENTITY_TYPE);
     }
 
     @Override
@@ -53,6 +61,22 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
         runner.provider = this;
         runner.owner.genData(ProviderType.RECIPE, this);
         runner.provider = null;
+    }
+
+    public HolderLookup.Provider registries() {
+        return registries;
+    }
+
+    public HolderLookup<Item> itemLookup() {
+        return itemLookup;
+    }
+
+    public HolderLookup<Block> blockLookup() {
+        return blockLookup;
+    }
+
+    public HolderLookup<EntityType<?>> entityLookup() {
+        return entityLookup;
     }
 
     public <T> Holder<T> resolve(ResourceKey<T> key) {
