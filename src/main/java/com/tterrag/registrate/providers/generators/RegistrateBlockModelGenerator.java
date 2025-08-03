@@ -1,25 +1,52 @@
 package com.tterrag.registrate.providers.generators;
 
+import com.tterrag.registrate.AbstractRegistrate;
+import com.tterrag.registrate.providers.ProviderType;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelOutput;
+import net.minecraft.client.data.models.MultiVariant;
+import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
+import net.minecraft.client.data.models.blockstates.MultiPartGenerator;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
+import net.minecraft.client.data.models.model.ModelInstance;
+import net.minecraft.client.data.models.model.ModelTemplate;
+import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.data.models.model.TexturedModel;
+import net.minecraft.client.renderer.block.model.BlockModelDefinition;
+import net.minecraft.client.renderer.block.model.VariantMutator;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.CeilingHangingSignBlock;
+import net.minecraft.world.level.block.CrossCollisionBlock;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.FenceBlock;
+import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.IronBarsBlock;
+import net.minecraft.world.level.block.PipeBlock;
+import net.minecraft.world.level.block.PressurePlateBlock;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.StandingSignBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.WallHangingSignBlock;
+import net.minecraft.world.level.block.WallSignBlock;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplate;
+import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.providers.ProviderType;
-
-import net.minecraft.client.data.models.BlockModelGenerators;
-import net.minecraft.client.data.models.ItemModelOutput;
-import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
-import net.minecraft.client.data.models.model.ModelInstance;
-import net.minecraft.client.data.models.model.ModelTemplate;
-import net.minecraft.client.data.models.model.TextureMapping;
-import net.minecraft.client.data.models.model.TexturedModel;
-import net.minecraft.client.renderer.block.model.BlockModelDefinition;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.neoforged.fml.util.ObfuscationReflectionHelper;
-import net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder;
 
 public class RegistrateBlockModelGenerator extends BlockModelGenerators {
 
@@ -43,10 +70,6 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
 
     public void create(Block block, ResourceLocation model) {
         this.blockStateOutput.accept(createSimpleBlock(block, plainVariant(model)));
-    }
-
-    public void create(Block block, TexturedModel.Provider texture) {
-        this.blockStateOutput.accept(createSimpleBlock(block, plainVariant(texture.create(block, this.modelOutput))));
     }
 
     public ResourceLocation mcLoc(String id) {
@@ -81,4 +104,609 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         return withBuilder(ExtendedModelTemplateBuilder.of(model.getTemplate()), model.getMapping());
     }
 
+    private static ExtendedModelTemplate withRenderType(ModelTemplate template, ResourceLocation renderType) {
+        return ExtendedModelTemplateBuilder.of(template).renderType(renderType).build();
+    }
+
+    private static TextureMapping sideBottomTopTextures(ResourceLocation side, ResourceLocation bottom, ResourceLocation top) {
+        return new TextureMapping()
+                .put(TextureSlot.SIDE, side)
+                .put(TextureSlot.BOTTOM, bottom)
+                .put(TextureSlot.TOP, top);
+    }
+
+    public ResourceLocation blockTexture(Block block) {
+        return TextureMapping.getBlockTexture(block);
+    }
+
+    public ResourceLocation blockTexture(Block block, String suffix) {
+        return TextureMapping.getBlockTexture(block, suffix);
+    }
+
+    public void generateWithTemplate(Block block, ModelTemplate template, TextureMapping textures) {
+        create(block, template.create(block, textures, modelOutput));
+    }
+
+    public void generate(Block block, TexturedModel.Provider texture) {
+        blockStateOutput.accept(createSimpleBlock(block, plainVariant(texture.create(block, modelOutput))));
+    }
+
+    public void generateAxisBlock(RotatedPillarBlock block) {
+        generateAxisBlock(block, blockTexture(block));
+    }
+
+    public void generateLogBlock(RotatedPillarBlock block) {
+        ResourceLocation texture = blockTexture(block);
+        generateAxisBlock(block, blockTexture(block), texture.withSuffix("_top"));
+    }
+
+    public void generateAxisBlock(RotatedPillarBlock block, ResourceLocation baseName) {
+        generateAxisBlock(block, baseName.withSuffix("_side"), baseName.withSuffix("_end"));
+    }
+
+    public void generateAxisBlock(RotatedPillarBlock block, ResourceLocation side, ResourceLocation end) {
+        generateAxisBlockInternal(block, side, end, ModelTemplates.CUBE_COLUMN, ModelTemplates.CUBE_COLUMN_HORIZONTAL);
+    }
+
+    public void generateAxisBlockWithRenderType(RotatedPillarBlock block, ResourceLocation renderType) {
+        generateAxisBlockWithRenderType(block, blockTexture(block), renderType);
+    }
+
+    public void generateLogBlockWithRenderType(RotatedPillarBlock block, ResourceLocation renderType) {
+        ResourceLocation texture = blockTexture(block);
+        generateAxisBlockWithRenderType(block, blockTexture(block), texture.withSuffix("_top"), renderType);
+    }
+
+    public void generateAxisBlockWithRenderType(RotatedPillarBlock block, ResourceLocation baseName, ResourceLocation renderType) {
+        generateAxisBlockWithRenderType(block, baseName.withSuffix("_side"), baseName.withSuffix("_end"), renderType);
+    }
+
+    public void generateAxisBlockWithRenderType(RotatedPillarBlock block, ResourceLocation side, ResourceLocation end, ResourceLocation renderType) {
+        generateAxisBlockInternal(
+                block,
+                side,
+                end,
+                withRenderType(ModelTemplates.CUBE_COLUMN, renderType),
+                withRenderType(ModelTemplates.CUBE_COLUMN_HORIZONTAL, renderType)
+        );
+    }
+
+    private void generateAxisBlockInternal(RotatedPillarBlock block, ResourceLocation side, ResourceLocation end, ModelTemplate cubeColumn, ModelTemplate cubeColumnHorizontal) {
+        generateAxisBlock(block,
+                plainVariant(cubeColumn.create(block, TextureMapping.column(side, end), modelOutput)),
+                plainVariant(cubeColumnHorizontal.create(block, TextureMapping.column(side, end), modelOutput))
+        );
+    }
+
+    public void generateAxisBlock(RotatedPillarBlock block, MultiVariant vertical, MultiVariant horizontal) {
+        blockStateOutput.accept(createRotatedPillarWithHorizontalVariant(block, vertical, horizontal));
+    }
+
+    private static final int DEFAULT_ANGLE_OFFSET = 180;
+
+    public void generateHorizontalBlock(Block block, ResourceLocation side, ResourceLocation front, ResourceLocation top) {
+        TextureMapping mapping = new TextureMapping().put(TextureSlot.SIDE, side).put(TextureSlot.FRONT, front).put(TextureSlot.TOP, top);
+        generateHorizontalBlock(block, plainVariant(ModelTemplates.CUBE_ORIENTABLE.create(block, mapping, modelOutput)));
+    }
+
+    private static VariantMutator yRot(Direction direction, int angleOffset) {
+        return switch ((direction.get2DDataValue() + angleOffset / 90) % 4) {
+            case 0 -> NOP;
+            case 1 -> Y_ROT_90;
+            case 2 -> Y_ROT_180;
+            case 3 -> Y_ROT_270;
+            default -> throw new IllegalStateException();
+        };
+    }
+
+    public static PropertyDispatch<VariantMutator> rotationHorizontalFacing(int angleOffset) {
+        return PropertyDispatch.modify(BlockStateProperties.HORIZONTAL_FACING)
+                .generate(direction -> yRot(direction, angleOffset));
+    }
+
+    public static PropertyDispatch<VariantMutator> rotationFacing(int angleOffsetY) {
+        return PropertyDispatch.modify(BlockStateProperties.FACING).generate(direction -> {
+            VariantMutator xRot = switch (direction) {
+                case DOWN -> X_ROT_180;
+                case UP -> NOP;
+                case NORTH, EAST, SOUTH, WEST -> X_ROT_90;
+            };
+            VariantMutator yRot = direction.getAxis().isVertical() ? NOP : yRot(direction, angleOffsetY);
+            return xRot.then(yRot);
+        });
+    }
+
+    public static PropertyDispatch<VariantMutator> rotationAttachFaceAndHorizontalFacing(int angleOffsetY) {
+        return PropertyDispatch.modify(BlockStateProperties.ATTACH_FACE, BlockStateProperties.HORIZONTAL_FACING).generate((attachFace, direction) -> {
+            VariantMutator xRot = switch (attachFace) {
+                case FLOOR -> NOP;
+                case WALL -> X_ROT_90;
+                case CEILING -> X_ROT_180;
+            };
+            VariantMutator yRot = yRot(direction, attachFace == AttachFace.CEILING ? angleOffsetY + 180 : angleOffsetY);
+            return xRot.then(yRot);
+        });
+    }
+
+    public void generateHorizontalBlock(Block block, MultiVariant model) {
+        blockStateOutput.accept(MultiVariantGenerator.dispatch(block, model).with(ROTATION_HORIZONTAL_FACING));
+    }
+
+    public void generateHorizontalBlock(Block block, MultiVariant multiVariant, int angleOffset) {
+        blockStateOutput.accept(MultiVariantGenerator.dispatch(block, multiVariant).with(rotationHorizontalFacing(angleOffset)));
+    }
+
+    public void generateHorizontalFaceBlock(Block block, MultiVariant model) {
+        generateHorizontalFaceBlock(block, model, DEFAULT_ANGLE_OFFSET);
+    }
+
+    public void generateHorizontalFaceBlock(Block block, MultiVariant variant, int angleOffset) {
+        blockStateOutput.accept(MultiVariantGenerator.dispatch(block, variant).with(rotationAttachFaceAndHorizontalFacing(angleOffset)));
+    }
+
+    public void generateDirectionalBlock(Block block, MultiVariant model) {
+        generateDirectionalBlock(block, model, DEFAULT_ANGLE_OFFSET);
+    }
+
+    public void generateDirectionalBlock(Block block, MultiVariant model, int angleOffsetY) {
+        blockStateOutput.accept(MultiVariantGenerator.dispatch(block, model).with(rotationFacing(angleOffsetY)));
+    }
+
+    public void generateStairsBlock(StairBlock block, ResourceLocation texture) {
+        generateStairsBlock(block, texture, texture, texture);
+    }
+
+    public void generateStairsBlock(StairBlock block, String name, ResourceLocation texture) {
+        generateStairsBlock(block, name, texture, texture, texture);
+    }
+
+    public void generateStairsBlock(StairBlock block, ResourceLocation side, ResourceLocation bottom, ResourceLocation top) {
+        TextureMapping textures = sideBottomTopTextures(side, bottom, top);
+        blockStateOutput.accept(createStairs(block,
+                plainVariant(ModelTemplates.STAIRS_INNER.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.STAIRS_STRAIGHT.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.STAIRS_OUTER.create(block, textures, modelOutput))
+        ));
+    }
+
+    public void generateStairsBlock(StairBlock block, String name, ResourceLocation side, ResourceLocation bottom, ResourceLocation top) {
+        generateStairsBlockInternal(block, modLoc(name + "_stairs"), side, bottom, top, ModelTemplates.STAIRS_STRAIGHT, ModelTemplates.STAIRS_INNER, ModelTemplates.STAIRS_OUTER);
+    }
+
+    public void generateStairsBlockWithRenderType(StairBlock block, ResourceLocation texture, ResourceLocation renderType) {
+        generateStairsBlockWithRenderType(block, texture, texture, texture, renderType);
+    }
+
+    public void generateStairsBlockWithRenderType(StairBlock block, String name, ResourceLocation texture, ResourceLocation renderType) {
+        generateStairsBlockWithRenderType(block, name, texture, texture, texture, renderType);
+    }
+
+    public void generateStairsBlockWithRenderType(StairBlock block, ResourceLocation side, ResourceLocation bottom, ResourceLocation top, ResourceLocation renderType) {
+        TextureMapping textures = sideBottomTopTextures(side, bottom, top);
+        blockStateOutput.accept(createStairs(block,
+                plainVariant(withRenderType(ModelTemplates.STAIRS_INNER, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.STAIRS_STRAIGHT, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.STAIRS_OUTER, renderType).create(block, textures, modelOutput))
+        ));
+    }
+
+    public void generateStairsBlockWithRenderType(StairBlock block, String name, ResourceLocation side, ResourceLocation bottom, ResourceLocation top, ResourceLocation renderType) {
+        generateStairsBlockInternalWithRenderType(block, modLoc(name + "_stairs"), side, bottom, top, renderType);
+    }
+
+    private void generateStairsBlockInternalWithRenderType(StairBlock block, ResourceLocation baseName, ResourceLocation side, ResourceLocation bottom, ResourceLocation top, ResourceLocation renderType) {
+        generateStairsBlockInternal(block, baseName, side, bottom, top,
+                withRenderType(ModelTemplates.STAIRS_STRAIGHT, renderType),
+                withRenderType(ModelTemplates.STAIRS_INNER, renderType),
+                withRenderType(ModelTemplates.STAIRS_OUTER, renderType)
+        );
+    }
+
+    private void generateStairsBlockInternal(StairBlock block, ResourceLocation baseName, ResourceLocation side, ResourceLocation bottom, ResourceLocation top, ModelTemplate straightTemplate, ModelTemplate innerTemplate, ModelTemplate outerTemplate) {
+        ResourceLocation modelLocation = baseName.withPrefix("block/");
+        TextureMapping textures = sideBottomTopTextures(side, bottom, top);
+        MultiVariant straightVariant = plainVariant(straightTemplate.create(modelLocation, textures, modelOutput));
+        MultiVariant innerVariant = plainVariant(innerTemplate.create(modelLocation.withSuffix("_inner"), textures, modelOutput));
+        MultiVariant outerVariant = plainVariant(outerTemplate.create(modelLocation.withSuffix("_outer"), textures, modelOutput));
+        blockStateOutput.accept(createStairs(block, innerVariant, straightVariant, outerVariant));
+    }
+
+    public void generateStairsBlock(StairBlock block, MultiVariant stairs, MultiVariant stairsInner, MultiVariant stairsOuter) {
+        blockStateOutput.accept(createStairs(block, stairsInner, stairs, stairsOuter));
+    }
+
+    public void generateSlabBlock(SlabBlock block, MultiVariant doubleSlab, ResourceLocation texture) {
+        generateSlabBlock(block, doubleSlab, texture, texture, texture);
+    }
+
+    public void generateSlabBlock(SlabBlock block, MultiVariant doubleSlab, ResourceLocation side, ResourceLocation bottom, ResourceLocation top) {
+        TextureMapping textures = sideBottomTopTextures(side, bottom, top);
+        MultiVariant slabTop = plainVariant(ModelTemplates.SLAB_TOP.create(block, textures, modelOutput));
+        MultiVariant slabBottom = plainVariant(ModelTemplates.SLAB_BOTTOM.create(block, textures, modelOutput));
+        generateSlabBlock(block, slabBottom, slabTop, doubleSlab);
+    }
+
+    public void generateSlabBlock(SlabBlock block, MultiVariant bottom, MultiVariant top, MultiVariant doubleslab) {
+        blockStateOutput.accept(createSlab(block, bottom, top, doubleslab));
+    }
+
+    public void generateButtonBlock(ButtonBlock block, ResourceLocation texture) {
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        MultiVariant button = plainVariant(ModelTemplates.BUTTON.create(block, textures, modelOutput));
+        MultiVariant buttonPressed = plainVariant(ModelTemplates.BUTTON_PRESSED.create(block, textures, modelOutput));
+        generateButtonBlock(block, button, buttonPressed);
+    }
+
+    public void generateButtonBlock(ButtonBlock block, MultiVariant button, MultiVariant buttonPressed) {
+        blockStateOutput.accept(createButton(block, button, buttonPressed));
+    }
+
+    public void generatePressurePlateBlock(PressurePlateBlock block, ResourceLocation texture) {
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        MultiVariant pressurePlate = plainVariant(ModelTemplates.PRESSURE_PLATE_UP.create(block, textures, modelOutput));
+        MultiVariant pressurePlateDown = plainVariant(ModelTemplates.PRESSURE_PLATE_DOWN.create(block, textures, modelOutput));
+        generatePressurePlateBlock(block, pressurePlate, pressurePlateDown);
+    }
+
+    public void generatePressurePlateBlock(PressurePlateBlock block, MultiVariant pressurePlate, MultiVariant pressurePlateDown) {
+        blockStateOutput.accept(createPressurePlate(block, pressurePlate, pressurePlateDown));
+    }
+
+    public void generateSignBlock(StandingSignBlock signBlock, WallSignBlock wallSignBlock, ResourceLocation texture) {
+        MultiVariant sign = plainVariant(ModelTemplates.PARTICLE_ONLY.create(signBlock, TextureMapping.particle(texture), modelOutput));
+        generateSignBlock(signBlock, wallSignBlock, sign);
+    }
+
+    public void generateSignBlock(StandingSignBlock signBlock, WallSignBlock wallSignBlock, MultiVariant sign) {
+        blockStateOutput.accept(createSimpleBlock(signBlock, sign));
+        blockStateOutput.accept(createSimpleBlock(wallSignBlock, sign));
+    }
+
+    public void generateHangingSignBlock(CeilingHangingSignBlock hangingSignBlock, WallHangingSignBlock wallHangingSignBlock, ResourceLocation texture) {
+        MultiVariant hangingSign = plainVariant(ModelTemplates.PARTICLE_ONLY.create(hangingSignBlock, TextureMapping.particle(texture), modelOutput));
+        generateHangingSignBlock(hangingSignBlock, wallHangingSignBlock, hangingSign);
+    }
+
+    public void generateHangingSignBlock(CeilingHangingSignBlock hangingSignBlock, WallHangingSignBlock wallHangingSignBlock, MultiVariant hangingSign) {
+        blockStateOutput.accept(createSimpleBlock(hangingSignBlock, hangingSign));
+        blockStateOutput.accept(createSimpleBlock(wallHangingSignBlock, hangingSign));
+    }
+
+    public void generateFourWayBlock(CrossCollisionBlock block, MultiVariant post, MultiVariant side) {
+        MultiPartGenerator builder = MultiPartGenerator.multiPart(block).with(post);
+        generateFourWayMultipart(builder, side);
+    }
+
+    public void generateFourWayMultipart(MultiPartGenerator builder, MultiVariant side) {
+        PipeBlock.PROPERTY_BY_DIRECTION.forEach((direction, property) -> {
+            if (direction.getAxis().isHorizontal()) {
+                VariantMutator yRot = switch (direction) {
+                    case NORTH -> NOP;
+                    case EAST -> Y_ROT_90;
+                    case SOUTH -> Y_ROT_180;
+                    case WEST -> Y_ROT_270;
+                    default -> throw new IllegalStateException();
+                };
+                builder.with(condition().term(property, true), side.with(UV_LOCK.then(yRot)));
+            }
+        });
+        blockStateOutput.accept(builder);
+    }
+
+    public void generateFenceBlock(FenceBlock block, ResourceLocation texture) {
+        generateFenceBlockInternal(block, texture, ModelTemplates.FENCE_POST, ModelTemplates.FENCE_SIDE);
+    }
+
+    public void generateFenceBlock(FenceBlock block, String name, ResourceLocation texture) {
+        generateFenceBlockInternal(block, name, texture, ModelTemplates.FENCE_POST, ModelTemplates.FENCE_SIDE);
+    }
+
+    public void generateFenceBlockWithRenderType(FenceBlock block, ResourceLocation texture, ResourceLocation renderType) {
+        generateFenceBlockInternal(block, texture, withRenderType(ModelTemplates.FENCE_POST, renderType), withRenderType(ModelTemplates.FENCE_SIDE, renderType));
+    }
+
+    public void generateFenceBlockWithRenderType(FenceBlock block, String name, ResourceLocation texture, ResourceLocation renderType) {
+        generateFenceBlockInternal(block, name, texture, withRenderType(ModelTemplates.FENCE_POST, renderType), withRenderType(ModelTemplates.FENCE_SIDE, renderType));
+    }
+
+    private void generateFenceBlockInternal(FenceBlock block, ResourceLocation texture, ModelTemplate fencePostTemplate, ModelTemplate fenceSideTemplate) {
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        generateFourWayBlock(block,
+                plainVariant(fencePostTemplate.create(block, textures, modelOutput)),
+                plainVariant(fenceSideTemplate.create(block, textures, modelOutput))
+        );
+    }
+
+    private void generateFenceBlockInternal(FenceBlock block, String name, ResourceLocation texture, ModelTemplate fencePostTemplate, ModelTemplate fenceSideTemplate) {
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        generateFourWayBlock(block,
+                plainVariant(fencePostTemplate.create(modLoc("block/" + name + "_fence_post"), textures, modelOutput)),
+                plainVariant(fenceSideTemplate.create(modLoc("block/" + name + "_fence_side"), textures, modelOutput))
+        );
+    }
+
+    public void generateFenceGateBlock(FenceGateBlock block, ResourceLocation texture) {
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        generateFenceGateBlock(block,
+                plainVariant(ModelTemplates.FENCE_GATE_CLOSED.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.FENCE_GATE_OPEN.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.FENCE_GATE_WALL_CLOSED.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.FENCE_GATE_WALL_OPEN.create(block, textures, modelOutput))
+        );
+    }
+
+    public void generateFenceGateBlock(FenceGateBlock block, String name, ResourceLocation texture) {
+        generateFenceGateBlockInternal(block, modLoc(name + "_fence_gate"), texture, ModelTemplates.FENCE_GATE_CLOSED, ModelTemplates.FENCE_GATE_OPEN, ModelTemplates.FENCE_GATE_WALL_CLOSED, ModelTemplates.FENCE_GATE_WALL_OPEN);
+    }
+
+    public void generateFenceGateBlockWithRenderType(FenceGateBlock block, ResourceLocation texture, ResourceLocation renderType) {
+        TextureMapping textureMapping = TextureMapping.defaultTexture(texture);
+        generateFenceGateBlock(block,
+                plainVariant(withRenderType(ModelTemplates.FENCE_GATE_CLOSED, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.FENCE_GATE_OPEN, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.FENCE_GATE_WALL_CLOSED, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.FENCE_GATE_WALL_OPEN, renderType).create(block, textureMapping, modelOutput))
+        );
+    }
+
+    public void generateFenceGateBlockWithRenderType(FenceGateBlock block, String name, ResourceLocation texture, ResourceLocation renderType) {
+        generateFenceGateBlockInternal(block, modLoc(name + "_fence_gate"), texture,
+                withRenderType(ModelTemplates.FENCE_GATE_CLOSED, renderType),
+                withRenderType(ModelTemplates.FENCE_GATE_OPEN, renderType),
+                withRenderType(ModelTemplates.FENCE_GATE_WALL_CLOSED, renderType),
+                withRenderType(ModelTemplates.FENCE_GATE_WALL_OPEN, renderType)
+        );
+    }
+
+    private void generateFenceGateBlockInternal(FenceGateBlock block, ResourceLocation baseName, ResourceLocation texture, ModelTemplate closedTemplate, ModelTemplate openTemplate, ModelTemplate wallClosedTemplate, ModelTemplate wallOpenTemplate) {
+        ResourceLocation baseModel = baseName.withPrefix("block/");
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        MultiVariant gate = plainVariant(closedTemplate.create(baseModel, textures, modelOutput));
+        MultiVariant gateOpen = plainVariant(openTemplate.create(baseModel.withSuffix("_open"), textures, modelOutput));
+        MultiVariant gateWall = plainVariant(wallClosedTemplate.create(baseModel.withSuffix("_wall"), textures, modelOutput));
+        MultiVariant gateWallOpen = plainVariant(wallOpenTemplate.create(baseModel.withSuffix("_wall_open"), textures, modelOutput));
+        generateFenceGateBlock(block, gate, gateOpen, gateWall, gateWallOpen);
+    }
+
+    public void generateFenceGateBlock(FenceGateBlock block, MultiVariant gate, MultiVariant gateOpen, MultiVariant gateWall, MultiVariant gateWallOpen) {
+        blockStateOutput.accept(createFenceGate(block, gateOpen, gate, gateWallOpen, gateWall, true));
+    }
+
+    public void generateWallBlock(WallBlock block, ResourceLocation texture) {
+        TextureMapping textures = TextureMapping.singleSlot(TextureSlot.WALL, texture);
+        blockStateOutput.accept(createWall(block,
+                plainVariant(ModelTemplates.WALL_POST.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.WALL_LOW_SIDE.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.WALL_TALL_SIDE.create(block, textures, modelOutput))
+        ));
+    }
+
+    public void generateWallBlock(WallBlock block, String name, ResourceLocation texture) {
+        ResourceLocation baseName = modLoc(name + "_wall");
+        generateWallBlockInternal(block, baseName, texture, ModelTemplates.WALL_POST, ModelTemplates.WALL_LOW_SIDE, ModelTemplates.WALL_TALL_SIDE);
+    }
+
+    public void generateWallBlockWithRenderType(WallBlock block, ResourceLocation texture, ResourceLocation renderType) {
+        TextureMapping textureMapping = TextureMapping.singleSlot(TextureSlot.WALL, texture);
+        generateWallBlock(block,
+                plainVariant(withRenderType(ModelTemplates.WALL_POST, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.WALL_LOW_SIDE, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.WALL_TALL_SIDE, renderType).create(block, textureMapping, modelOutput))
+        );
+    }
+
+    public void generateWallBlockWithRenderType(WallBlock block, String name, ResourceLocation texture, ResourceLocation renderType) {
+        ResourceLocation baseName = modLoc(name + "_wall");
+        generateWallBlockInternal(block, baseName, texture,
+                withRenderType(ModelTemplates.WALL_POST, renderType),
+                withRenderType(ModelTemplates.WALL_LOW_SIDE, renderType),
+                withRenderType(ModelTemplates.WALL_TALL_SIDE, renderType)
+        );
+    }
+
+    private void generateWallBlockInternal(WallBlock block, ResourceLocation baseName, ResourceLocation texture, ModelTemplate postTemplate, ModelTemplate sideTemplate, ModelTemplate tallSideTemplate) {
+        TextureMapping textures = TextureMapping.singleSlot(TextureSlot.WALL, texture);
+        ResourceLocation baseModel = baseName.withPrefix("block/");
+        generateWallBlock(block,
+                plainVariant(postTemplate.create(baseModel.withSuffix("_post"), textures, modelOutput)),
+                plainVariant(sideTemplate.create(baseModel.withSuffix("_side"), textures, modelOutput)),
+                plainVariant(tallSideTemplate.create(baseModel.withSuffix("_side_tall"), textures, modelOutput))
+        );
+    }
+
+    public void generateWallBlock(WallBlock block, MultiVariant post, MultiVariant side, MultiVariant sideTall) {
+        blockStateOutput.accept(createWall(block, post, side, sideTall));
+    }
+
+    public void generatePaneBlock(IronBarsBlock block, ResourceLocation pane, ResourceLocation edge) {
+        TextureMapping textures = new TextureMapping().put(TextureSlot.PANE, pane).put(TextureSlot.EDGE, edge);
+        generatePaneBlock(block,
+                plainVariant(ModelTemplates.STAINED_GLASS_PANE_POST.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.STAINED_GLASS_PANE_SIDE.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.STAINED_GLASS_PANE_SIDE_ALT.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.STAINED_GLASS_PANE_NOSIDE.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.STAINED_GLASS_PANE_NOSIDE_ALT.create(block, textures, modelOutput))
+        );
+    }
+
+    public void generatePaneBlock(IronBarsBlock block, String name, ResourceLocation pane, ResourceLocation edge) {
+        ResourceLocation baseName = modLoc(name + "_pane");
+        generatePaneBlockInternal(block, baseName, pane, edge, ModelTemplates.STAINED_GLASS_PANE_POST, ModelTemplates.STAINED_GLASS_PANE_SIDE, ModelTemplates.STAINED_GLASS_PANE_SIDE_ALT, ModelTemplates.STAINED_GLASS_PANE_NOSIDE, ModelTemplates.STAINED_GLASS_PANE_NOSIDE_ALT);
+    }
+
+    public void generatePaneBlockWithRenderType(IronBarsBlock block, ResourceLocation pane, ResourceLocation edge, ResourceLocation renderType) {
+        TextureMapping textureMapping = new TextureMapping().put(TextureSlot.PANE, pane).put(TextureSlot.EDGE, edge);
+        generatePaneBlock(block,
+                plainVariant(withRenderType(ModelTemplates.STAINED_GLASS_PANE_POST, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.STAINED_GLASS_PANE_SIDE, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.STAINED_GLASS_PANE_SIDE_ALT, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.STAINED_GLASS_PANE_NOSIDE, renderType).create(block, textureMapping, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.STAINED_GLASS_PANE_NOSIDE_ALT, renderType).create(block, textureMapping, modelOutput))
+        );
+    }
+
+    public void generatePaneBlockWithRenderType(IronBarsBlock block, String name, ResourceLocation pane, ResourceLocation edge, ResourceLocation renderType) {
+        ResourceLocation baseName = modLoc(name + "_pane");
+        generatePaneBlockInternal(block, baseName, pane, edge,
+                withRenderType(ModelTemplates.STAINED_GLASS_PANE_POST, renderType),
+                withRenderType(ModelTemplates.STAINED_GLASS_PANE_SIDE, renderType),
+                withRenderType(ModelTemplates.STAINED_GLASS_PANE_SIDE_ALT, renderType),
+                withRenderType(ModelTemplates.STAINED_GLASS_PANE_NOSIDE, renderType),
+                withRenderType(ModelTemplates.STAINED_GLASS_PANE_NOSIDE_ALT, renderType)
+        );
+    }
+
+    private void generatePaneBlockInternal(IronBarsBlock block, ResourceLocation baseName, ResourceLocation pane, ResourceLocation edge, ModelTemplate postTemplate, ModelTemplate sideTemplate, ModelTemplate sideAltTemplate, ModelTemplate noSideTemplate, ModelTemplate noSideAltTemplate) {
+        ResourceLocation baseModel = baseName.withPrefix("block/");
+        TextureMapping textures = new TextureMapping().put(TextureSlot.PANE, pane).put(TextureSlot.EDGE, edge);
+        generatePaneBlock(block,
+                plainVariant(postTemplate.create(baseModel.withSuffix("_post"), textures, modelOutput)),
+                plainVariant(sideTemplate.create(baseModel.withSuffix("_side"), textures, modelOutput)),
+                plainVariant(sideAltTemplate.create(baseModel.withSuffix("_side_alt"), textures, modelOutput)),
+                plainVariant(noSideTemplate.create(baseModel.withSuffix("_noside"), textures, modelOutput)),
+                plainVariant(noSideAltTemplate.create(baseModel.withSuffix("_noside_alt"), textures, modelOutput))
+        );
+    }
+
+    public void generatePaneBlock(IronBarsBlock block, MultiVariant post, MultiVariant side, MultiVariant sideAlt, MultiVariant noSide, MultiVariant noSideAlt) {
+        blockStateOutput.accept(MultiPartGenerator.multiPart(block)
+                .with(post)
+                .with(condition().term(BlockStateProperties.NORTH, true), side)
+                .with(condition().term(BlockStateProperties.EAST, true), side.with(Y_ROT_90))
+                .with(condition().term(BlockStateProperties.SOUTH, true), sideAlt)
+                .with(condition().term(BlockStateProperties.WEST, true), sideAlt.with(Y_ROT_90))
+                .with(condition().term(BlockStateProperties.NORTH, false), noSide)
+                .with(condition().term(BlockStateProperties.EAST, false), noSideAlt)
+                .with(condition().term(BlockStateProperties.SOUTH, false), noSideAlt.with(Y_ROT_90))
+                .with(condition().term(BlockStateProperties.WEST, false), noSide.with(Y_ROT_270))
+        );
+    }
+
+    public void generateDoorBlock(DoorBlock block, ResourceLocation bottom, ResourceLocation top) {
+        TextureMapping textures = TextureMapping.door(top, bottom);
+        generateDoorBlock(block,
+                plainVariant(ModelTemplates.DOOR_BOTTOM_LEFT.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.DOOR_BOTTOM_LEFT_OPEN.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.DOOR_BOTTOM_RIGHT.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.DOOR_BOTTOM_RIGHT_OPEN.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.DOOR_TOP_LEFT.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.DOOR_TOP_LEFT_OPEN.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.DOOR_TOP_RIGHT.create(block, textures, modelOutput)),
+                plainVariant(ModelTemplates.DOOR_TOP_RIGHT_OPEN.create(block, textures, modelOutput))
+        );
+    }
+
+    public void generateDoorBlock(DoorBlock block, String name, ResourceLocation bottom, ResourceLocation top) {
+        generateDoorBlockInternal(block, modLoc(name + "_door"), bottom, top);
+    }
+
+    public void generateDoorBlockWithRenderType(DoorBlock block, ResourceLocation bottom, ResourceLocation top, ResourceLocation renderType) {
+        TextureMapping textures = TextureMapping.door(top, bottom);
+        generateDoorBlock(block,
+                plainVariant(withRenderType(ModelTemplates.DOOR_BOTTOM_LEFT, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.DOOR_BOTTOM_LEFT_OPEN, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.DOOR_BOTTOM_RIGHT, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.DOOR_BOTTOM_RIGHT_OPEN, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.DOOR_TOP_LEFT, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.DOOR_TOP_LEFT_OPEN, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.DOOR_TOP_RIGHT, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(ModelTemplates.DOOR_TOP_RIGHT_OPEN, renderType).create(block, textures, modelOutput))
+        );
+    }
+
+    public void generateDoorBlockWithRenderType(DoorBlock block, String name, ResourceLocation bottom, ResourceLocation top, ResourceLocation renderType) {
+        generateDoorBlockInternalWithRenderType(block, modLoc(name + "_door"), bottom, top, renderType);
+    }
+
+    private void generateDoorBlockInternal(DoorBlock block, ResourceLocation baseName, ResourceLocation bottom, ResourceLocation top) {
+        generateDoorBlockInternal(block, baseName, bottom, top, ModelTemplates.DOOR_BOTTOM_LEFT, ModelTemplates.DOOR_BOTTOM_LEFT_OPEN, ModelTemplates.DOOR_BOTTOM_RIGHT, ModelTemplates.DOOR_BOTTOM_RIGHT_OPEN, ModelTemplates.DOOR_TOP_LEFT, ModelTemplates.DOOR_TOP_LEFT_OPEN, ModelTemplates.DOOR_TOP_RIGHT, ModelTemplates.DOOR_TOP_RIGHT_OPEN);
+    }
+
+    private void generateDoorBlockInternalWithRenderType(DoorBlock block, ResourceLocation baseName, ResourceLocation bottom, ResourceLocation top, ResourceLocation renderType) {
+        generateDoorBlockInternal(block, baseName, bottom, top,
+                withRenderType(ModelTemplates.DOOR_BOTTOM_LEFT, renderType),
+                withRenderType(ModelTemplates.DOOR_BOTTOM_LEFT_OPEN, renderType),
+                withRenderType(ModelTemplates.DOOR_BOTTOM_RIGHT, renderType),
+                withRenderType(ModelTemplates.DOOR_BOTTOM_RIGHT_OPEN, renderType),
+                withRenderType(ModelTemplates.DOOR_TOP_LEFT, renderType),
+                withRenderType(ModelTemplates.DOOR_TOP_LEFT_OPEN, renderType),
+                withRenderType(ModelTemplates.DOOR_TOP_RIGHT, renderType),
+                withRenderType(ModelTemplates.DOOR_TOP_RIGHT_OPEN, renderType)
+        );
+    }
+
+    private void generateDoorBlockInternal(DoorBlock block, ResourceLocation baseName, ResourceLocation bottom, ResourceLocation top, ModelTemplate bottomLeftTemplate, ModelTemplate bottomLeftOpenTemplate, ModelTemplate bottomRightTemplate, ModelTemplate bottomRightOpenTemplate, ModelTemplate topLeftTemplate, ModelTemplate topLeftOpenTemplate, ModelTemplate topRightTemplate, ModelTemplate topRightOpenTemplate) {
+        ResourceLocation baseModel = baseName.withPrefix("block/");
+        TextureMapping textures = TextureMapping.door(top, bottom);
+        MultiVariant bottomLeft = plainVariant(bottomLeftTemplate.create(baseModel.withSuffix("_bottom_left"), textures, modelOutput));
+        MultiVariant bottomLeftOpen = plainVariant(bottomLeftOpenTemplate.create(baseModel.withSuffix("_bottom_left_open"), textures, modelOutput));
+        MultiVariant bottomRight = plainVariant(bottomRightTemplate.create(baseModel.withSuffix("_bottom_right"), textures, modelOutput));
+        MultiVariant bottomRightOpen = plainVariant(bottomRightOpenTemplate.create(baseModel.withSuffix("_bottom_right_open"), textures, modelOutput));
+        MultiVariant topLeft = plainVariant(topLeftTemplate.create(baseModel.withSuffix("_top_left"), textures, modelOutput));
+        MultiVariant topLeftOpen = plainVariant(topLeftOpenTemplate.create(baseModel.withSuffix("_top_left_open"), textures, modelOutput));
+        MultiVariant topRight = plainVariant(topRightTemplate.create(baseModel.withSuffix("_top_right"), textures, modelOutput));
+        MultiVariant topRightOpen = plainVariant(topRightOpenTemplate.create(baseModel.withSuffix("_top_right_open"), textures, modelOutput));
+        generateDoorBlock(block, bottomLeft, bottomLeftOpen, bottomRight, bottomRightOpen, topLeft, topLeftOpen, topRight, topRightOpen);
+    }
+
+    public void generateDoorBlock(DoorBlock block, MultiVariant bottomLeft, MultiVariant bottomLeftOpen, MultiVariant bottomRight, MultiVariant bottomRightOpen, MultiVariant topLeft, MultiVariant topLeftOpen, MultiVariant topRight, MultiVariant topRightOpen) {
+        blockStateOutput.accept(createDoor(block, bottomLeft, bottomLeftOpen, bottomRight, bottomRightOpen, topLeft, topLeftOpen, topRight, topRightOpen));
+    }
+
+    public void generateTrapdoorBlock(TrapDoorBlock block, ResourceLocation texture, boolean orientable) {
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        generateTrapdoorBlock(block,
+                plainVariant((orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_BOTTOM : ModelTemplates.TRAPDOOR_BOTTOM).create(block, textures, modelOutput)),
+                plainVariant((orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_TOP : ModelTemplates.TRAPDOOR_TOP).create(block, textures, modelOutput)),
+                plainVariant((orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_OPEN : ModelTemplates.TRAPDOOR_OPEN).create(block, textures, modelOutput)),
+                orientable
+        );
+    }
+
+    public void generateTrapdoorBlock(TrapDoorBlock block, String name, ResourceLocation texture, boolean orientable) {
+        generateTrapdoorBlockInternal(block, modLoc(name + "_trapdoor"), texture, orientable);
+    }
+
+    public void generateTrapdoorBlockWithRenderType(TrapDoorBlock block, ResourceLocation texture, boolean orientable, ResourceLocation renderType) {
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        generateTrapdoorBlock(block,
+                plainVariant(withRenderType(orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_BOTTOM : ModelTemplates.TRAPDOOR_BOTTOM, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_TOP : ModelTemplates.TRAPDOOR_TOP, renderType).create(block, textures, modelOutput)),
+                plainVariant(withRenderType(orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_OPEN : ModelTemplates.TRAPDOOR_OPEN, renderType).create(block, textures, modelOutput)),
+                orientable
+        );
+    }
+
+    public void generateTrapdoorBlockWithRenderType(TrapDoorBlock block, String name, ResourceLocation texture, boolean orientable, ResourceLocation renderType) {
+        generateTrapdoorBlockInternalWithRenderType(block, modLoc(name + "_trapdoor"), texture, orientable, renderType);
+    }
+
+    private void generateTrapdoorBlockInternal(TrapDoorBlock block, ResourceLocation baseName, ResourceLocation texture, boolean orientable) {
+        generateTrapdoorBlockInternal(block, baseName, texture, orientable,
+                orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_BOTTOM : ModelTemplates.TRAPDOOR_BOTTOM,
+                orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_TOP : ModelTemplates.TRAPDOOR_TOP,
+                orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_OPEN : ModelTemplates.TRAPDOOR_OPEN
+        );
+    }
+
+    private void generateTrapdoorBlockInternalWithRenderType(TrapDoorBlock block, ResourceLocation baseName, ResourceLocation texture, boolean orientable, ResourceLocation renderType) {
+        generateTrapdoorBlockInternal(block, baseName, texture, orientable,
+                withRenderType(orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_BOTTOM : ModelTemplates.TRAPDOOR_BOTTOM, renderType),
+                withRenderType(orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_TOP : ModelTemplates.TRAPDOOR_TOP, renderType),
+                withRenderType(orientable ? ModelTemplates.ORIENTABLE_TRAPDOOR_OPEN : ModelTemplates.TRAPDOOR_OPEN, renderType)
+        );
+    }
+
+    private void generateTrapdoorBlockInternal(TrapDoorBlock block, ResourceLocation baseName, ResourceLocation texture, boolean orientable, ModelTemplate bottomTemplate, ModelTemplate topTemplate, ModelTemplate openTemplate) {
+        ResourceLocation baseModel = baseName.withPrefix("block/");
+        TextureMapping textures = TextureMapping.defaultTexture(texture);
+        MultiVariant bottom = plainVariant(bottomTemplate.create(baseModel.withSuffix("_bottom"), textures, modelOutput));
+        MultiVariant top = plainVariant(topTemplate.create(baseModel.withSuffix("_top"), textures, modelOutput));
+        MultiVariant open = plainVariant(openTemplate.create(baseModel.withSuffix("_open"), textures, modelOutput));
+        generateTrapdoorBlock(block, bottom, top, open, orientable);
+    }
+
+    public void generateTrapdoorBlock(TrapDoorBlock block, MultiVariant bottom, MultiVariant top, MultiVariant open, boolean orientable) {
+        blockStateOutput.accept(orientable ? createOrientableTrapdoor(block, top, bottom, open) : createTrapdoor(block, top, bottom, open));
+    }
 }
