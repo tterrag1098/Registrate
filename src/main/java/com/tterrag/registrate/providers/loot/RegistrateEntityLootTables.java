@@ -8,14 +8,14 @@ import javax.annotation.Generated;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
-import lombok.RequiredArgsConstructor;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.EntityLootSubProvider;
 import net.minecraft.data.loot.packs.VanillaEntityLoot;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -26,10 +26,17 @@ public class RegistrateEntityLootTables extends VanillaEntityLoot implements Reg
     private final AbstractRegistrate<?> parent;
     private final Consumer<RegistrateEntityLootTables> callback;
 
+    private final HolderLookup<Item> itemLookup;
+    private final HolderLookup<Block> blockLookup;
+    private final HolderLookup<EntityType<?>> entityLookup;
+
     public RegistrateEntityLootTables(HolderLookup.Provider p_346214_, AbstractRegistrate<?> parent, Consumer<RegistrateEntityLootTables> callback) {
         super(p_346214_);
         this.parent = parent;
         this.callback = callback;
+        itemLookup = registries.lookupOrThrow(Registries.ITEM);
+        blockLookup = registries.lookupOrThrow(Registries.BLOCK);
+        entityLookup = registries.lookupOrThrow(Registries.ENTITY_TYPE);
     }
 
     @Override
@@ -44,6 +51,18 @@ public class RegistrateEntityLootTables extends VanillaEntityLoot implements Reg
 
     public HolderLookup.Provider getRegistries() {
         return this.registries;
+    }
+
+    public HolderLookup<Item> itemLookup() {
+        return itemLookup;
+    }
+
+    public HolderLookup<Block> blockLookup() {
+        return blockLookup;
+    }
+
+    public HolderLookup<EntityType<?>> entityLookup() {
+        return entityLookup;
     }
 
     // @formatter:off

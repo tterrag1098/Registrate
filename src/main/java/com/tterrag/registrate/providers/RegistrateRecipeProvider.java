@@ -1,6 +1,8 @@
 package com.tterrag.registrate.providers;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -24,6 +26,7 @@ import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.BlockFamily;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
@@ -38,6 +41,7 @@ import net.minecraft.data.recipes.SingleItemRecipeBuilder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.*;
@@ -50,12 +54,28 @@ import net.neoforged.neoforge.common.conditions.ICondition;
 public class RegistrateRecipeProvider extends RecipeProvider implements RegistrateProvider, RecipeOutput {
 
     private final AbstractRegistrate<?> owner;
-    @Getter
-	private HolderLookup.Provider provider;
+	private HolderLookup.Provider provider = null;
 
     public RegistrateRecipeProvider(AbstractRegistrate<?> owner, PackOutput output, CompletableFuture<HolderLookup.Provider> provider) {
         super(output, provider);
         this.owner = owner;
+    }
+
+    public HolderLookup.Provider getRegistries() {
+        Objects.requireNonNull(this.provider, "Attempting to resolve registries before provider is being run");
+        return this.provider;
+    }
+
+    public HolderLookup<Item> itemLookup() {
+        return getRegistries().lookupOrThrow(Registries.ITEM);
+    }
+
+    public HolderLookup<Block> blockLookup() {
+        return getRegistries().lookupOrThrow(Registries.BLOCK);
+    }
+
+    public HolderLookup<EntityType<?>> entityLookup() {
+        return getRegistries().lookupOrThrow(Registries.ENTITY_TYPE);
     }
 
     public <T> Holder<T> resolve(ResourceKey<T> key) {
@@ -127,7 +147,7 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
     public static final int DEFAULT_BLAST_TIME = DEFAULT_SMELT_TIME / 2;
     public static final int DEFAULT_SMOKE_TIME = DEFAULT_BLAST_TIME;
     public static final int DEFAULT_CAMPFIRE_TIME = DEFAULT_SMELT_TIME * 3;
-    
+
     private static final ImmutableMap<RecipeSerializer<? extends AbstractCookingRecipe>, String> COOKING_TYPE_NAMES = ImmutableMap.<RecipeSerializer<? extends AbstractCookingRecipe>, String>builder()
             .put(RecipeSerializer.SMELTING_RECIPE, "smelting")
             .put(RecipeSerializer.BLASTING_RECIPE, "blasting")

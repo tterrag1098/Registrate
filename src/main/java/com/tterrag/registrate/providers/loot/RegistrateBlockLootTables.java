@@ -7,6 +7,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.packs.VanillaBlockLoot;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -27,10 +28,17 @@ public class RegistrateBlockLootTables extends VanillaBlockLoot implements Regis
     private final AbstractRegistrate<?> parent;
     private final Consumer<RegistrateBlockLootTables> callback;
 
+    private final HolderLookup<Item> itemLookup;
+    private final HolderLookup<Block> blockLookup;
+    private final HolderLookup<EntityType<?>> entityLookup;
+
     public RegistrateBlockLootTables(HolderLookup.Provider provider, AbstractRegistrate<?> parent, Consumer<RegistrateBlockLootTables> callback) {
         super(provider);
         this.parent = parent;
         this.callback = callback;
+        itemLookup = registries.lookupOrThrow(Registries.ITEM);
+        blockLookup = registries.lookupOrThrow(Registries.BLOCK);
+        entityLookup = registries.lookupOrThrow(Registries.ENTITY_TYPE);
     }
 
     @Override
@@ -45,6 +53,18 @@ public class RegistrateBlockLootTables extends VanillaBlockLoot implements Regis
 
     public HolderLookup.Provider getRegistries() {
         return this.registries;
+    }
+
+    public HolderLookup<Item> itemLookup() {
+        return itemLookup;
+    }
+
+    public HolderLookup<Block> blockLookup() {
+        return blockLookup;
+    }
+
+    public HolderLookup<EntityType<?>> entityLookup() {
+        return entityLookup;
     }
 
     // @formatter:off
