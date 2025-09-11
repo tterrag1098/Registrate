@@ -6,10 +6,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.google.gson.JsonElement;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JavaOps;
-import com.mojang.serialization.JsonOps;
+import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -31,7 +28,10 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.block.model.BlockStateModel.Unbaked;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.block.model.SingleVariant;
+import net.minecraft.client.renderer.block.model.Variant;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -92,6 +93,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
+    @Nullable
+    private Supplier<Supplier<ChunkSectionLayer>> renderLayer;
 
     @Nullable
     private NonNullSupplier<Supplier<BlockColor>> colorHandler;
@@ -129,7 +132,31 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         return this;
     }
 
-    // TODO <1.21.5> block layer registration
+    /**
+     * @deprecated Set your render type in your model's JSON ({@link net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder#renderType(ResourceLocation)})
+     */
+    @Deprecated(forRemoval = true)
+    public BlockBuilder<T, P> addLayer(Supplier<Supplier<ChunkSectionLayer>> layer) {
+        if (this.renderLayer == null) {
+            onRegister(this::registerLayers);
+            this.renderLayer = layer;
+        } else {
+            throw new IllegalStateException("Only a single layer can be registered for a block");
+        }
+        return this;
+    }
+
+    @SuppressWarnings("deprecation")
+    protected void registerLayers(T entry) {
+        RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
+                if (renderLayer != null) {
+                    ChunkSectionLayer layer = renderLayer.get().get();
+                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
+                }
+            });
+        });
+    }
 
     /**
      * Create a standard {@link BlockItem} for this block, building it immediately, and not allowing for further configuration.
@@ -157,7 +184,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     /**
      * Create a {@link BlockItem} for this block, which is created by the given factory, and return the builder for it so that further customization can be done.
      * <p>
-     * By default, the item will have no lang entry (since it would duplicate the block's)
+     * By default, the item will have no lang entry (since it would duplicate the block's) and a simple block item model.
      * 
      * @param <I>
      *            The type of the item
@@ -166,20 +193,20 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link ItemBuilder} for the {@link BlockItem}
      */
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
-        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p))
+        return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p.useBlockDescriptionPrefix()))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
                 .model(() -> (ctx, prov) -> {
-                    var model = getOwner().getDataProvider(ProviderType.BLOCKSTATE)
+                    getOwner().getDataProvider(ProviderType.BLOCKSTATE)
                             .map(g -> g.seenBlockstates.get(getEntry()))
                             .flatMap(b -> b.simpleModels())
                             .map(b -> b.models().get(""))
-                            .flatMap(ub -> Unbaked.CODEC.encodeStart(JsonOps.INSTANCE, ub).result())
-                            .filter(JsonElement::isJsonObject)
-                            .map(j -> j.getAsJsonObject().get("model"))
-                            .map(JsonElement::getAsString);
-                    if (model.isPresent()) {
-                        prov.createWithExistingModel(ctx.get(), ResourceLocation.parse(model.get()));
-                    }
+                            .map(unbaked -> {
+                                if (unbaked instanceof SingleVariant.Unbaked(Variant variant)) {
+                                    return variant.modelLocation();
+                                }
+                                return null;
+                            })
+                            .ifPresent(model -> prov.createWithExistingModel(ctx.get(), model));
                 });
     }
 

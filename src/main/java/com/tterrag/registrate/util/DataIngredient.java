@@ -7,6 +7,7 @@ import lombok.Getter;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -22,7 +23,7 @@ import java.util.function.Supplier;
  * A helper for data generation when using ingredients as input(s) to recipes.<br>
  * It remembers the name of the primary ingredient for use in creating recipe names/criteria.
  * <p>
- * Create an instance of this class with the various factory methods such as {@link #items(ItemLike, ItemLike...)} and {@link #tag(TagKey)}.
+ * Create an instance of this class with the various factory methods such as {@link #items(ItemLike, ItemLike...)} and {@link #tag(HolderSet.Named)} )}.
  * <p>
  * <strong>This class should not be used for any purpose other than data generation</strong>, it will throw an exception if it is serialized to a packet buffer.
  */
@@ -67,8 +68,8 @@ public final class DataIngredient {
         return ingredient(Ingredient.of(ObjectArrays.concat(first, others)), first);
     }
 
-    public static DataIngredient tag(TagKey<Item> tag) {
-        return ingredient(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(tag)), tag);
+    public static DataIngredient tag(HolderSet.Named<Item> tag) {
+        return ingredient(Ingredient.of(tag), tag.key());
     }
     
     public static DataIngredient ingredient(Ingredient parent, ItemLike required) {

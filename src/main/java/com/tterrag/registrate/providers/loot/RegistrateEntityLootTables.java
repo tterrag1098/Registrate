@@ -8,6 +8,8 @@ import net.minecraft.data.loot.EntityLootSubProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -21,10 +23,17 @@ public class RegistrateEntityLootTables extends EntityLootSubProvider implements
     private final AbstractRegistrate<?> parent;
     private final Consumer<RegistrateEntityLootTables> callback;
 
+    private final HolderLookup<Item> itemLookup;
+    private final HolderLookup<Block> blockLookup;
+    private final HolderLookup<EntityType<?>> entityLookup;
+
     public RegistrateEntityLootTables(HolderLookup.Provider p_346214_, AbstractRegistrate<?> parent, Consumer<RegistrateEntityLootTables> callback) {
         super(FeatureFlags.REGISTRY.allFlags(), p_346214_);
         this.parent = parent;
         this.callback = callback;
+        itemLookup = registries.lookupOrThrow(Registries.ITEM);
+        blockLookup = registries.lookupOrThrow(Registries.BLOCK);
+        entityLookup = registries.lookupOrThrow(Registries.ENTITY_TYPE);
     }
 
     @Override
@@ -41,23 +50,35 @@ public class RegistrateEntityLootTables extends EntityLootSubProvider implements
         return this.registries;
     }
 
+    public HolderLookup<Item> itemLookup() {
+        return itemLookup;
+    }
+
+    public HolderLookup<Block> blockLookup() {
+        return blockLookup;
+    }
+
+    public HolderLookup<EntityType<?>> entityLookup() {
+        return entityLookup;
+    }
+
     // @formatter:off
     // GENERATED START - DO NOT EDIT BELOW THIS LINE
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#killedByFrog} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 08:35:35 GMT")
-    public LootItemCondition.Builder killedByFrog(HolderGetter<EntityType<?>> p_361765_) { return super.killedByFrog(p_361765_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Sun, 20 Jul 2025 07:02:04 GMT")
+    public LootItemCondition.Builder killedByFrog(HolderGetter<EntityType<?>> entityTypeRegistry) { return super.killedByFrog(entityTypeRegistry); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 08:35:35 GMT")
-    public void add(EntityType<?> p_248740_, LootTable.Builder p_249440_) { super.add(p_248740_, p_249440_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Sun, 20 Jul 2025 07:02:04 GMT")
+    public void add(EntityType<?> entityType, LootTable.Builder builder) { super.add(entityType, builder); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Wed, 26 Mar 2025 08:35:35 GMT")
-    public void add(EntityType<?> p_252130_, ResourceKey<LootTable> p_335943_, LootTable.Builder p_249357_) { super.add(p_252130_, p_335943_, p_249357_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Sun, 20 Jul 2025 07:02:04 GMT")
+    public void add(EntityType<?> entityType, ResourceKey<LootTable> defaultLootTable, LootTable.Builder builder) { super.add(entityType, defaultLootTable, builder); }
 
     // GENERATED END
 }

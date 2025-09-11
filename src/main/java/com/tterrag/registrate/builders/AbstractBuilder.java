@@ -100,7 +100,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
         if (!tagsByType.containsKey(type)) {
             setData(type, (ctx, prov) -> tagsByType.get(type).stream()
                     .map(t -> (TagKey<R>) t)
-                    .map(prov::addTag)
+                    .map(prov::rawBuilder)
                     .forEach(b -> b.add(asTag())));
         }
         tagsByType.putAll(type, Arrays.asList(tags));

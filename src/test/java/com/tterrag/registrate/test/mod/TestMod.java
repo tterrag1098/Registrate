@@ -3,7 +3,9 @@ package com.tterrag.registrate.test.mod;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
+import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.ProviderType;
+import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.*;
 import com.tterrag.registrate.util.nullness.NonnullType;
@@ -12,13 +14,11 @@ import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.Constant;
-import net.minecraft.client.color.item.ItemTintSource;
-import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.entity.PigRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -84,6 +84,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.RegistryBuilder;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -214,7 +215,7 @@ public class TestMod {
                 .tag(BlockTags.WITHER_IMMUNE)
                 .color(() -> () -> (state, world, pos, index) -> 0xFFFF0000)
                 .item()
-            .model(() -> (ctx, prov) -> prov.generateTintedModel(ctx.get(), prov.mcLoc("item/egg"), new Constant(0xFFFF0000)))
+            .model(() -> Client::testBlockModel)
                     .build()
                 .blockEntity(TestBlockEntity::new)
                     .renderer(() -> TestBlockEntityRenderer::new)
@@ -228,7 +229,7 @@ public class TestMod {
                             .transformTemplate(t -> t
                                     .parent(prov.mcLoc("block/gold_block"))
                             ).build(prov.modLoc("block/subfolder/" + ctx.getName()))))
-            .simpleItem()//TODO <1.21.4> automatic inheritance of block model is not supported yet
+            .simpleItem()
             .register();
 
     private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registries.ITEM);
@@ -261,7 +262,7 @@ public class TestMod {
                     ResourceLocation.withDefaultNamespace("block/lava_still"),
 					FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
-            .renderType(() -> RenderType::translucent)
+            .renderType(() -> () -> ChunkSectionLayer.TRANSLUCENT)
             .noBucket()
 //            .bucket()
 //                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
@@ -376,6 +377,7 @@ public class TestMod {
                                             /* infiniBurn */ BlockTags.INFINIBURN_OVERWORLD,
                                             /* effectsLocation */ BuiltinDimensionTypes.OVERWORLD_EFFECTS,
                                             /* ambientLight */ 0F,
+                                            /* cloudHeight */ Optional.of(192),
                                             new DimensionType.MonsterSettings(
                                                     /* piglinSafe */ false,
                                                     /* hasRaids */ true,
@@ -419,5 +421,11 @@ public class TestMod {
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
+    }
+
+    private static class Client {
+        private static void testBlockModel(DataGenContext<Item, BlockItem> ctx, RegistrateItemModelGenerator prov) {
+            prov.generateTintedModel(ctx.get(), prov.mcLoc("item/egg"), new Constant(0xFFFF0000));
+        }
     }
 }
