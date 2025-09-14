@@ -261,7 +261,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     private NonNullConsumer<FluidType.Properties> typeProperties = $ -> {};
 
-    private NonNullConsumer<BaseFlowingFluid.Properties> fluidProperties;
+    private NonNullConsumer<BaseFlowingFluid.Properties> fluidProperties = $ -> {};
 
     private @Nullable Supplier<Supplier<ChunkSectionLayer>> layer = null;
 
@@ -278,10 +278,6 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         this.fluidFactory = fluidFactory;
         this.fluidType = NonNullSupplier.lazy(() -> typeFactory.create(makeTypeProperties()));
         this.registerType = true;
-
-        String bucketName = this.bucketName;
-        this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, Registries.ITEM).get())
-            .block(() -> owner.<Block, LiquidBlock>get(name, Registries.BLOCK).get());
     }
 
     public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
@@ -291,10 +287,6 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         this.fluidFactory = fluidFactory;
         this.fluidType = fluidType;
         this.registerType = false; // Don't register if we have a fluid from outside.
-
-        String bucketName = this.bucketName;
-        this.fluidProperties = p -> p.bucket(() -> owner.get(bucketName, Registries.ITEM).get())
-                .block(() -> owner.<Block, LiquidBlock>get(name, Registries.BLOCK).get());
     }
 
     /**
@@ -345,7 +337,6 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
 
-    @SuppressWarnings("deprecation")
     public FluidBuilder<T, P> renderType(Supplier<Supplier<ChunkSectionLayer>> layer) {
         if (this.layer == null) {
             onRegister(this::registerRenderType);
@@ -354,7 +345,6 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         return this;
     }
 
-    @SuppressWarnings("deprecation")
     protected void registerRenderType(T entry) {
         RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
@@ -438,10 +428,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         final NonNullSupplier<T> supplier = asSupplier();
         final var lightLevel = Lazy.of(() -> fluidType.get().getLightLevel());
         final ToIntFunction<BlockState> lightLevelInt = $ -> lightLevel.get();
-        return getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
+        final var ret =  getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
             .properties(p -> BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable())
             .properties(p -> p.lightLevel(lightLevelInt))
                 .blockstate(() -> (ctx, prov) -> prov.createNonTemplateModelBlock(ctx.get()));
+        this.fluidProperties(p -> p.block(ret.asSupplier()));
+        return ret;
     }
 
     @Beta
@@ -497,9 +489,11 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         if (source == null) {
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }
-        return getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
+        final var ret = getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
             .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
                 .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
+        this.fluidProperties(p -> p.bucket(ret.asSupplier()));
+        return ret;
     }
 
     @Beta

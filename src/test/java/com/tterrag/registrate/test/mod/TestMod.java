@@ -421,6 +421,7 @@ public class TestMod {
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
+        if (testfluid.get().getBucket() != Items.AIR) throw new IllegalStateException("Expected no bucket for test fluid"); // should not crash
     }
 
     private static class Client {
