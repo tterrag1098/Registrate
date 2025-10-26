@@ -2,7 +2,6 @@ package com.tterrag.registrate.providers;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -20,6 +19,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -76,7 +76,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})
     public <T> String getAutomaticName(NonNullSupplier<? extends T> sup, ResourceKey<? extends Registry<T>> registry) {
-        return toEnglishName(((Registry<Registry<T>>) BuiltInRegistries.REGISTRY).getValue(registry.location()).getKey(sup.get()).getPath());
+        return toEnglishName(((Registry<Registry<T>>) BuiltInRegistries.REGISTRY).getValue(registry.identifier()).getKey(sup.get()).getPath());
     }
 
     public void addBlock(NonNullSupplier<? extends Block> block) {
@@ -97,7 +97,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         addItem(item, getAutomaticName(item, Registries.ITEM));
     }
 
-    public void addItemWithTooltip(NonNullSupplier<? extends Item> block, String name, List<@NonnullType String> tooltip) {
+    public void addItemWithTooltip(NonNullSupplier<? extends Item> block, String name, List<String> tooltip) {
         addItem(block, name);
         addTooltip(block, tooltip);
     }
@@ -106,7 +106,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         add(item.get().asItem().getDescriptionId() + ".desc", tooltip);
     }
 
-    public void addTooltip(NonNullSupplier<? extends ItemLike> item, List<@NonnullType String> tooltip) {
+    public void addTooltip(NonNullSupplier<? extends ItemLike> item, List<String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
             add(item.get().asItem().getDescriptionId() + ".desc." + i, tooltip.get(i));
         }
@@ -145,19 +145,29 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     private String toUpsideDown(String normal) {
-        char[] ud = new char[normal.length()];
+        int formatIndex = 1;
+        ArrayList<Character> ud = new ArrayList<>();
         for (int i = 0; i < normal.length(); i++) {
             char c = normal.charAt(i);
             if (c == '%') {
                 String fmtArg = "";
                 while (Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd') { // TODO this is a bit lazy
+                    if (fmtArg.equals("%") && c == 's') {
+                        fmtArg = "%" + formatIndex + "$s";
+                        formatIndex++;
+                        i++;
+                        break;
+                    }
+                    else if (c == '$') {
+                        formatIndex++;
+                    }
                     fmtArg += c;
                     i++;
                     c = i == normal.length() ? 0 : normal.charAt(i);
                 }
                 i--;
-                for (int j = 0; j < fmtArg.length(); j++) {
-                    ud[normal.length() - 1 - i + j] = fmtArg.charAt(j);
+                for (int j = fmtArg.length() - 1; j >= 0; j--) {
+                    ud.addFirst(fmtArg.charAt(j));
                 }
                 continue;
             }
@@ -165,9 +175,13 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
             if (lookup >= 0) {
                 c = UPSIDE_DOWN_CHARS.charAt(lookup);
             }
-            ud[normal.length() - 1 - i] = c;
+            ud.addFirst(c);
         }
-        return new String(ud);
+        StringBuilder builder = new StringBuilder(ud.size());
+        for (Character ch : ud) {
+            builder.append(ch);
+        }
+        return builder.toString();
     }
 
     @Override

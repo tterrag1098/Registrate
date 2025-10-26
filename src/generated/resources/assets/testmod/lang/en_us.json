@@ -11,5 +11,7 @@
   "item.testmod.testitem.testextra": "Magic!",
   "itemGroup.testmod.test_creative_mode_tab": "Test Creative Mode Tab",
   "testmod.custom.lang": "Test",
+  "testmod.custom.lang.with_placeholders1": "Placeholder 1 %s Placeholder 2 %s",
+  "testmod.custom.lang.with_placeholders2": "Placeholder 1 %s Placeholder 2 %2$s Placeholder 3 %s",
   "tooltip.testmod.testblock": "Egg."
 }

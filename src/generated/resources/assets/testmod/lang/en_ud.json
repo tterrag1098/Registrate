@@ -11,5 +11,7 @@
   "item.testmod.testitem.testextra": "¡ɔıbɐW",
   "itemGroup.testmod.test_creative_mode_tab": "qɐ⟘ ǝpoW ǝʌıʇɐǝɹƆ ʇsǝ⟘",
   "testmod.custom.lang": "ʇsǝ⟘",
+  "testmod.custom.lang.with_placeholders1": "%2$s ᄅ ɹǝpןoɥǝɔɐןԀ %1$s Ɩ ɹǝpןoɥǝɔɐןԀ",
+  "testmod.custom.lang.with_placeholders2": "%3$s Ɛ ɹǝpןoɥǝɔɐןԀ %2$s ᄅ ɹǝpןoɥǝɔɐןԀ %1$s Ɩ ɹǝpןoɥǝɔɐןԀ",
   "tooltip.testmod.testblock": "˙bbƎ"
 }
