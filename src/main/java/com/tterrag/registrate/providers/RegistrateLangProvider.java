@@ -20,6 +20,7 @@ import net.neoforged.neoforge.common.data.LanguageProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -145,19 +146,29 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     private String toUpsideDown(String normal) {
-        char[] ud = new char[normal.length()];
+        int formatIndex = 1;
+        ArrayList<Character> ud = new ArrayList<>();
         for (int i = 0; i < normal.length(); i++) {
             char c = normal.charAt(i);
             if (c == '%') {
                 String fmtArg = "";
                 while (Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd') { // TODO this is a bit lazy
+                    if (fmtArg.equals("%") && c == 's') {
+                        fmtArg = "%" + formatIndex + "$s";
+                        formatIndex++;
+                        i++;
+                        break;
+                    }
+                    else if (c == '$') {
+                        formatIndex++;
+                    }
                     fmtArg += c;
                     i++;
                     c = i == normal.length() ? 0 : normal.charAt(i);
                 }
                 i--;
-                for (int j = 0; j < fmtArg.length(); j++) {
-                    ud[normal.length() - 1 - i + j] = fmtArg.charAt(j);
+                for (int j = fmtArg.length() - 1; j >= 0; j--) {
+                    ud.addFirst(fmtArg.charAt(j));
                 }
                 continue;
             }
@@ -165,9 +176,13 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
             if (lookup >= 0) {
                 c = UPSIDE_DOWN_CHARS.charAt(lookup);
             }
-            ud[normal.length() - 1 - i] = c;
+            ud.addFirst(c);
         }
-        return new String(ud);
+        StringBuilder builder = new StringBuilder(ud.size());
+        for (Character ch : ud) {
+            builder.append(ch);
+        }
+        return builder.toString();
     }
 
     @Override

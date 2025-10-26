@@ -1,12 +1,12 @@
-// 1.21.8	2025-07-20T09:09:50.09422877	Registrate Provider for testmod [Registries, Data Maps, , Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Model Definitions - testmod, Lang (en_us/en_ud), generic_client_provider]
+// 1.21.8	2025-10-26T21:27:27.2231794	Registrate Provider for testmod [Registries, Data Maps, , Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Model Definitions - testmod, Lang (en_us/en_ud), generic_client_provider]
 353e0134b90278ff49840165bed05cb48e7fff1b assets/testmod/blockstates/magic_item_model.json
 bc6ecd9ef8452b21567c005ab9c626c54a1beeaa assets/testmod/blockstates/testblock.json
 069fa0cc9495cbad97a129b3e39bd0bdf0599b28 assets/testmod/blockstates/testfluid.json
 f89300065873b3d7b9ce32afdc50aa054bf394c9 assets/testmod/items/magic_item_model.json
 9a69e68a4d502233127cbf455882bfccf73db0f7 assets/testmod/items/testblock.json
 1e6a2105bb914bd0e1433b408fde3c456245968a assets/testmod/items/testitem.json
-5499519c3582b4dd1d88f0b713926b60d52ffed0 assets/testmod/lang/en_ud.json
-ecccfddb2cc9cdf08dbfbc93f0c9bbe2440d1fa9 assets/testmod/lang/en_us.json
+768a14df7851185a11ea4198df6ef553dfc59c1d assets/testmod/lang/en_ud.json
+3de215df116ebdca8011aaee94098a92fed18cab assets/testmod/lang/en_us.json
 b3c7ac87f735c9813d09ee46f1d26c844c06353c assets/testmod/models/block/subfolder/magic_item_model.json
 226ecfcb53fb775aa96f550dcc41bc44c026127f assets/testmod/models/block/testblock.json
 6cde7304ac9429b0ea7e01078b4846b1cac6a0c8 data/minecraft/tags/block/bamboo_plantable_on.json

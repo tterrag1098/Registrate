@@ -337,6 +337,8 @@ public class TestMod {
     public TestMod(IEventBus eventBus) {
 
         registrate.addRawLang("testmod.custom.lang", "Test");
+        registrate.addRawLang("testmod.custom.lang.with_placeholders1", "Placeholder 1 %s Placeholder 2 %s");
+        registrate.addRawLang("testmod.custom.lang.with_placeholders2", "Placeholder 1 %s Placeholder 2 %2$s Placeholder 3 %s");
         registrate.addLang("tooltip", testblock.getId(), "Egg.");
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
         registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
