@@ -133,12 +133,12 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
             /* lowercase */ "abcdefghijklmn\u00F1opqrstuvwxyz" +
             /* uppercase */ "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
             /*  numbers  */ "0123456789" +
-            /*  special  */ "_,;.?!/\\'";
+            /*  special  */ "()[]{}<>\u25C1\u25B7_,;.?!/\\'";
     private static final String UPSIDE_DOWN_CHARS =
             /* lowercase */ "\u0250q\u0254p\u01DD\u025Fb\u0265\u0131\u0638\u029E\u05DF\u026Fuuodb\u0279s\u0287n\u028C\u028Dx\u028Ez" +
             /* uppercase */ "\u2C6F\u15FA\u0186\u15E1\u018E\u2132\u2141HI\u017F\u029E\uA780WNO\u0500\u1F49\u1D1AS\u27D8\u2229\u039BMX\u028EZ" +
             /*  numbers  */ "0\u0196\u1105\u0190\u3123\u03DB9\u312586" +
-            /*  special  */ "\u203E'\u061B\u02D9\u00BF\u00A1/\\,";
+            /*  special  */ ")(][}{><\u25B7\u25C1\u203E'\u061B\u02D9\u00BF\u00A1\\/,";
 
     static {
         if (NORMAL_CHARS.length() != UPSIDE_DOWN_CHARS.length()) {

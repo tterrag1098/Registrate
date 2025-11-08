@@ -1,12 +1,12 @@
-// 26.1.2	2026-04-26T10:48:39.724715923	Registrate Provider for testmod [Registries, Data Maps, , Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Model Definitions - testmod, Lang (en_us/en_ud), generic_client_provider]
+// 26.1.2	2026-04-26T10:49:23.781810137	Registrate Provider for testmod [Registries, Data Maps, , Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Model Definitions - testmod, Lang (en_us/en_ud), generic_client_provider]
 353e0134b90278ff49840165bed05cb48e7fff1b assets/testmod/blockstates/magic_item_model.json
 bc6ecd9ef8452b21567c005ab9c626c54a1beeaa assets/testmod/blockstates/testblock.json
 069fa0cc9495cbad97a129b3e39bd0bdf0599b28 assets/testmod/blockstates/testfluid.json
 f89300065873b3d7b9ce32afdc50aa054bf394c9 assets/testmod/items/magic_item_model.json
 9a69e68a4d502233127cbf455882bfccf73db0f7 assets/testmod/items/testblock.json
 1e6a2105bb914bd0e1433b408fde3c456245968a assets/testmod/items/testitem.json
-768a14df7851185a11ea4198df6ef553dfc59c1d assets/testmod/lang/en_ud.json
-3de215df116ebdca8011aaee94098a92fed18cab assets/testmod/lang/en_us.json
+e37fa10911c591713356f92b7f65ae3990ce582d assets/testmod/lang/en_ud.json
+47b89cdda8ced820749d16da10af056ad9958f3e assets/testmod/lang/en_us.json
 b3c7ac87f735c9813d09ee46f1d26c844c06353c assets/testmod/models/block/subfolder/magic_item_model.json
 e6b1a73e2228a3216085e31392b29703b4c7cda9 assets/testmod/models/block/testblock.json
 6cde7304ac9429b0ea7e01078b4846b1cac6a0c8 data/minecraft/tags/block/dragon_immune.json
