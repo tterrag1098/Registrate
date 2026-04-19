@@ -3,7 +3,6 @@ package com.tterrag.registrate.util;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.tterrag.registrate.AbstractRegistrate;
-import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.neoforged.bus.api.Event;
@@ -22,7 +21,7 @@ import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 @Log4j2
-public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullType T> {
+public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
 
 
     public static <T extends Event & IModBusEvent> void addModListener(AbstractRegistrate<?> owner, Class<? super T> evtClass, Consumer<? super T> listener) {

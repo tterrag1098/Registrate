@@ -2,7 +2,6 @@ package com.tterrag.registrate.providers;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -19,7 +18,7 @@ import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -76,7 +75,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})
     public <T> String getAutomaticName(NonNullSupplier<? extends T> sup, ResourceKey<? extends Registry<T>> registry) {
-        return toEnglishName(((Registry<Registry<T>>) BuiltInRegistries.REGISTRY).getValue(registry.location()).getKey(sup.get()).getPath());
+        return toEnglishName(((Registry<Registry<T>>) BuiltInRegistries.REGISTRY).getValue(registry.identifier()).getKey(sup.get()).getPath());
     }
 
     public void addBlock(NonNullSupplier<? extends Block> block) {
@@ -97,7 +96,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         addItem(item, getAutomaticName(item, Registries.ITEM));
     }
 
-    public void addItemWithTooltip(NonNullSupplier<? extends Item> block, String name, List<@NonnullType String> tooltip) {
+    public void addItemWithTooltip(NonNullSupplier<? extends Item> block, String name, List<String> tooltip) {
         addItem(block, name);
         addTooltip(block, tooltip);
     }
@@ -106,7 +105,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         add(item.get().asItem().getDescriptionId() + ".desc", tooltip);
     }
 
-    public void addTooltip(NonNullSupplier<? extends ItemLike> item, List<@NonnullType String> tooltip) {
+    public void addTooltip(NonNullSupplier<? extends ItemLike> item, List<String> tooltip) {
         for (int i = 0; i < tooltip.size(); i++) {
             add(item.get().asItem().getDescriptionId() + ".desc." + i, tooltip.get(i));
         }

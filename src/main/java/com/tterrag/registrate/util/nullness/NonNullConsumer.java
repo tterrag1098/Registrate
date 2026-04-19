@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 @FunctionalInterface
-public interface NonNullConsumer<@NonnullType T> extends Consumer<T> {
+public interface NonNullConsumer<T> extends Consumer<T> {
     
     @Override
     void accept(T t);

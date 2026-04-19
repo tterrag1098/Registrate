@@ -2,6 +2,7 @@ package com.tterrag.registrate.test.meta;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +61,7 @@ public class MethodGenerator {
     }
 
     public void generate(Path output) throws IOException {
-        List<String> currentSource = Files.readAllLines(output, Charsets.UTF_8);
+        List<String> currentSource = Files.readAllLines(output, StandardCharsets.UTF_8);
         List<Header> newHeaders = ProtectedMethodScraper.scrapeInput();
         ListIterator<Header> headerItr = newHeaders.listIterator();
         while (headerItr.hasNext()) {

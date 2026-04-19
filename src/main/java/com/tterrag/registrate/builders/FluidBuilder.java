@@ -11,13 +11,13 @@ import com.tterrag.registrate.util.RegistrateDistExecutor;
 import com.tterrag.registrate.util.entry.FluidEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.*;
-import net.minecraft.Util;
 import net.minecraft.client.data.models.model.ModelTemplates;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -38,7 +38,7 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,8 +59,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
 
-    @Nullable
-    private NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension;
+    private @Nullable NonNullSupplier<Supplier<FluidModel.Unbaked>> model;
+
+    private @Nullable NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension;
 
     /**
      * Register a client extension for this block. The {@link IClientBlockExtensions} instance can be shared across many items.
@@ -77,8 +78,25 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         return this;
     }
 
-    public FluidBuilder<T, P> clientExtension(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return clientExtension(() -> () -> new DefaultFluidTypeExtension(stillTexture, flowingTexture));
+    public FluidBuilder<T, P> model(Identifier stillTexture, Identifier flowingTexture) {
+        return model(() -> () -> new FluidModel.Unbaked(new Material(stillTexture), new Material(flowingTexture), null, null));
+    }
+
+    public FluidBuilder<T, P> model(NonNullSupplier<Supplier<FluidModel.Unbaked>> model) {
+        if (this.model == null) {
+            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerModel);
+        }
+        this.model = model;
+        return this;
+    }
+
+    protected void registerModel() {
+        OneTimeEventReceiver.addModListener(getOwner(), RegisterFluidModelsEvent.class, e -> {
+            NonNullSupplier<Supplier<FluidModel.Unbaked>> model = this.model;
+            if (model != null) {
+                e.register(model.get().get(), getEntry());
+            }
+        });
     }
 
     protected void registerClientExtension() {
@@ -253,22 +271,17 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     private final FluidFactory<T> fluidFactory;
 
-    @Nullable
-    private final NonNullSupplier<FluidType> fluidType;
+    private @Nullable final NonNullSupplier<FluidType> fluidType;
 
-    @Nullable
-    private Boolean defaultSource, defaultBlock, defaultBucket;
+    private @Nullable Boolean defaultSource, defaultBlock, defaultBucket;
 
     private NonNullConsumer<FluidType.Properties> typeProperties = $ -> {};
 
     private NonNullConsumer<BaseFlowingFluid.Properties> fluidProperties = $ -> {};
 
-    private @Nullable Supplier<Supplier<ChunkSectionLayer>> layer = null;
-
     private boolean registerType;
 
-    @Nullable
-    private NonNullSupplier<? extends BaseFlowingFluid> source;
+    private @Nullable NonNullSupplier<? extends BaseFlowingFluid> source;
     private final List<TagKey<Fluid>> tags = new ArrayList<>();
 
     public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
@@ -334,27 +347,6 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      */
     public FluidBuilder<T, P> lang(String name) {
         return lang(f -> f.getFluidType().getDescriptionId(), name);
-    }
-
-
-    public FluidBuilder<T, P> renderType(Supplier<Supplier<ChunkSectionLayer>> layer) {
-        if (this.layer == null) {
-            onRegister(this::registerRenderType);
-        }
-        this.layer = layer;
-        return this;
-    }
-
-    protected void registerRenderType(T entry) {
-        RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
-                if (this.layer != null) {
-                    ChunkSectionLayer layer = this.layer.get().get();
-                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
-                    ItemBlockRenderTypes.setRenderLayer(getSource(), layer);
-                }
-            });
-        });
     }
 
     /**
@@ -563,7 +555,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
             properties.descriptionId(block.get().get().getDescriptionId());
             setData(ProviderType.LANG, NonNullBiConsumer.noop());
         } else {
-            properties.descriptionId(Util.makeDescriptionId("fluid", ResourceLocation.fromNamespaceAndPath(getOwner().getModid(), sourceName)));
+            properties.descriptionId(Util.makeDescriptionId("fluid", Identifier.fromNamespaceAndPath(getOwner().getModid(), sourceName)));
         }
 
         return properties;
@@ -616,26 +608,4 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     protected RegistryEntry<Fluid, T> createEntryWrapper(DeferredHolder<Fluid, T> delegate) {
         return new FluidEntry<>(getOwner(), delegate);
     }
-
-	public static class DefaultFluidTypeExtension implements IClientFluidTypeExtensions {
-
-		private final ResourceLocation stillTexture,flowingTexture;
-
-		public DefaultFluidTypeExtension(ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-			this.stillTexture = stillTexture;
-			this.flowingTexture = flowingTexture;
-		}
-
-		@Override
-		public ResourceLocation getStillTexture() {
-			return stillTexture;
-		}
-
-		@Override
-		public ResourceLocation getFlowingTexture() {
-			return flowingTexture;
-		}
-
-	}
-
 }

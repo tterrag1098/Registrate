@@ -1,15 +1,13 @@
 package com.tterrag.registrate.util.entry;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 
 public class LazyRegistryEntry<R, T extends R> implements NonNullSupplier<T> {
-    
-    @Nullable
-    private NonNullSupplier<? extends RegistryEntry<R, T>> supplier;
-    @Nullable
-    private RegistryEntry<R, T> value;
+
+    private @Nullable NonNullSupplier<? extends RegistryEntry<R, T>> supplier;
+    private @Nullable RegistryEntry<R, T> value;
 
     public LazyRegistryEntry(NonNullSupplier<? extends RegistryEntry<R, T>> supplier) {
         this.supplier = supplier;

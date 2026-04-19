@@ -3,7 +3,6 @@ package com.tterrag.registrate.providers;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.providers.generators.*;
 import com.tterrag.registrate.providers.loot.RegistrateLootTableProvider;
-import com.tterrag.registrate.util.nullness.FieldsAreNonnullByDefault;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -19,7 +18,6 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +34,6 @@ import java.util.function.Function;
  */
 @FunctionalInterface
 @SuppressWarnings("deprecation")
-@FieldsAreNonnullByDefault
 @ParametersAreNonnullByDefault
 public interface ProviderType<T extends RegistrateProvider> extends GeneratorType<T> {
 
