@@ -7,7 +7,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<?>, EntityType<T>> {
 

@@ -5,7 +5,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.DebugMarkers;
-import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -14,7 +13,7 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -81,7 +80,7 @@ public class RegistrateDataProvider implements DataProvider {
         return registriesLookup.thenCompose(provider -> {
             var list = Lists.<CompletableFuture<?>>newArrayList();
 
-            for (Map.Entry<@NonnullType ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
+            for (Map.Entry<ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
                 log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
                 list.add(e.getValue().run(cache));
             };

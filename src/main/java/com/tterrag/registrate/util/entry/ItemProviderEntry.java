@@ -4,6 +4,7 @@ import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -19,6 +20,14 @@ public class ItemProviderEntry<R extends ItemLike, T extends R> extends Registry
 
     public ItemStack asStack(int count) {
         return new ItemStack(this, count);
+    }
+
+    public ItemStackTemplate asStackTemplate() {
+        return new ItemStackTemplate(asItem(), 1);
+    }
+
+    public ItemStackTemplate asStackTemplate(int count) {
+        return new ItemStackTemplate(asItem(), count);
     }
 
     public boolean isIn(ItemStack stack) {

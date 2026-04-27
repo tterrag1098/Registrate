@@ -8,38 +8,52 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.*;
-import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementType;
-import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.client.Minecraft;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.client.color.block.BlockTintSources;
 import net.minecraft.client.color.item.Constant;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.entity.PigRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.worldgen.biome.OverworldBiomes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TimelineTags;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.attribute.AmbientSounds;
+import net.minecraft.world.attribute.BackgroundMusic;
+import net.minecraft.world.attribute.BedRule;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
@@ -47,6 +61,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.crafting.CookingBookCategory;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.FixedBiomeSource;
@@ -59,7 +75,6 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -82,10 +97,10 @@ import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.RegistryBuilder;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -106,12 +121,11 @@ public class TestMod {
 
         @Override
         protected InteractionResult useWithoutItem(BlockState state, Level worldIn, BlockPos pos, Player player, BlockHitResult hit) {
-            if (!worldIn.isClientSide) {
+            if (!worldIn.isClientSide()) {
                 player.openMenu(new MenuProvider() {
 
                     @Override
-                    @Nullable
-                    public AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
+                    public @Nullable AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
                         return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, testblockbe.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
 
@@ -125,8 +139,7 @@ public class TestMod {
         }
 
         @Override
-        @Nullable
-        public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
             return testblockbe.create(pos, state);
         }
     }
@@ -138,17 +151,34 @@ public class TestMod {
         }
     }
 
-    private static class TestBlockEntityRenderer implements BlockEntityRenderer<TestBlockEntity> {
+    private static class TestBlockEntityRenderer implements BlockEntityRenderer<TestBlockEntity, TestBlockEntityRenderer.RenderState> {
+        private final ItemModelResolver itemModelResolver;
 
         public TestBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
+            itemModelResolver = ctx.itemModelResolver();
         }
 
         @Override
-        public void render(TestBlockEntity blockEntityIn, float partialTicks, PoseStack matrixStackIn, MultiBufferSource bufferIn, int combinedLightIn, int combinedOverlayIn, Vec3 cam) {
-            matrixStackIn.pushPose();
-            matrixStackIn.translate(0.5, 0.5, 0.5);
-            Minecraft.getInstance().getItemRenderer().renderStatic(new ItemStack(Items.DIAMOND), ItemDisplayContext.GROUND, combinedLightIn, combinedOverlayIn, matrixStackIn, bufferIn, blockEntityIn.getLevel(), 0);
-            matrixStackIn.popPose();
+        public RenderState createRenderState() {
+            return new RenderState();
+        }
+
+        @Override
+        public void extractRenderState(TestBlockEntity blockEntity, RenderState state, float partialTicks, Vec3 cameraPosition, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+            BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+            itemModelResolver.updateForTopItem(state.item, new ItemStack(Items.DIAMOND), ItemDisplayContext.GROUND, blockEntity.getLevel(), null, 0);
+        }
+
+        @Override
+        public void submit(RenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
+            poseStack.pushPose();
+            poseStack.translate(0.5, 0.5, 0.5);
+            state.item.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, EntityRenderState.NO_OUTLINE);
+            poseStack.popPose();
+        }
+
+        private static class RenderState extends BlockEntityRenderState {
+            private final ItemStackRenderState item = new ItemStackRenderState();
         }
     }
 
@@ -198,7 +228,7 @@ public class TestMod {
             .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(),
                     prov.getBuilder().transformTemplate(template -> template
                             .parent(prov.mcLoc("block/glass"))
-                            .renderType(prov.mcLoc("cutout"))).build(ctx.getEntry())
+                    ).build(ctx.getEntry())
             ))
                 .transform(TestMod::applyDiamondDrop)
                 .recipe((ctx, prov) -> {
@@ -209,11 +239,11 @@ public class TestMod {
                             .unlockedBy("has_egg", prov.has(Items.EGG))
                             .save(prov);
 
-                    prov.food(DataIngredient.items(ctx), RecipeCategory.MISC, () -> Blocks.DIAMOND_BLOCK, 1f);
+                    prov.food(DataIngredient.items(ctx), RecipeCategory.MISC, CookingBookCategory.MISC, () -> Blocks.DIAMOND_BLOCK, 1f);
                 })
-                .tag(BlockTags.BAMBOO_PLANTABLE_ON, BlockTags.DRAGON_IMMUNE)
+                .tag(BlockTags.SUPPORTS_BAMBOO, BlockTags.DRAGON_IMMUNE)
                 .tag(BlockTags.WITHER_IMMUNE)
-                .color(() -> () -> (state, world, pos, index) -> 0xFFFF0000)
+                .color(() -> () -> List.of(BlockTintSources.constant(0xFFFF0000)))
                 .item()
             .model(() -> Client::testBlockModel)
                     .build()
@@ -258,11 +288,10 @@ public class TestMod {
 
     private final FluidEntry<BaseFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(
-                    ResourceLocation.withDefaultNamespace("block/water_flow"),
-                    ResourceLocation.withDefaultNamespace("block/lava_still"),
+                    Identifier.withDefaultNamespace("block/water_flow"),
+                    Identifier.withDefaultNamespace("block/lava_still"),
 					FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
-            .renderType(() -> () -> ChunkSectionLayer.TRANSLUCENT)
             .noBucket()
 //            .bucket()
 //                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
@@ -330,7 +359,7 @@ public class TestMod {
 //            .block(Block::new)
 //            .addLayer(() -> RenderType::getTranslucent);
 
-    private static <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
+    private static <T extends Block, P> BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
         return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
     }
 
@@ -344,7 +373,7 @@ public class TestMod {
                 .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
                 .display(Items.EGG,
                         adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
-                        ResourceLocation.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
+                        Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
                 .save(adv, registrate.getModid() + ":root");
         });
         registrate.addDataGenerator(ProviderType.GENERIC_SERVER, provider -> provider.add(data -> {
@@ -353,7 +382,7 @@ public class TestMod {
             // /execute as @s in testmod:test_dimension run tp @s 0 64 0
             // you can validate you are in this dimension by checking the debug screen
             // right underneath the `Chunks[C]` and `Chunk[S]` should be the dimension name
-            var testDimensionTypeKey = ResourceKey.create(Registries.DIMENSION_TYPE, ResourceLocation.fromNamespaceAndPath("testmod", "test_dimension_type"));
+            var testDimensionTypeKey = ResourceKey.create(Registries.DIMENSION_TYPE, Identifier.fromNamespaceAndPath("testmod", "test_dimension_type"));
 
             return new DatapackBuiltinEntriesProvider(
                     data.output(),
@@ -363,27 +392,36 @@ public class TestMod {
                             .add(Registries.DIMENSION_TYPE, context -> context.register(
                                     testDimensionTypeKey,
                                     new DimensionType(
-                                            /* fixedTime */ OptionalLong.empty(),
+                                            /* hasFixedTime */ false,
                                             /* hasSky */ true,
                                             /* hasCeiling */ false,
-                                            /* ultraWarm */ false,
-                                            /* natural */ true,
+                                            /* hasEnderDragonFight */ false,
                                             /* coordinateScale */ 1D,
-                                            /* bedWords */ true,
-                                            /* respawnAnchorWorks */ false,
                                             /* minY */ -64,
                                             /* height */ 384,
                                             /* localHeight */ 384,
                                             /* infiniBurn */ BlockTags.INFINIBURN_OVERWORLD,
-                                            /* effectsLocation */ BuiltinDimensionTypes.OVERWORLD_EFFECTS,
                                             /* ambientLight */ 0F,
-                                            /* cloudHeight */ Optional.of(192),
                                             new DimensionType.MonsterSettings(
-                                                    /* piglinSafe */ false,
-                                                    /* hasRaids */ true,
                                                     /* monsterSpawnLightTest */ UniformInt.of(0, 7),
                                                     /* monsterSpawnBlockLightLimit */ 0
-                                            )
+                                            ),
+                                            DimensionType.Skybox.OVERWORLD,
+                                            CardinalLighting.Type.DEFAULT,
+                                            EnvironmentAttributeMap.builder()
+                                                    .set(EnvironmentAttributes.FOG_COLOR, 0xffc0d8ff)
+                                                    .set(EnvironmentAttributes.SKY_COLOR, OverworldBiomes.calculateSkyColor(0.8F))
+                                                    .set(EnvironmentAttributes.AMBIENT_LIGHT_COLOR, 0xff0a0a0a)
+                                                    .set(EnvironmentAttributes.CLOUD_COLOR, ARGB.white(0.8F))
+                                                    .set(EnvironmentAttributes.CLOUD_HEIGHT, 192.33f)
+                                                    .set(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.OVERWORLD)
+                                                    .set(EnvironmentAttributes.BED_RULE, BedRule.CAN_SLEEP_WHEN_DARK)
+                                                    .set(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, false)
+                                                    .set(EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS, true)
+                                                    .set(EnvironmentAttributes.AMBIENT_SOUNDS, AmbientSounds.LEGACY_CAVE_SETTINGS)
+                                                    .build(),
+                                            context.lookup(Registries.TIMELINE).getOrThrow(TimelineTags.IN_OVERWORLD),
+                                            Optional.of(context.lookup(Registries.WORLD_CLOCK).getOrThrow(WorldClocks.OVERWORLD))
                                     )
                             ))
                             // register custom dimension for the dimension type
@@ -394,7 +432,7 @@ public class TestMod {
                                 var overworldNoiseSettings = context.lookup(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD);
 
                                 context.register(
-                                        ResourceKey.create(Registries.LEVEL_STEM, ResourceLocation.fromNamespaceAndPath("testmod", "test_dimension")),
+                                        ResourceKey.create(Registries.LEVEL_STEM, Identifier.fromNamespaceAndPath("testmod", "test_dimension")),
                                         new LevelStem(
                                                 testDimensionType,
                                                 new NoiseBasedChunkGenerator(
@@ -416,7 +454,7 @@ public class TestMod {
             throw new IllegalStateException("Register callback not fired!");
         }
 
-        testblock.asStack();
+        testblock.asStackTemplate();
         testitem.is(Items.SNOWBALL);
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
