@@ -20,6 +20,7 @@
 ## intellij
 /out
 /.idea
+/.eclipse
 /*.iml
 /*.ipr
 /*.iws

@@ -1,6 +1,8 @@
 package com.tterrag.registrate.test.mod;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -25,6 +27,8 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySetBuilder;
@@ -43,11 +47,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.attribute.AmbientSounds;
-import net.minecraft.world.attribute.BackgroundMusic;
-import net.minecraft.world.attribute.BedRule;
-import net.minecraft.world.attribute.EnvironmentAttributeMap;
-import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.attribute.*;
 import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -90,22 +90,33 @@ import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.RegistryBuilder;
-import org.jspecify.annotations.Nullable;
+import net.neoforged.testframework.conf.ClientConfiguration;
+import net.neoforged.testframework.conf.Feature;
+import net.neoforged.testframework.conf.FrameworkConfiguration;
+import net.neoforged.testframework.impl.MutableTestFramework;
+import org.lwjgl.glfw.GLFW;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Mod("testmod")
+@Mod(TestMod.MOD_ID)
 public class TestMod {
+
+    public static final String MOD_ID = "testmod";
 
     private class TestBlock extends Block implements EntityBlock {
 
@@ -164,7 +175,7 @@ public class TestMod {
         }
 
         @Override
-        public void extractRenderState(TestBlockEntity blockEntity, RenderState state, float partialTicks, Vec3 cameraPosition, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+        public void extractRenderState(TestBlockEntity blockEntity, RenderState state, float partialTicks, Vec3 cameraPosition, @Nullable ModelFeatureRenderer.CrumblingOverlay breakProgress) {
             BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
             itemModelResolver.updateForTopItem(state.item, new ItemStack(Items.DIAMOND), ItemDisplayContext.GROUND, blockEntity.getLevel(), null, 0);
         }
@@ -200,13 +211,15 @@ public class TestMod {
 
     private final Registrate registrate = Registrate.create("testmod");
 
-    private final RegistryEntry<CreativeModeTab, CreativeModeTab> testcreativetab = registrate.object("test_creative_mode_tab")
+    @VisibleForTesting
+    public final RegistryEntry<CreativeModeTab, CreativeModeTab> testcreativetab = registrate.object("test_creative_mode_tab")
             .defaultCreativeTab(tab -> tab.withLabelColor(0xFF00AA00))
             .register();
 
     private final AtomicBoolean sawCallback = new AtomicBoolean();
 
-    private final ItemEntry<Item> testitem = registrate.object("testitem")
+    @VisibleForTesting
+    public final ItemEntry<Item> testitem = registrate.object("testitem")
             .item(Item::new)
                 .onRegister(item -> sawCallback.set(true))
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
@@ -215,14 +228,16 @@ public class TestMod {
                 .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx))
                 .register();
 
-    private final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
+    @VisibleForTesting
+    public final EntityEntry<TestEntity> testduplicatename = registrate.object("testitem")
             .entity(TestEntity::new, MobCategory.CREATURE)
             .attributes(Pig::createAttributes)
             .loot((tb, e) -> tb.add(e, LootTable.lootTable()))
             .renderer(() -> PigRenderer::new)
             .register();
 
-    private final BlockEntry<TestBlock> testblock = registrate.object("testblock")
+    @VisibleForTesting
+    public final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
                 .properties(p -> p.noOcclusion())
             .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(),
@@ -252,7 +267,8 @@ public class TestMod {
                     .build()
                 .register();
 
-    private final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
+    @VisibleForTesting
+    public final BlockEntry<Block> magicItemModelTest = registrate.object("magic_item_model")
             .block(Block::new)
             .blockstate(() -> (ctx, prov) ->
                     prov.create(ctx.getEntry(), prov.getBuilder()
@@ -262,11 +278,14 @@ public class TestMod {
             .simpleItem()
             .register();
 
-    private final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registries.ITEM);
-    private final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(Registries.BLOCK_ENTITY_TYPE));
+    @VisibleForTesting
+    public final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registries.ITEM);
+    @VisibleForTesting
+    public final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(Registries.BLOCK_ENTITY_TYPE));
 
     @SuppressWarnings("deprecation")
-    private final EntityEntry<TestEntity> testentity = registrate.object("testentity")
+    @VisibleForTesting
+    public final EntityEntry<TestEntity> testentity = registrate.object("testentity")
             .entity(TestEntity::new, MobCategory.CREATURE)
             .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
@@ -281,12 +300,14 @@ public class TestMod {
             .tag(EntityTypeTags.RAIDERS)
             .register();
 
-    private final BlockEntityEntry<TestDummyBlockEntity> testblockentity = registrate.object("testblockentity")
+    @VisibleForTesting
+    public final BlockEntityEntry<TestDummyBlockEntity> testblockentity = registrate.object("testblockentity")
             .blockEntity(TestDummyBlockEntity::new)
             .validBlock(() -> Blocks.DIRT)//TODO <1.21.4> now empty valid block is not allowed
             .register();
 
-    private final FluidEntry<BaseFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
+    @VisibleForTesting
+    public final FluidEntry<BaseFlowingFluid.Flowing> testfluid = registrate.object("testfluid")
             .fluid(
                     Identifier.withDefaultNamespace("block/water_flow"),
                     Identifier.withDefaultNamespace("block/lava_still"),
@@ -298,7 +319,8 @@ public class TestMod {
 //                .build()
             .register();
 
-    private final MenuEntry<ChestMenu> testmenu = registrate.object("testmenu")
+    @VisibleForTesting
+    public final MenuEntry<ChestMenu> testmenu = registrate.object("testmenu")
             .menu((type, windowId, inv) -> new ChestMenu(type, windowId, inv, new SimpleContainer(9 * 9), 9), () -> ContainerScreen::new)
             .register();
     
@@ -351,8 +373,10 @@ public class TestMod {
 //            .dimensionTypeCallback(t -> testdimensiontype = t)
 //            .register();
 
-    private final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = registrate.makeRegistry("custom", RegistryBuilder::new);
-    private final RegistryEntry<TestCustomRegistryEntry, TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
+    @VisibleForTesting
+    public final ResourceKey<Registry<TestCustomRegistryEntry>> CUSTOM_REGISTRY = registrate.makeRegistry("custom", RegistryBuilder::new);
+    @VisibleForTesting
+    public final RegistryEntry<TestCustomRegistryEntry, TestCustomRegistryEntry> testcustom = registrate.object("testcustom")
             .simple(CUSTOM_REGISTRY, TestCustomRegistryEntry::new);
 
 //    private final BlockBuilder<Block, Registrate> INVALID_TEST = registrate.object("invalid")
@@ -363,7 +387,10 @@ public class TestMod {
         return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
     }
 
-    public TestMod(IEventBus eventBus) {
+    private static @Nullable TestMod INSTANCE = null;
+
+    public TestMod(IEventBus eventBus, ModContainer container) {
+        INSTANCE = this;
 
         registrate.addRawLang("testmod.custom.lang", "Test");
         registrate.addRawLang("testmod.custom.lang.with_placeholders1", "Placeholder 1 %s Placeholder 2 %s");
@@ -451,6 +478,25 @@ public class TestMod {
         }));
 
         eventBus.addListener(this::onCommonSetup);
+
+        // Setup gametests for normal run config
+        final MutableTestFramework framework = FrameworkConfiguration
+                .builder(Identifier.fromNamespaceAndPath(MOD_ID, "tests"))
+                .clientConfiguration(() -> ClientConfiguration.builder()
+                        .toggleOverlayKey(GLFW.GLFW_KEY_O)
+                        .openManagerKey(GLFW.GLFW_KEY_M)
+                        .build())
+                .enable(Feature.CLIENT_SYNC, Feature.TEST_STORE)
+                .build()
+                .create();
+
+        framework.init(eventBus, container);
+
+        NeoForge.EVENT_BUS.addListener((final RegisterCommandsEvent event) -> {
+            final LiteralArgumentBuilder<CommandSourceStack> node = Commands.literal("tests");
+            framework.registerCommands(node);
+            event.getDispatcher().register(node);
+        });
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
@@ -470,5 +516,10 @@ public class TestMod {
         private static void testBlockModel(DataGenContext<Item, BlockItem> ctx, RegistrateItemModelGenerator prov) {
             prov.generateTintedModel(ctx.get(), prov.mcLoc("item/egg"), new Constant(0xFFFF0000));
         }
+    }
+
+    public static TestMod instance() {
+        Objects.requireNonNull(INSTANCE, "Attempting to get mod instance before mod construction");
+        return INSTANCE;
     }
 }

@@ -37,11 +37,17 @@ runs {
 
     client {
         workingDirectory project.file('run')
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'testmod'
     }
 
     server {
         workingDirectory project.file('run/server')
         arguments '--nogui'
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'testmod'
+    }
+
+    gameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'testmod'
     }
 
     clientData {
@@ -64,6 +70,7 @@ repositories {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+    implementation "net.neoforged:testframework:${neo_version}"
 
     implementation "javax.annotation:javax.annotation-api:1.3.2"
 
