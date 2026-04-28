@@ -69,27 +69,27 @@ public class RegistrateEntityLootTables extends VanillaEntityLoot implements Reg
     // GENERATED START - DO NOT EDIT BELOW THIS LINE
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#createSheepTable} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 18 Jun 2024 17:49:13 GMT")
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 28 Apr 2026 01:12:07 GMT")
     public static LootTable.Builder createSheepTable(ItemLike p_249422_) { return EntityLootSubProvider.createSheepTable(p_249422_); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#canHaveLootTable} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 18 Jun 2024 17:49:13 GMT")
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 28 Apr 2026 01:12:07 GMT")
     public boolean canHaveLootTable(EntityType<?> p_249029_) { return super.canHaveLootTable(p_249029_); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#killedByFrogVariant} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 18 Jun 2024 17:49:13 GMT")
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 28 Apr 2026 01:12:07 GMT")
     public LootItemCondition.Builder killedByFrogVariant(ResourceKey<FrogVariant> p_335676_) { return super.killedByFrogVariant(p_335676_); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 18 Jun 2024 17:49:13 GMT")
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 28 Apr 2026 01:12:07 GMT")
     public void add(EntityType<?> p_248740_, LootTable.Builder p_249440_) { super.add(p_248740_, p_249440_); }
 
     /** Generated override to expose protected method: {@link EntityLootSubProvider#add} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 18 Jun 2024 17:49:13 GMT")
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateEntityLootTables", date = "Tue, 28 Apr 2026 01:12:07 GMT")
     public void add(EntityType<?> p_252130_, ResourceKey<LootTable> p_335943_, LootTable.Builder p_249357_) { super.add(p_252130_, p_335943_, p_249357_); }
 
     // GENERATED END
