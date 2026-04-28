@@ -4,16 +4,7 @@
   "cookingtime": 600,
   "experience": 1.0,
   "ingredient": {
-    "type": "testmod:data_ingredient",
-    "parent": {
-      "item": "testmod:testblock"
-    },
-    "criteria": [
-      {
-        "items": "testmod:testblock"
-      }
-    ],
-    "id": "testmod:testblock"
+    "item": "testmod:testblock"
   },
   "result": {
     "count": 1,
