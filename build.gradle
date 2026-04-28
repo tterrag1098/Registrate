@@ -2,7 +2,6 @@ plugins {
     id "io.freefair.lombok" version "8.13"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'org.ajoberstar.grgit' version '5.2.2'
-//    id "com.palantir.revapi" version "1.7.0"
     id 'net.neoforged.gradle.userdev' version '7.1.25'
 }
 
@@ -26,14 +25,6 @@ group = "com.tterrag.registrate"
 base.archivesName = "Registrate"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
-/*
-revapi {
-    oldGroup = project.group
-    oldName = project.archivesBaseName
-    oldVersion = 'MC1.18.2-1.0.25'
-    tasks.revapiAnalyze.dependsOn reobf
-}
-*/
 
 runs {
     configureEach {
@@ -135,6 +126,17 @@ publishing {
         if (project.hasProperty('mavendir')) {
             maven { url mavendir }
         }
+
+        def mavenToken = System.getenv("MAVEN_TOKEN")
+        if (mavenToken != null && !mavenToken.isEmpty()) {
+            maven {
+                url = "https://maven.gegy.dev/releases"
+                credentials {
+                    username = "registrate"
+                    password = mavenToken
+                }
+            }
+        }
     }
 }
 
@@ -143,35 +145,4 @@ repositories {
         url 'https://repo.maven.apache.org/maven2'
         name 'Maven Central'
     }
-}
-
-String getChangelogText() {
-    def changelogFile = file('changelog.txt')
-    String str = ''
-    int lineCount = 0
-    boolean done = false
-    changelogFile.eachLine {
-        if (done || it == null) {
-            return
-        }
-        if (it.size() > 1) {
-            def temp = it
-            if (lineCount == 0) {
-                temp = "Chisel ${version}"
-                temp = "<h2>$temp</h2>"
-            } else if (it.startsWith('-')) {
-                temp = "&nbsp;&nbsp;&nbsp;$temp"
-                temp = temp.replaceAll("(\\S+\\/\\S+)#([0-9]+)\\b", "<a href=\"https://github.com/\$1/issues/\$2\">\$0</a>")
-                temp = temp.replaceAll("#([0-9]+)\\b(?!<\\/a>)", "<a href=\"https://github.com/$github_project/issues/\$1\">\$0</a>")
-            } else {
-                temp = "<h4>$temp</h4>"
-            }
-            str += "$temp<br/>"
-            lineCount++
-            return
-        } else {
-            done = true
-        }
-    }
-    return str
 }
