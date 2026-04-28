@@ -17,8 +17,9 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import org.apache.commons.lang3.StringUtils;
-
 import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -130,12 +131,12 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
             /* lowercase */ "abcdefghijklmn\u00F1opqrstuvwxyz" +
             /* uppercase */ "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
             /*  numbers  */ "0123456789" +
-            /*  special  */ "_,;.?!/\\'";
+            /*  special  */ "()[]{}<>\u25C1\u25B7_,;.?!/\\'";
     private static final String UPSIDE_DOWN_CHARS =
             /* lowercase */ "\u0250q\u0254p\u01DD\u025Fb\u0265\u0131\u0638\u029E\u05DF\u026Fuuodb\u0279s\u0287n\u028C\u028Dx\u028Ez" +
             /* uppercase */ "\u2C6F\u15FA\u0186\u15E1\u018E\u2132\u2141HI\u017F\u029E\uA780WNO\u0500\u1F49\u1D1AS\u27D8\u2229\u039BMX\u028EZ" +
             /*  numbers  */ "0\u0196\u1105\u0190\u3123\u03DB9\u312586" +
-            /*  special  */ "\u203E'\u061B\u02D9\u00BF\u00A1/\\,";
+            /*  special  */ ")(][}{><\u25B7\u25C1\u203E'\u061B\u02D9\u00BF\u00A1\\/,";
 
     static {
         if (NORMAL_CHARS.length() != UPSIDE_DOWN_CHARS.length()) {
@@ -144,19 +145,29 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     private String toUpsideDown(String normal) {
-        char[] ud = new char[normal.length()];
+        int formatIndex = 1;
+        ArrayList<Character> ud = new ArrayList<>();
         for (int i = 0; i < normal.length(); i++) {
             char c = normal.charAt(i);
             if (c == '%') {
                 String fmtArg = "";
                 while (Character.isDigit(c) || c == '%' || c == '$' || c == 's' || c == 'd') { // TODO this is a bit lazy
+                    if (fmtArg.equals("%") && c == 's') {
+                        fmtArg = "%" + formatIndex + "$s";
+                        formatIndex++;
+                        i++;
+                        break;
+                    }
+                    else if (c == '$') {
+                        formatIndex++;
+                    }
                     fmtArg += c;
                     i++;
                     c = i == normal.length() ? 0 : normal.charAt(i);
                 }
                 i--;
-                for (int j = 0; j < fmtArg.length(); j++) {
-                    ud[normal.length() - 1 - i + j] = fmtArg.charAt(j);
+                for (int j = fmtArg.length() - 1; j >= 0; j--) {
+                    ud.addFirst(fmtArg.charAt(j));
                 }
                 continue;
             }
@@ -164,9 +175,13 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
             if (lookup >= 0) {
                 c = UPSIDE_DOWN_CHARS.charAt(lookup);
             }
-            ud[normal.length() - 1 - i] = c;
+            ud.addFirst(c);
         }
-        return new String(ud);
+        StringBuilder builder = new StringBuilder(ud.size());
+        for (Character ch : ud) {
+            builder.append(ch);
+        }
+        return builder.toString();
     }
 
     @Override
