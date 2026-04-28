@@ -2,7 +2,7 @@ package com.tterrag.registrate.util.entry;
 
 import java.util.Optional;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
 

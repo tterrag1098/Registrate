@@ -17,8 +17,8 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

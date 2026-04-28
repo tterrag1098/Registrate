@@ -13,8 +13,7 @@ public class RegistrateDataMapProvider extends DataMapProvider implements Regist
 
 	private final AbstractRegistrate<?> parent;
 
-	@Nullable
-	private HolderLookup.Provider provider;
+	private HolderLookup.@Nullable Provider provider;
 
 	protected RegistrateDataMapProvider(AbstractRegistrate<?> parent, PackOutput output, CompletableFuture<HolderLookup.Provider> pvd) {
 		super(output, pvd);

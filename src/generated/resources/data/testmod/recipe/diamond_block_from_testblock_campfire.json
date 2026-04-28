@@ -1,11 +1,10 @@
 {
   "type": "minecraft:campfire_cooking",
-  "category": "food",
+  "category": "misc",
   "cookingtime": 600,
   "experience": 1.0,
   "ingredient": "testmod:testblock",
   "result": {
-    "count": 1,
     "id": "minecraft:diamond_block"
   }
 }

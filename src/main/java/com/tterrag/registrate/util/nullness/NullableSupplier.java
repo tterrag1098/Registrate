@@ -1,13 +1,15 @@
 package com.tterrag.registrate.util.nullness;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Objects;
 import java.util.function.Supplier;
 
 @Deprecated
-public interface NullableSupplier<@NullableType T> extends Supplier<T> {
+public interface NullableSupplier<T> extends Supplier<@Nullable T> {
     
     @Override
-    T get();
+    @Nullable T get();
 
     default T getNonNull() {
         return getNonNull(() -> "Unexpected null value from supplier");

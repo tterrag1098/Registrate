@@ -11,7 +11,6 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiFunction;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
-import com.tterrag.registrate.util.nullness.NonnullType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 import net.minecraft.core.Registry;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -69,7 +68,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
      * @return The built entry
      */
     @SuppressWarnings("null")
-    protected abstract @NonnullType T createEntry();
+    protected abstract T createEntry();
 
     @Override
     public RegistryEntry<R, T> register() {
@@ -117,7 +116,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     }
 
     protected TagEntry asTag() {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(getOwner().getModid(), getName());
+        Identifier id = Identifier.fromNamespaceAndPath(getOwner().getModid(), getName());
         if (isOptional) return TagEntry.optionalElement(id);
         return TagEntry.element(id);
     }
@@ -172,7 +171,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     }
 
     public ResourceKey<R> getResourceKey(){
-        return ResourceKey.create(getRegistryKey(), ResourceLocation.fromNamespaceAndPath(getOwner().getModid(), getName()));
+        return ResourceKey.create(getRegistryKey(), Identifier.fromNamespaceAndPath(getOwner().getModid(), getName()));
     }
 
 }

@@ -1,12 +1,12 @@
 package com.tterrag.registrate.builders;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
-import com.google.common.base.Preconditions;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.builders.BlockEntityBuilder.BlockEntityFactory;
 import com.tterrag.registrate.providers.DataGenContext;
@@ -27,13 +27,12 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
-import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.block.model.SingleVariant;
-import net.minecraft.client.renderer.block.model.Variant;
+import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
+import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -93,11 +92,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     
     private NonNullSupplier<BlockBehaviour.Properties> initialProperties;
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
-    @Nullable
-    private Supplier<Supplier<ChunkSectionLayer>> renderLayer;
 
-    @Nullable
-    private NonNullSupplier<Supplier<BlockColor>> colorHandler;
+    private @Nullable NonNullSupplier<Supplier<List<BlockTintSource>>> tintSources;
 
     protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, NonNullSupplier<BlockBehaviour.Properties> initialProperties) {
         super(owner, parent, name, callback, Registries.BLOCK);
@@ -130,32 +126,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public BlockBuilder<T, P> initialProperties(NonNullSupplier<? extends Block> block) {
         initialProperties = () -> BlockBehaviour.Properties.ofFullCopy(block.get());
         return this;
-    }
-
-    /**
-     * @deprecated Set your render type in your model's JSON ({@link net.neoforged.neoforge.client.model.generators.template.ExtendedModelTemplateBuilder#renderType(ResourceLocation)})
-     */
-    @Deprecated(forRemoval = true)
-    public BlockBuilder<T, P> addLayer(Supplier<Supplier<ChunkSectionLayer>> layer) {
-        if (this.renderLayer == null) {
-            onRegister(this::registerLayers);
-            this.renderLayer = layer;
-        } else {
-            throw new IllegalStateException("Only a single layer can be registered for a block");
-        }
-        return this;
-    }
-
-    @SuppressWarnings("deprecation")
-    protected void registerLayers(T entry) {
-        RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-            OneTimeEventReceiver.addModListener(getOwner(), FMLClientSetupEvent.class, $ -> {
-                if (renderLayer != null) {
-                    ChunkSectionLayer layer = renderLayer.get().get();
-                    ItemBlockRenderTypes.setRenderLayer(entry, layer);
-                }
-            });
-        });
     }
 
     /**
@@ -239,26 +209,25 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     }
     
     /**
-     * Register a block color handler for this block. The {@link BlockColor} instance can be shared across many blocks.
+     * Register a set of block tint sources for this block. The {@link BlockTintSource} instances can be shared across many blocks.
      * 
-     * @param colorHandler
-     *            The color handler to register for this block
+     * @param tintSources The tint sources to register for this block, indexed by tint index
      * @return this {@link BlockBuilder}
      */
     // TODO it might be worthwhile to abstract this more and add the capability to automatically copy to the item
-    public BlockBuilder<T, P> color(NonNullSupplier<Supplier<BlockColor>> colorHandler) {
-        if (this.colorHandler == null) {
+    public BlockBuilder<T, P> color(NonNullSupplier<Supplier<List<BlockTintSource>>> tintSources) {
+        if (this.tintSources == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerBlockColor);
         }
-        this.colorHandler = colorHandler;
+        this.tintSources = tintSources;
         return this;
     }
     
     protected void registerBlockColor() {
-        OneTimeEventReceiver.addModListener(getOwner(), RegisterColorHandlersEvent.Block.class, e -> {
-            NonNullSupplier<Supplier<BlockColor>> colorHandler = this.colorHandler;
-            if (colorHandler != null) {
-                e.register(colorHandler.get().get(), getEntry());
+        OneTimeEventReceiver.addModListener(getOwner(), RegisterColorHandlersEvent.BlockTintSources.class, e -> {
+            NonNullSupplier<Supplier<List<BlockTintSource>>> tintSources = this.tintSources;
+            if (tintSources != null) {
+                e.register(tintSources.get().get(), getEntry());
             }
         });
     }
@@ -347,8 +316,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         return setData(ProviderType.RECIPE, cons);
     }
 
-    @Nullable
-    private Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtensionFunc;
+    private @Nullable Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtensionFunc;
 
     /**
      * Register a client extension for this block.

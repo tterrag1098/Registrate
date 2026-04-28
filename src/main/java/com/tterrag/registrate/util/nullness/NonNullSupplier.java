@@ -6,16 +6,16 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface NonNullSupplier<@NonnullType T> extends Supplier<T> {
+public interface NonNullSupplier<T> extends Supplier<T> {
     
     @Override
     T get();
 
-    static <T> NonNullSupplier<T> of(Supplier<@NullableType T> sup) {
+    static <T> NonNullSupplier<T> of(Supplier<T> sup) {
         return of(sup, () -> "Unexpected null value from supplier");
     }
     
-    static <T> NonNullSupplier<T> of(Supplier<@NullableType T> sup, NonNullSupplier<String> errorMsg) {
+    static <T> NonNullSupplier<T> of(Supplier<T> sup, NonNullSupplier<String> errorMsg) {
         return () -> {
             T res = sup.get();
             Objects.requireNonNull(res, errorMsg);
@@ -27,7 +27,7 @@ public interface NonNullSupplier<@NonnullType T> extends Supplier<T> {
         return lazy(this);
     }
 
-    static <T> NonNullSupplier<T> lazy(Supplier<@NonnullType T> sup) {
+    static <T> NonNullSupplier<T> lazy(Supplier<T> sup) {
         return Lazy.of(sup)::get;
     }
 }

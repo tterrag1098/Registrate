@@ -31,7 +31,7 @@ import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -264,8 +264,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return dataMap(NeoForgeDataMaps.COMPOSTABLES, new Compostable(chance));
     }
 
-    @Nullable
-    private Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtensionFunc;
+    private @Nullable Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtensionFunc;
 
     /**
      * Register a client extension for this item. The {@link IClientItemExtensions} instance can be shared across many items.
