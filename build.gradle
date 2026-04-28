@@ -37,17 +37,23 @@ runs {
 
     client {
         workingDirectory project.file('run')
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'testmod'
     }
 
     server {
         workingDirectory project.file('run/server')
-        programArguments '--nogui'
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'testmod'
+        argument '--nogui'
+    }
+
+    gameTestServer {
+        systemProperty 'neoforge.enabledGameTestNamespaces', 'testmod'
     }
 
     data {
         workingDirectory project.file('run')
 
-        programArguments.addAll '--mod', 'testmod', '--all', '--output', rootProject.file('src/generated/resources/').getAbsolutePath(), '--existing', rootProject.file('src/test/resources').getAbsolutePath()
+        arguments.addAll '--mod', 'testmod', '--all', '--output', rootProject.file('src/generated/resources/').getAbsolutePath(), '--existing', rootProject.file('src/test/resources').getAbsolutePath()
     }
 }
 
@@ -64,6 +70,7 @@ repositories {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+    implementation "net.neoforged:testframework:${neo_version}"
 
     implementation group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
 
