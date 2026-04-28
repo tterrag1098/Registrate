@@ -33,6 +33,10 @@ runs {
 
         modSource project.sourceSets.test
         modSource project.sourceSets.main
+
+        idea {
+            primarySourceSet = project.sourceSets.test
+        }
     }
 
     client {
