@@ -348,274 +348,279 @@ public class RegistrateRecipeProvider extends RecipeProvider implements Registra
 
     /** Generated override to expose protected method: {@link RecipeProvider#buildAdvancement} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public CompletableFuture<?> buildAdvancement(CachedOutput p_253674_, HolderLookup.Provider p_323646_, AdvancementHolder p_301116_) { return super.buildAdvancement(p_253674_, p_323646_, p_301116_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public CompletableFuture<?> buildAdvancement(CachedOutput output, HolderLookup.Provider registries, AdvancementHolder advancement) { return super.buildAdvancement(output, registries, advancement); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#buildAdvancement} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public CompletableFuture<?> buildAdvancement(CachedOutput p_253674_, HolderLookup.Provider p_323646_, AdvancementHolder p_301116_, net.neoforged.neoforge.common.conditions.ICondition... conditions) { return super.buildAdvancement(p_253674_, p_323646_, p_301116_, conditions); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public CompletableFuture<?> buildAdvancement(CachedOutput output, HolderLookup.Provider registries, AdvancementHolder advancement, net.neoforged.neoforge.common.conditions.ICondition... conditions) { return super.buildAdvancement(output, registries, advancement, conditions); }
+
+    /** Generated override to expose protected method: {@link RecipeProvider#buildRecipes} */
+    @Override
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public void buildRecipes(RecipeOutput p_recipeOutput, HolderLookup.Provider holderLookup) { super.buildRecipes(p_recipeOutput, holderLookup); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#generateForEnabledBlockFamilies} */
     @Override
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public void generateForEnabledBlockFamilies(RecipeOutput p_301146_, FeatureFlagSet p_251836_) { super.generateForEnabledBlockFamilies(p_301146_, p_251836_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public void generateForEnabledBlockFamilies(RecipeOutput enabledFeatures, FeatureFlagSet p_251836_) { super.generateForEnabledBlockFamilies(enabledFeatures, p_251836_); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#netheriteSmithing} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void netheriteSmithing(RecipeOutput p_300886_, Item p_250046_, RecipeCategory p_248986_, Item p_250389_) { RecipeProvider.netheriteSmithing(p_300886_, p_250046_, p_248986_, p_250389_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void netheriteSmithing(RecipeOutput recipeOutput, Item ingredientItem, RecipeCategory category, Item resultItem) { RecipeProvider.netheriteSmithing(recipeOutput, ingredientItem, category, resultItem); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#trimSmithing} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void trimSmithing(RecipeOutput p_301332_, Item p_285461_, ResourceLocation p_285044_) { RecipeProvider.trimSmithing(p_301332_, p_285461_, p_285044_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void trimSmithing(RecipeOutput recipeOutput, Item ingredientItem, ResourceLocation location) { RecipeProvider.trimSmithing(recipeOutput, ingredientItem, location); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#twoByTwoPacker} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void twoByTwoPacker(RecipeOutput p_301022_, RecipeCategory p_250881_, ItemLike p_252184_, ItemLike p_249710_) { RecipeProvider.twoByTwoPacker(p_301022_, p_250881_, p_252184_, p_249710_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void twoByTwoPacker(RecipeOutput recipeOutput, RecipeCategory category, ItemLike packed, ItemLike unpacked) { RecipeProvider.twoByTwoPacker(recipeOutput, category, packed, unpacked); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#threeByThreePacker} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void threeByThreePacker(RecipeOutput p_301298_, RecipeCategory p_259247_, ItemLike p_259376_, ItemLike p_259717_, String p_260308_) { RecipeProvider.threeByThreePacker(p_301298_, p_259247_, p_259376_, p_259717_, p_260308_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void threeByThreePacker(RecipeOutput recipeOutput, RecipeCategory category, ItemLike packed, ItemLike unpacked, String criterionName) { RecipeProvider.threeByThreePacker(recipeOutput, category, packed, unpacked, criterionName); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#threeByThreePacker} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void threeByThreePacker(RecipeOutput p_301302_, RecipeCategory p_259186_, ItemLike p_259360_, ItemLike p_259263_) { RecipeProvider.threeByThreePacker(p_301302_, p_259186_, p_259360_, p_259263_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void threeByThreePacker(RecipeOutput recipeOutput, RecipeCategory category, ItemLike packed, ItemLike unpacked) { RecipeProvider.threeByThreePacker(recipeOutput, category, packed, unpacked); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#planksFromLog} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void planksFromLog(RecipeOutput p_301020_, ItemLike p_259052_, TagKey<Item> p_259045_, int p_259471_) { RecipeProvider.planksFromLog(p_301020_, p_259052_, p_259045_, p_259471_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void planksFromLog(RecipeOutput recipeOutput, ItemLike planks, TagKey<Item> logs, int resultCount) { RecipeProvider.planksFromLog(recipeOutput, planks, logs, resultCount); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#planksFromLogs} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void planksFromLogs(RecipeOutput p_301221_, ItemLike p_259193_, TagKey<Item> p_259818_, int p_259807_) { RecipeProvider.planksFromLogs(p_301221_, p_259193_, p_259818_, p_259807_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void planksFromLogs(RecipeOutput recipeOutput, ItemLike planks, TagKey<Item> logs, int result) { RecipeProvider.planksFromLogs(recipeOutput, planks, logs, result); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#woodFromLogs} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void woodFromLogs(RecipeOutput p_301095_, ItemLike p_126004_, ItemLike p_126005_) { RecipeProvider.woodFromLogs(p_301095_, p_126004_, p_126005_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void woodFromLogs(RecipeOutput recipeOutput, ItemLike wood, ItemLike log) { RecipeProvider.woodFromLogs(recipeOutput, wood, log); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#woodenBoat} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void woodenBoat(RecipeOutput p_301315_, ItemLike p_126023_, ItemLike p_126024_) { RecipeProvider.woodenBoat(p_301315_, p_126023_, p_126024_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void woodenBoat(RecipeOutput recipeOutput, ItemLike boat, ItemLike material) { RecipeProvider.woodenBoat(recipeOutput, boat, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#chestBoat} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void chestBoat(RecipeOutput p_300996_, ItemLike p_236373_, ItemLike p_236374_) { RecipeProvider.chestBoat(p_300996_, p_236373_, p_236374_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void chestBoat(RecipeOutput recipeOutput, ItemLike boat, ItemLike material) { RecipeProvider.chestBoat(recipeOutput, boat, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#buttonBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder buttonBuilder(ItemLike p_176659_, Ingredient p_176660_) { return RecipeProvider.buttonBuilder(p_176659_, p_176660_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder buttonBuilder(ItemLike button, Ingredient material) { return RecipeProvider.buttonBuilder(button, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#doorBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder doorBuilder(ItemLike p_176671_, Ingredient p_176672_) { return RecipeProvider.doorBuilder(p_176671_, p_176672_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder doorBuilder(ItemLike door, Ingredient material) { return RecipeProvider.doorBuilder(door, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#fenceBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder fenceBuilder(ItemLike p_176679_, Ingredient p_176680_) { return RecipeProvider.fenceBuilder(p_176679_, p_176680_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder fenceBuilder(ItemLike fence, Ingredient material) { return RecipeProvider.fenceBuilder(fence, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#fenceGateBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder fenceGateBuilder(ItemLike p_176685_, Ingredient p_176686_) { return RecipeProvider.fenceGateBuilder(p_176685_, p_176686_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder fenceGateBuilder(ItemLike fenceGate, Ingredient material) { return RecipeProvider.fenceGateBuilder(fenceGate, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#pressurePlate} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void pressurePlate(RecipeOutput p_301211_, ItemLike p_176692_, ItemLike p_176693_) { RecipeProvider.pressurePlate(p_301211_, p_176692_, p_176693_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void pressurePlate(RecipeOutput recipeOutput, ItemLike pressurePlate, ItemLike material) { RecipeProvider.pressurePlate(recipeOutput, pressurePlate, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#pressurePlateBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder pressurePlateBuilder(RecipeCategory p_251447_, ItemLike p_251989_, Ingredient p_249211_) { return RecipeProvider.pressurePlateBuilder(p_251447_, p_251989_, p_249211_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder pressurePlateBuilder(RecipeCategory category, ItemLike pressurePlate, Ingredient material) { return RecipeProvider.pressurePlateBuilder(category, pressurePlate, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#slab} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void slab(RecipeOutput p_300949_, RecipeCategory p_251848_, ItemLike p_249368_, ItemLike p_252133_) { RecipeProvider.slab(p_300949_, p_251848_, p_249368_, p_252133_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void slab(RecipeOutput recipeOutput, RecipeCategory category, ItemLike slab, ItemLike material) { RecipeProvider.slab(recipeOutput, category, slab, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#slabBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder slabBuilder(RecipeCategory p_251707_, ItemLike p_251284_, Ingredient p_248824_) { return RecipeProvider.slabBuilder(p_251707_, p_251284_, p_248824_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder slabBuilder(RecipeCategory category, ItemLike slab, Ingredient material) { return RecipeProvider.slabBuilder(category, slab, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#stairBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder stairBuilder(ItemLike p_176711_, Ingredient p_176712_) { return RecipeProvider.stairBuilder(p_176711_, p_176712_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder stairBuilder(ItemLike stairs, Ingredient material) { return RecipeProvider.stairBuilder(stairs, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#trapdoorBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder trapdoorBuilder(ItemLike p_176721_, Ingredient p_176722_) { return RecipeProvider.trapdoorBuilder(p_176721_, p_176722_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder trapdoorBuilder(ItemLike trapdoor, Ingredient material) { return RecipeProvider.trapdoorBuilder(trapdoor, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#signBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder signBuilder(ItemLike p_176727_, Ingredient p_176728_) { return RecipeProvider.signBuilder(p_176727_, p_176728_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder signBuilder(ItemLike sign, Ingredient material) { return RecipeProvider.signBuilder(sign, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#hangingSign} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void hangingSign(RecipeOutput p_301272_, ItemLike p_252355_, ItemLike p_250437_) { RecipeProvider.hangingSign(p_301272_, p_252355_, p_250437_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void hangingSign(RecipeOutput recipeOutput, ItemLike sign, ItemLike material) { RecipeProvider.hangingSign(recipeOutput, sign, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#colorBlockWithDye} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void colorBlockWithDye(RecipeOutput p_301260_, List<Item> p_289675_, List<Item> p_289672_, String p_289641_) { RecipeProvider.colorBlockWithDye(p_301260_, p_289675_, p_289672_, p_289641_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void colorBlockWithDye(RecipeOutput recipeOutput, List<Item> dyes, List<Item> dyeableItems, String group) { RecipeProvider.colorBlockWithDye(recipeOutput, dyes, dyeableItems, group); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#carpet} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void carpet(RecipeOutput p_300953_, ItemLike p_176718_, ItemLike p_176719_) { RecipeProvider.carpet(p_300953_, p_176718_, p_176719_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void carpet(RecipeOutput recipeOutput, ItemLike carpet, ItemLike material) { RecipeProvider.carpet(recipeOutput, carpet, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#bedFromPlanksAndWool} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void bedFromPlanksAndWool(RecipeOutput p_301140_, ItemLike p_126075_, ItemLike p_126076_) { RecipeProvider.bedFromPlanksAndWool(p_301140_, p_126075_, p_126076_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void bedFromPlanksAndWool(RecipeOutput recipeOutput, ItemLike bed, ItemLike wool) { RecipeProvider.bedFromPlanksAndWool(recipeOutput, bed, wool); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#banner} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void banner(RecipeOutput p_301322_, ItemLike p_126083_, ItemLike p_126084_) { RecipeProvider.banner(p_301322_, p_126083_, p_126084_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void banner(RecipeOutput recipeOutput, ItemLike banner, ItemLike material) { RecipeProvider.banner(recipeOutput, banner, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#stainedGlassFromGlassAndDye} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void stainedGlassFromGlassAndDye(RecipeOutput p_300895_, ItemLike p_126087_, ItemLike p_126088_) { RecipeProvider.stainedGlassFromGlassAndDye(p_300895_, p_126087_, p_126088_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void stainedGlassFromGlassAndDye(RecipeOutput recipeOutput, ItemLike stainedGlass, ItemLike dye) { RecipeProvider.stainedGlassFromGlassAndDye(recipeOutput, stainedGlass, dye); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#stainedGlassPaneFromStainedGlass} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void stainedGlassPaneFromStainedGlass(RecipeOutput p_301233_, ItemLike p_126091_, ItemLike p_126092_) { RecipeProvider.stainedGlassPaneFromStainedGlass(p_301233_, p_126091_, p_126092_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void stainedGlassPaneFromStainedGlass(RecipeOutput recipeOutput, ItemLike stainedGlassPane, ItemLike stainedGlass) { RecipeProvider.stainedGlassPaneFromStainedGlass(recipeOutput, stainedGlassPane, stainedGlass); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#stainedGlassPaneFromGlassPaneAndDye} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void stainedGlassPaneFromGlassPaneAndDye(RecipeOutput p_301038_, ItemLike p_126095_, ItemLike p_126096_) { RecipeProvider.stainedGlassPaneFromGlassPaneAndDye(p_301038_, p_126095_, p_126096_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void stainedGlassPaneFromGlassPaneAndDye(RecipeOutput recipeOutput, ItemLike stainedGlassPane, ItemLike dye) { RecipeProvider.stainedGlassPaneFromGlassPaneAndDye(recipeOutput, stainedGlassPane, dye); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#coloredTerracottaFromTerracottaAndDye} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void coloredTerracottaFromTerracottaAndDye(RecipeOutput p_300948_, ItemLike p_126099_, ItemLike p_126100_) { RecipeProvider.coloredTerracottaFromTerracottaAndDye(p_300948_, p_126099_, p_126100_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void coloredTerracottaFromTerracottaAndDye(RecipeOutput recipeOutput, ItemLike terracotta, ItemLike dye) { RecipeProvider.coloredTerracottaFromTerracottaAndDye(recipeOutput, terracotta, dye); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#concretePowder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void concretePowder(RecipeOutput p_301177_, ItemLike p_126103_, ItemLike p_126104_) { RecipeProvider.concretePowder(p_301177_, p_126103_, p_126104_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void concretePowder(RecipeOutput recipeOutput, ItemLike concretePowder, ItemLike dye) { RecipeProvider.concretePowder(recipeOutput, concretePowder, dye); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#candle} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void candle(RecipeOutput p_301024_, ItemLike p_176544_, ItemLike p_176545_) { RecipeProvider.candle(p_301024_, p_176544_, p_176545_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void candle(RecipeOutput recipeOutput, ItemLike candle, ItemLike dye) { RecipeProvider.candle(recipeOutput, candle, dye); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#wall} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void wall(RecipeOutput p_301176_, RecipeCategory p_251148_, ItemLike p_250499_, ItemLike p_249970_) { RecipeProvider.wall(p_301176_, p_251148_, p_250499_, p_249970_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void wall(RecipeOutput recipeOutput, RecipeCategory category, ItemLike wall, ItemLike material) { RecipeProvider.wall(recipeOutput, category, wall, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#wallBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder wallBuilder(RecipeCategory p_249083_, ItemLike p_250754_, Ingredient p_250311_) { return RecipeProvider.wallBuilder(p_249083_, p_250754_, p_250311_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder wallBuilder(RecipeCategory category, ItemLike wall, Ingredient material) { return RecipeProvider.wallBuilder(category, wall, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#polished} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void polished(RecipeOutput p_301100_, RecipeCategory p_248719_, ItemLike p_250032_, ItemLike p_250021_) { RecipeProvider.polished(p_301100_, p_248719_, p_250032_, p_250021_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void polished(RecipeOutput recipeOutput, RecipeCategory category, ItemLike result, ItemLike material) { RecipeProvider.polished(recipeOutput, category, result, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#polishedBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static RecipeBuilder polishedBuilder(RecipeCategory p_249131_, ItemLike p_251242_, Ingredient p_251412_) { return RecipeProvider.polishedBuilder(p_249131_, p_251242_, p_251412_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static RecipeBuilder polishedBuilder(RecipeCategory category, ItemLike result, Ingredient material) { return RecipeProvider.polishedBuilder(category, result, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#cut} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void cut(RecipeOutput p_301189_, RecipeCategory p_252306_, ItemLike p_249686_, ItemLike p_251100_) { RecipeProvider.cut(p_301189_, p_252306_, p_249686_, p_251100_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void cut(RecipeOutput recipeOutput, RecipeCategory category, ItemLike cutResult, ItemLike material) { RecipeProvider.cut(recipeOutput, category, cutResult, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#cutBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static ShapedRecipeBuilder cutBuilder(RecipeCategory p_250895_, ItemLike p_251147_, Ingredient p_251563_) { return RecipeProvider.cutBuilder(p_250895_, p_251147_, p_251563_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static ShapedRecipeBuilder cutBuilder(RecipeCategory category, ItemLike cutResult, Ingredient material) { return RecipeProvider.cutBuilder(category, cutResult, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#chiseled} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void chiseled(RecipeOutput p_300911_, RecipeCategory p_251604_, ItemLike p_251049_, ItemLike p_252267_) { RecipeProvider.chiseled(p_300911_, p_251604_, p_251049_, p_252267_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void chiseled(RecipeOutput recipeOutput, RecipeCategory category, ItemLike chiseledResult, ItemLike material) { RecipeProvider.chiseled(recipeOutput, category, chiseledResult, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#mosaicBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void mosaicBuilder(RecipeOutput p_301088_, RecipeCategory p_248788_, ItemLike p_251925_, ItemLike p_252242_) { RecipeProvider.mosaicBuilder(p_301088_, p_248788_, p_251925_, p_252242_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void mosaicBuilder(RecipeOutput recipeOutput, RecipeCategory category, ItemLike result, ItemLike material) { RecipeProvider.mosaicBuilder(recipeOutput, category, result, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#chiseledBuilder} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static ShapedRecipeBuilder chiseledBuilder(RecipeCategory p_251755_, ItemLike p_249782_, Ingredient p_250087_) { return RecipeProvider.chiseledBuilder(p_251755_, p_249782_, p_250087_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static ShapedRecipeBuilder chiseledBuilder(RecipeCategory category, ItemLike chiseledResult, Ingredient material) { return RecipeProvider.chiseledBuilder(category, chiseledResult, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#stonecutterResultFromBase} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void stonecutterResultFromBase(RecipeOutput p_301035_, RecipeCategory p_248911_, ItemLike p_251265_, ItemLike p_250033_) { RecipeProvider.stonecutterResultFromBase(p_301035_, p_248911_, p_251265_, p_250033_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void stonecutterResultFromBase(RecipeOutput recipeOutput, RecipeCategory category, ItemLike result, ItemLike material) { RecipeProvider.stonecutterResultFromBase(recipeOutput, category, result, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#stonecutterResultFromBase} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void stonecutterResultFromBase(RecipeOutput p_301195_, RecipeCategory p_250609_, ItemLike p_251254_, ItemLike p_249666_, int p_251462_) { RecipeProvider.stonecutterResultFromBase(p_301195_, p_250609_, p_251254_, p_249666_, p_251462_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void stonecutterResultFromBase(RecipeOutput recipeOutput, RecipeCategory category, ItemLike result, ItemLike material, int resultCount) { RecipeProvider.stonecutterResultFromBase(recipeOutput, category, result, material, resultCount); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#smeltingResultFromBase} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void smeltingResultFromBase(RecipeOutput p_300916_, ItemLike p_176741_, ItemLike p_176742_) { RecipeProvider.smeltingResultFromBase(p_300916_, p_176741_, p_176742_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void smeltingResultFromBase(RecipeOutput recipeOutput, ItemLike result, ItemLike ingredient) { RecipeProvider.smeltingResultFromBase(recipeOutput, result, ingredient); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#copySmithingTemplate} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void copySmithingTemplate(RecipeOutput p_300986_, ItemLike p_266974_, TagKey<Item> p_267283_) { RecipeProvider.copySmithingTemplate(p_300986_, p_266974_, p_267283_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void copySmithingTemplate(RecipeOutput recipeOutput, ItemLike template, TagKey<Item> baseMaterial) { RecipeProvider.copySmithingTemplate(recipeOutput, template, baseMaterial); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#copySmithingTemplate} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void copySmithingTemplate(RecipeOutput p_301265_, ItemLike p_267133_, ItemLike p_267023_) { RecipeProvider.copySmithingTemplate(p_301265_, p_267133_, p_267023_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void copySmithingTemplate(RecipeOutput recipeOutput, ItemLike template, ItemLike baseItem) { RecipeProvider.copySmithingTemplate(recipeOutput, template, baseItem); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#copySmithingTemplate} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void copySmithingTemplate(RecipeOutput p_350466_, ItemLike p_350799_, Ingredient p_350344_) { RecipeProvider.copySmithingTemplate(p_350466_, p_350799_, p_350344_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void copySmithingTemplate(RecipeOutput recipeOutput, ItemLike template, Ingredient baseItem) { RecipeProvider.copySmithingTemplate(recipeOutput, template, baseItem); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#waxRecipes} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void waxRecipes(RecipeOutput p_301254_, FeatureFlagSet p_313879_) { RecipeProvider.waxRecipes(p_301254_, p_313879_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void waxRecipes(RecipeOutput recipeOutput, FeatureFlagSet requiredFeatures) { RecipeProvider.waxRecipes(recipeOutput, requiredFeatures); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#grate} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void grate(RecipeOutput p_309012_, Block p_309021_, Block p_309140_) { RecipeProvider.grate(p_309012_, p_309021_, p_309140_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void grate(RecipeOutput recipeOutput, Block grateBlock, Block material) { RecipeProvider.grate(recipeOutput, grateBlock, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#copperBulb} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void copperBulb(RecipeOutput p_308971_, Block p_309026_, Block p_308866_) { RecipeProvider.copperBulb(p_308971_, p_309026_, p_308866_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void copperBulb(RecipeOutput recipeOutput, Block bulbBlock, Block material) { RecipeProvider.copperBulb(recipeOutput, bulbBlock, material); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#generateRecipes} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static void generateRecipes(RecipeOutput p_301014_, BlockFamily p_176582_, FeatureFlagSet p_313799_) { RecipeProvider.generateRecipes(p_301014_, p_176582_, p_313799_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static void generateRecipes(RecipeOutput recipeOutput, BlockFamily blockFamily, FeatureFlagSet requiredFeatures) { RecipeProvider.generateRecipes(recipeOutput, blockFamily, requiredFeatures); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#getBaseBlock} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static Block getBaseBlock(BlockFamily p_176524_, BlockFamily.Variant p_176525_) { return RecipeProvider.getBaseBlock(p_176524_, p_176525_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static Block getBaseBlock(BlockFamily family, BlockFamily.Variant variant) { return RecipeProvider.getBaseBlock(family, variant); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#insideOf} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static Criterion<EnterBlockTrigger.TriggerInstance> insideOf(Block p_125980_) { return RecipeProvider.insideOf(p_125980_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static Criterion<EnterBlockTrigger.TriggerInstance> insideOf(Block block) { return RecipeProvider.insideOf(block); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#has} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> has(MinMaxBounds.Ints p_176521_, ItemLike p_176522_) { return RecipeProvider.has(p_176521_, p_176522_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> has(MinMaxBounds.Ints count, ItemLike item) { return RecipeProvider.has(count, item); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#has} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> has(ItemLike p_125978_) { return RecipeProvider.has(p_125978_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> has(ItemLike itemLike) { return RecipeProvider.has(itemLike); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#has} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> has(TagKey<Item> p_206407_) { return RecipeProvider.has(p_206407_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> has(TagKey<Item> tag) { return RecipeProvider.has(tag); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#inventoryTrigger} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate.Builder... p_299111_) { return RecipeProvider.inventoryTrigger(p_299111_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate.Builder... items) { return RecipeProvider.inventoryTrigger(items); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#inventoryTrigger} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate... p_126012_) { return RecipeProvider.inventoryTrigger(p_126012_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate... predicates) { return RecipeProvider.inventoryTrigger(predicates); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#getHasName} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static String getHasName(ItemLike p_176603_) { return RecipeProvider.getHasName(p_176603_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static String getHasName(ItemLike itemLike) { return RecipeProvider.getHasName(itemLike); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#getItemName} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static String getItemName(ItemLike p_176633_) { return RecipeProvider.getItemName(p_176633_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static String getItemName(ItemLike itemLike) { return RecipeProvider.getItemName(itemLike); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#getSimpleRecipeName} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static String getSimpleRecipeName(ItemLike p_176645_) { return RecipeProvider.getSimpleRecipeName(p_176645_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static String getSimpleRecipeName(ItemLike itemLike) { return RecipeProvider.getSimpleRecipeName(itemLike); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#getConversionRecipeName} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static String getConversionRecipeName(ItemLike p_176518_, ItemLike p_176519_) { return RecipeProvider.getConversionRecipeName(p_176518_, p_176519_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static String getConversionRecipeName(ItemLike result, ItemLike ingredient) { return RecipeProvider.getConversionRecipeName(result, ingredient); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#getSmeltingRecipeName} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static String getSmeltingRecipeName(ItemLike p_176657_) { return RecipeProvider.getSmeltingRecipeName(p_176657_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static String getSmeltingRecipeName(ItemLike itemLike) { return RecipeProvider.getSmeltingRecipeName(itemLike); }
 
     /** Generated override to expose protected method: {@link RecipeProvider#getBlastingRecipeName} */
-    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:12:36 GMT")
-    public static String getBlastingRecipeName(ItemLike p_176669_) { return RecipeProvider.getBlastingRecipeName(p_176669_); }
+    @Generated(value = "com.tterrag.registrate.test.meta.UpdateRecipeProvider", date = "Tue, 28 Apr 2026 01:45:28 GMT")
+    public static String getBlastingRecipeName(ItemLike itemLike) { return RecipeProvider.getBlastingRecipeName(itemLike); }
 
     // GENERATED END
 }
