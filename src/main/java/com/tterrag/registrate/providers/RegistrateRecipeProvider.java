@@ -54,7 +54,8 @@ import net.neoforged.neoforge.common.conditions.ICondition;
 public class RegistrateRecipeProvider extends RecipeProvider implements RegistrateProvider, RecipeOutput {
 
     private final AbstractRegistrate<?> owner;
-	private HolderLookup.Provider provider = null;
+    @Getter(onMethod_ = {@Deprecated(forRemoval = true)})
+    private @Nullable HolderLookup.Provider provider = null;
 
     public RegistrateRecipeProvider(AbstractRegistrate<?> owner, PackOutput output, CompletableFuture<HolderLookup.Provider> provider) {
         super(output, provider);
