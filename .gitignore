@@ -8,6 +8,7 @@
 
 ## ForgeGradle
 /run
+/runs
 /*.launch
 
 ## eclipse
