@@ -232,11 +232,11 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         }
         Map<String, Registration<?, ?>> registrationsForType = registrations.row(type);
         if (registrationsForType.size() > 0) {
-            log.trace(DebugMarkers.REGISTER, "({}) Registering {} known objects of type {}", getModid(), registrationsForType.size(), type.identifier());
+            log.debug(DebugMarkers.REGISTER, "({}) Registering {} known objects of type {}", getModid(), registrationsForType.size(), type.identifier());
             for (Entry<String, Registration<?, ?>> e : registrationsForType.entrySet()) {
                 try {
                     e.getValue().register(event);
-                    log.trace(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistryKey().identifier());
+                    log.debug(DebugMarkers.REGISTER, "Registered {} to registry {}", e.getValue().getName(), event.getRegistryKey().identifier());
                 } catch (Exception ex) {
                     String err = "Unexpected error while registering entry " + e.getValue().getName() + " to registry " + event.getRegistryKey().identifier();
                     if (skipErrors) {
@@ -869,7 +869,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     protected <R, T extends R> RegistryEntry<R, T> accept(String name, ResourceKey<? extends Registry<R>> type, Builder<R, T, ?, ?> builder, NonNullSupplier<? extends T> creator, NonNullFunction<DeferredHolder<R, T>, ? extends RegistryEntry<R, T>> entryFactory) {
         Registration<R, T> reg = new Registration<>(Identifier.fromNamespaceAndPath(modid, name), type, creator, entryFactory);
-        log.trace(DebugMarkers.REGISTER, "Captured registration for entry {}:{} of type {}", getModid(), name, type.identifier());
+        log.debug(DebugMarkers.REGISTER, "Captured registration for entry {}:{} of type {}", getModid(), name, type.identifier());
         registerCallbacks.removeAll(Pair.of(name, type)).forEach(callback -> {
             @SuppressWarnings({ "unchecked", "null" })
             NonNullConsumer<? super T> unsafeCallback = (NonNullConsumer<? super T>) callback;
