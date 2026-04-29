@@ -15,7 +15,7 @@ def getVersion = {
     System.out.println(desc)
     def hash = desc.remove(desc.size() - 1).substring(1)
     def offset = desc.remove(desc.size() - 1)
-    return project.mod_version.replace('x', offset) + (System.getenv("GITHUB_RUN_NUMBER") == null ? "+${hash}" : "+${System.getenv("GITHUB_RUN_NUMBER")}")
+    return project.mod_version.replace('x', offset) + (System.getenv("GITHUB_RUN_NUMBER") == null ? "+${hash}" : "")
 }
 
 System.out.println(JavaVersion.current())
