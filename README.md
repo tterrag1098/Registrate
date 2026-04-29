@@ -1,4 +1,4 @@
-# Registrate [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci.tterrag.com%2Fjob%2FRegistrate%2Fjob%2F1.21%2F)](https://ci.tterrag.com/job/Registrate/job/1.21) [![License](https://img.shields.io/github/license/tterrag1098/Registrate?cacheSeconds=36000)](https://www.tldrlegal.com/l/mpl-2.0) [![Maven Version](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.tterrag.com%2Fcom%2Ftterrag%2Fregistrate%2FRegistrate%2Fmaven-metadata.xml)](https://maven.tterrag.com/com/tterrag/registrate/Registrate) ![Minecraft Version](https://img.shields.io/badge/minecraft-1.21.8-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
+# Registrate [![GitHub branch status](https://img.shields.io/github/check-runs/tterrag1098/Registrate/26.1%2Fdev?label=build)](https://github.com/tterrag1098/Registrate/actions) [![License](https://img.shields.io/github/license/tterrag1098/Registrate?cacheSeconds=36000)](https://www.tldrlegal.com/l/mpl-2.0) [![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.gegy.dev%2Freleases%2Fcom%2Ftterrag%2Fregistrate%2FRegistrate%2Fmaven-metadata.xml&filter=MC26.1*)](https://maven.tterrag.com/com/tterrag/registrate/Registrate) ![Minecraft Version](https://img.shields.io/badge/minecraft-26.1-blue) [![Discord](https://img.shields.io/discord/175740881389879296?label=discord&logo=discord&color=7289da)](https://discord.gg/gZqYcEj)
 
 A powerful wrapper for creating and registering objects in your mod.
 
@@ -85,14 +85,13 @@ reobf {
 tasks.jarJar.finalizedBy('reobfJarJar')
 ```
 
-Finally, the dependency itself must be added. First add my maven repository,
+Finally, the dependency itself must be added. First add Gegy's maven repository,
 
 ```groovy
 repositories {
     maven { // Registrate
-        url "https://maven.tterrag.com/"
+        url "https://maven.gegy.dev/releases"
     }
-    mavenLocal()
 }
 ```
 
@@ -103,9 +102,9 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}" // This should alread
     
     // MC<minecraft_version>-<registrate_version>
-    implementation fg.deobf("com.tterrag.registrate:Registrate:MC1.19.3-1.1.6")
+    implementation fg.deobf("com.tterrag.registrate:Registrate:MC26.1-1.5.0")
     // [MC<minecraft_version>,MC<next_minecraft_version>)
-    jarJar(group: 'com.tterrag.registrate', name: 'Registrate', version: "[MC1.19.3,MC1.20)")
+    jarJar(group: 'com.tterrag.registrate', name: 'Registrate', version: "[MC26.1,MC26.2)")
 }
 ```
 <details>
