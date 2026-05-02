@@ -46,7 +46,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
-public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder<Fluid, T, P, FluidBuilder<T, P>> {
+public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<T, P, S>> extends AbstractBuilder<Fluid, T, P, S> {
 
     @FunctionalInterface
     public interface FluidTypeFactory {
@@ -70,24 +70,24 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            The client extension to register for this block
      * @return this {@link BlockBuilder}
      */
-    public FluidBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension) {
+    public S clientExtension(NonNullSupplier<Supplier<IClientFluidTypeExtensions>> clientExtension) {
         if (this.clientExtension == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
         this.clientExtension = clientExtension;
-        return this;
+        return self();
     }
 
-    public FluidBuilder<T, P> model(Identifier stillTexture, Identifier flowingTexture) {
+    public S model(Identifier stillTexture, Identifier flowingTexture) {
         return model(() -> () -> new FluidModel.Unbaked(new Material(stillTexture), new Material(flowingTexture), null, null));
     }
 
-    public FluidBuilder<T, P> model(NonNullSupplier<Supplier<FluidModel.Unbaked>> model) {
+    public S model(NonNullSupplier<Supplier<FluidModel.Unbaked>> model) {
         if (this.model == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerModel);
         }
         this.model = model;
-        return this;
+        return self();
     }
 
     protected void registerModel() {
@@ -113,6 +113,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *
      * @param <P>
      *            Parent object type
+     * @param <S>
+     *            Self type
      * @param owner
      *            The owning {@link AbstractRegistrate} object
      * @param parent
@@ -124,7 +126,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, FluidTypeFactory, FluidFactory)
      */
-    public static <P> FluidBuilder<BaseFlowingFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback) {
+    public static <P, S extends FluidBuilder<BaseFlowingFluid.Flowing, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback) {
         return create(owner, parent, name, callback, FluidType::new, BaseFlowingFluid.Flowing::new);
     }
 
@@ -133,6 +135,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *
      * @param <P>
      *            Parent object type
+     * @param <S>
+     *            Self type
      * @param owner
      *            The owning {@link AbstractRegistrate} object
      * @param parent
@@ -146,7 +150,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, FluidTypeFactory, FluidFactory)
      */
-    public static <P> FluidBuilder<BaseFlowingFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, FluidTypeFactory typeFactory) {
+    public static <P, S extends FluidBuilder<BaseFlowingFluid.Flowing, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, FluidTypeFactory typeFactory) {
         return create(owner, parent, name, callback, typeFactory, BaseFlowingFluid.Flowing::new);
     }
 
@@ -155,6 +159,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *
      * @param <P>
      *            Parent object type
+     * @param <S>
+     *            Self type
      * @param owner
      *            The owning {@link AbstractRegistrate} object
      * @param parent
@@ -168,7 +174,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, FluidTypeFactory, FluidFactory)
      */
-    public static <P> FluidBuilder<BaseFlowingFluid.Flowing, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<FluidType> fluidType) {
+    public static <P, S extends FluidBuilder<BaseFlowingFluid.Flowing, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<FluidType> fluidType) {
         return create(owner, parent, name, callback, p -> fluidType.get(), BaseFlowingFluid.Flowing::new);
     }
 
@@ -179,6 +185,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            The type of the builder
      * @param <P>
      *            Parent object type
+     * @param <S>
+     *            Self type
      * @param owner
      *            The owning {@link AbstractRegistrate} object
      * @param parent
@@ -191,8 +199,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
-    public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
-        FluidFactory<T> fluidFactory) {
+    public static <T extends BaseFlowingFluid, P, S extends FluidBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, FluidFactory<T> fluidFactory) {
         return create(owner, parent, name, callback, FluidType::new, fluidFactory);
     }
 
@@ -211,6 +218,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            The type of the builder
      * @param <P>
      *            Parent object type
+     * @param <S>
+     *            Self type
      * @param owner
      *            The owning {@link AbstractRegistrate} object
      * @param parent
@@ -225,11 +234,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
-    public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
-        FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
-        FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, typeFactory, fluidFactory)
+    public static <T extends BaseFlowingFluid, P, S extends FluidBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
+        return new FluidBuilder<T, P, S>(owner, parent, name, callback, typeFactory, fluidFactory)
                 .defaultLang().defaultSource().defaultBlock().defaultBucket();
-        return ret;
     }
 
     /**
@@ -247,6 +254,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            The type of the builder
      * @param <P>
      *            Parent object type
+     * @param <S>
+     *            Self type
      * @param owner
      *            The owning {@link AbstractRegistrate} object
      * @param parent
@@ -261,9 +270,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A factory that creates the flowing fluid
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
-    public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
-        NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
-        return new FluidBuilder<>(owner, parent, name, callback, fluidType, fluidFactory)
+    public static <T extends BaseFlowingFluid, P, S extends FluidBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullSupplier<FluidType> fluidType, FluidFactory<T> fluidFactory) {
+        return new FluidBuilder<T, P, S>(owner, parent, name, callback, fluidType, fluidFactory)
                 .defaultLang().defaultSource().defaultBlock().defaultBucket();
     }
 
@@ -284,6 +292,10 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     private @Nullable NonNullSupplier<? extends BaseFlowingFluid> source;
     private final List<TagKey<Fluid>> tags = new ArrayList<>();
 
+    protected final String getSourceName() {
+        return sourceName;
+    }
+
     public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
         super(owner, parent, "flowing_" + name, callback, Registries.FLUID);
         this.sourceName = name;
@@ -302,6 +314,11 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         this.registerType = false; // Don't register if we have a fluid from outside.
     }
 
+    @SuppressWarnings("unchecked")
+    protected final S self() {
+        return (S) this;
+    }
+
     /**
      * Modify the properties of the fluid type. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
      * different operations.
@@ -310,9 +327,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            The action to perform on the attributes
      * @return this {@link FluidBuilder}
      */
-    public FluidBuilder<T, P> properties(NonNullConsumer<FluidType.Properties> cons) {
+    public S properties(NonNullConsumer<FluidType.Properties> cons) {
         typeProperties = typeProperties.andThen(cons);
-        return this;
+        return self();
     }
 
     /**
@@ -323,9 +340,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            The action to perform on the attributes
      * @return this {@link FluidBuilder}
      */
-    public FluidBuilder<T, P> fluidProperties(NonNullConsumer<BaseFlowingFluid.Properties> cons) {
+    public S fluidProperties(NonNullConsumer<BaseFlowingFluid.Properties> cons) {
         fluidProperties = fluidProperties.andThen(cons);
-        return this;
+        return self();
     }
 
     /**
@@ -334,7 +351,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *
      * @return this {@link FluidBuilder}
      */
-    public FluidBuilder<T, P> defaultLang() {
+    public S defaultLang() {
         return lang(f -> f.getFluidType().getDescriptionId(), RegistrateLangProvider.toEnglishName(sourceName));
     }
 
@@ -345,7 +362,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A localized English name
      * @return this {@link FluidBuilder}
      */
-    public FluidBuilder<T, P> lang(String name) {
+    public S lang(String name) {
         return lang(f -> f.getFluidType().getDescriptionId(), name);
     }
 
@@ -357,12 +374,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @throws IllegalStateException
      *             If {@link #source(NonNullFunction)} has been called before this method
      */
-    public FluidBuilder<T, P> defaultSource() {
+    public S defaultSource() {
         if (this.defaultSource != null) {
             throw new IllegalStateException("Cannot set a default source after a custom source has been created");
         }
         this.defaultSource = true;
-        return this;
+        return self();
     }
 
     /**
@@ -372,10 +389,10 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A factory for the fluid, which accepts the properties and returns a new fluid
      * @return this {@link FluidBuilder}
      */
-    public FluidBuilder<T, P> source(NonNullFunction<BaseFlowingFluid.Properties, ? extends BaseFlowingFluid> factory) {
+    public S source(NonNullFunction<BaseFlowingFluid.Properties, ? extends BaseFlowingFluid> factory) {
         this.defaultSource = false;
         this.source = NonNullSupplier.lazy(() -> factory.apply(makeProperties()));
-        return this;
+        return self();
     }
 
     /**
@@ -386,12 +403,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @throws IllegalStateException
      *             If {@link #block()} or {@link #block(NonNullBiFunction)} has been called before this method
      */
-    public FluidBuilder<T, P> defaultBlock() {
+    public S defaultBlock() {
         if (this.defaultBlock != null) {
             throw new IllegalStateException("Cannot set a default block after a custom block has been created");
         }
         this.defaultBlock = true;
-        return this;
+        return self();
     }
 
     /**
@@ -399,7 +416,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *
      * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
-    public BlockBuilder<LiquidBlock, FluidBuilder<T, P>> block() {
+    public <BB extends BlockBuilder<LiquidBlock, S, BB>> BB block() {
         return block(LiquidBlock::new);
     }
 
@@ -412,7 +429,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A factory for the block, which accepts the block object and properties and returns a new block
      * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
-    public <B extends LiquidBlock> BlockBuilder<B, FluidBuilder<T, P>> block(NonNullBiFunction<T, BlockBehaviour.Properties, ? extends B> factory) {
+    public <B extends LiquidBlock, BB extends BlockBuilder<B, S, BB>> BB block(NonNullBiFunction<T, BlockBehaviour.Properties, ? extends B> factory) {
         if (this.defaultBlock == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
         }
@@ -420,7 +437,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         final NonNullSupplier<T> supplier = asSupplier();
         final var lightLevel = Lazy.of(() -> fluidType.get().getLightLevel());
         final ToIntFunction<BlockState> lightLevelInt = $ -> lightLevel.get();
-        final var ret =  getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
+        final var ret =  getOwner().<B, S, BB>block(self(), sourceName, p -> factory.apply(supplier.get(), p))
             .properties(p -> BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable())
             .properties(p -> p.lightLevel(lightLevelInt))
                 .blockstate(() -> (ctx, prov) -> prov.createNonTemplateModelBlock(ctx.get()));
@@ -429,12 +446,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     @Beta
-    public FluidBuilder<T, P> noBlock() {
+    public S noBlock() {
         if (this.defaultBlock == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
         }
         this.defaultBlock = false;
-        return this;
+        return self();
     }
 
     /**
@@ -445,12 +462,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @throws IllegalStateException
      *             If {@link #bucket()} or {@link #bucket(NonNullBiFunction)} has been called before this method
      */
-    public FluidBuilder<T, P> defaultBucket() {
+    public S defaultBucket() {
         if (this.defaultBucket != null) {
             throw new IllegalStateException("Cannot set a default bucket after a custom bucket has been created");
         }
         defaultBucket = true;
-        return this;
+        return self();
     }
 
     /**
@@ -458,7 +475,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
-    public ItemBuilder<BucketItem, FluidBuilder<T, P>> bucket() {
+    public <IB extends ItemBuilder<BucketItem, S, IB>> IB bucket() {
         return bucket(BucketItem::new);
     }
 
@@ -471,7 +488,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      *            A factory for the bucket item, which accepts the fluid object supplier and properties and returns a new item
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
-    public <I extends BucketItem> ItemBuilder<I, FluidBuilder<T, P>> bucket(NonNullBiFunction<BaseFlowingFluid, Item.Properties, ? extends I> factory) {
+    public <I extends BucketItem, IB extends ItemBuilder<I, S, IB>> IB bucket(NonNullBiFunction<BaseFlowingFluid, Item.Properties, ? extends I> factory) {
         if (this.defaultBucket == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
@@ -481,7 +498,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         if (source == null) {
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }
-        final var ret = getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
+        final var ret = getOwner().<I, S, IB>item(self(), bucketName, p -> factory.apply(source.get(), p))
             .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
                 .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
         this.fluidProperties(p -> p.bucket(ret.asSupplier()));
@@ -489,12 +506,12 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     @Beta
-    public FluidBuilder<T, P> noBucket() {
+    public S noBucket() {
         if (this.defaultBucket == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
         this.defaultBucket = false;
-        return this;
+        return self();
     }
 
     /**
@@ -505,10 +522,10 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    public final FluidBuilder<T, P> tag(TagKey<Fluid>... tags) {
-        FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
+    public final S tag(TagKey<Fluid>... tags) {
+        S ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
-            ret.getOwner().<RegistrateTagsProvider.Intrinsic<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
+            ret.getOwner().<RegistrateTagsProvider.Intrinsic<Fluid>, Fluid>setDataGenerator(ret.getSourceName(), getRegistryKey(), ProviderType.FLUID_TAGS,
                 prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource())));
         }
         this.tags.addAll(Arrays.asList(tags));
@@ -523,7 +540,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    public final FluidBuilder<T, P> removeTag(TagKey<Fluid>... tags) {
+    public final S removeTag(TagKey<Fluid>... tags) {
         this.tags.removeAll(Arrays.asList(tags));
         return this.removeTag(ProviderType.FLUID_TAGS, tags);
     }
