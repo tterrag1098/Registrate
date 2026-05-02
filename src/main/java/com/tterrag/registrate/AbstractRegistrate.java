@@ -1000,9 +1000,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return item(parent, currentName(), factory);
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends Item, P, IB extends ItemBuilder<T, P, IB>> IB item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
-        return (IB) entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory)
+        return entry(name, callback -> ItemBuilder.<T, P, IB>create(this, parent, name, callback, factory)
                 .transform(builder -> this.defaultCreativeModeTab == null ? builder : builder.tab(this.defaultCreativeModeTab)));
     }
 

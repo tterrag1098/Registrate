@@ -107,9 +107,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      * @see #create(AbstractRegistrate, Object, String, BuilderCallback, ResourceLocation, ResourceLocation, FluidTypeFactory, NonNullFunction)
      */
     @Deprecated(forRemoval = true)
-    @SuppressWarnings("unchecked")
     public static <P, S extends FluidBuilder<BaseFlowingFluid.Flowing, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture) {
-        return (S) create(owner, parent, name, callback, stillTexture, flowingTexture, (prop, still, flowing) ->
+        return FluidBuilder.<BaseFlowingFluid.Flowing, P, S>create(owner, parent, name, callback, stillTexture, flowingTexture, (prop, still, flowing) ->
                 new FluidType(prop), BaseFlowingFluid.Flowing::new)
                 .clientExtension(()-> ()-> new DefaultFluidTypeExtension(stillTexture, flowingTexture));
     }
@@ -190,9 +189,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      * @return A new {@link FluidBuilder} with reasonable default data generators.
      */
     @Deprecated(forRemoval = true)
-    @SuppressWarnings("unchecked")
     public static <T extends BaseFlowingFluid, P, S extends FluidBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, ResourceLocation stillTexture, ResourceLocation flowingTexture, NonNullFunction<BaseFlowingFluid.Properties, T> fluidFactory) {
-        return (S) create(owner, parent, name, callback, stillTexture, flowingTexture, (prop, still, flowing) ->
+        return FluidBuilder.<T, P, S>create(owner, parent, name, callback, stillTexture, flowingTexture, (prop, still, flowing) ->
                 new FluidType(prop), fluidFactory).clientExtension(()-> ()-> new DefaultFluidTypeExtension(stillTexture, flowingTexture));
     }
 
@@ -290,6 +288,10 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
     private @Nullable Supplier<Supplier<RenderType>> layer = null;
 
     private boolean registerType;
+
+    protected final String getSourceName() {
+        return sourceName;
+    }
 
     @Nullable
     private NonNullSupplier<? extends BaseFlowingFluid> source;
@@ -556,15 +558,14 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      * @return this {@link FluidBuilder}
      */
     @SafeVarargs
-    @SuppressWarnings("unchecked")
     public final S tag(TagKey<Fluid>... tags) {
-        FluidBuilder<T, P, S> ret = this.tag(ProviderType.FLUID_TAGS, tags);
+        S ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
-            ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
+            ret.getOwner().<RegistrateTagsProvider<Fluid>, Fluid>setDataGenerator(ret.getSourceName(), getRegistryKey(), ProviderType.FLUID_TAGS,
                 prov -> this.tags.stream().map(prov::addTag).forEach(p -> p.add(getSource().builtInRegistryHolder().key())));
         }
         this.tags.addAll(Arrays.asList(tags));
-        return (S) ret;
+        return ret;
     }
 
     /**
