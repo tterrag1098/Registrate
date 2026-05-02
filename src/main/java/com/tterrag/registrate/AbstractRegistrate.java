@@ -960,206 +960,204 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     // Items
 
-    public <T extends Item, B extends ItemBuilder<T, S, B>> B item(NonNullFunction<Item.Properties, T> factory) {
+    public <T extends Item, IB extends ItemBuilder<T, S, IB>> IB item(NonNullFunction<Item.Properties, T> factory) {
         return item(self(), factory);
     }
 
-    public <T extends Item, B extends ItemBuilder<T, S, B>> B item(String name, NonNullFunction<Item.Properties, T> factory) {
+    public <T extends Item, IB extends ItemBuilder<T, S, IB>> IB item(String name, NonNullFunction<Item.Properties, T> factory) {
         return item(self(), name, factory);
     }
 
-    public <T extends Item, P, B extends ItemBuilder<T, P, B>> B item(P parent, NonNullFunction<Item.Properties, T> factory) {
+    public <T extends Item, P, IB extends ItemBuilder<T, P, IB>> IB item(P parent, NonNullFunction<Item.Properties, T> factory) {
         return item(parent, currentName(), factory);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Item, P, B extends ItemBuilder<T, P, B>> B item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
-        return (B) entry(name, callback -> ItemBuilder.create(this, parent, name, callback, factory)
+    public <T extends Item, P, IB extends ItemBuilder<T, P, IB>> IB item(P parent, String name, NonNullFunction<Item.Properties, T> factory) {
+        return entry(name, callback -> ItemBuilder.<T, P, IB>create(this, parent, name, callback, factory)
                 .transform(builder -> this.defaultCreativeModeTab == null ? builder : builder.tab(this.defaultCreativeModeTab)));
     }
 
     // Blocks
 
-    public <T extends Block, B extends BlockBuilder<T, S, B>> B block(NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block, BB extends BlockBuilder<T, S, BB>> BB block(NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(self(), factory);
     }
 
-    public <T extends Block, B extends BlockBuilder<T, S, B>> B block(String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block, BB extends BlockBuilder<T, S, BB>> BB block(String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(self(), name, factory);
     }
 
-    public <T extends Block, P, B extends BlockBuilder<T, P, B>> B block(P parent, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block, P, BB extends BlockBuilder<T, P, BB>> BB block(P parent, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return block(parent, currentName(), factory);
     }
 
-    public <T extends Block, P, B extends BlockBuilder<T, P, B>> B block(P parent, String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
+    public <T extends Block, P, BB extends BlockBuilder<T, P, BB>> BB block(P parent, String name, NonNullFunction<BlockBehaviour.Properties, T> factory) {
         return entry(name, callback -> BlockBuilder.create(this, parent, name, callback, factory));
     }
 
     // Entities
 
-    public <T extends Entity, B extends EntityBuilder<T, S, B>> B entity(EntityFactory<T> factory, MobCategory classification) {
+    public <T extends Entity, EB extends EntityBuilder<T, S, EB>> EB entity(EntityFactory<T> factory, MobCategory classification) {
         return entity(self(), factory, classification);
     }
 
-    public <T extends Entity, B extends EntityBuilder<T, S, B>> B entity(String name, EntityFactory<T> factory, MobCategory classification) {
+    public <T extends Entity, EB extends EntityBuilder<T, S, EB>> EB entity(String name, EntityFactory<T> factory, MobCategory classification) {
         return entity(self(), name, factory, classification);
     }
 
-    public <T extends Entity, P, B extends EntityBuilder<T, P, B>> B entity(P parent, EntityFactory<T> factory, MobCategory classification) {
+    public <T extends Entity, P, EB extends EntityBuilder<T, P, EB>> EB entity(P parent, EntityFactory<T> factory, MobCategory classification) {
         return entity(parent, currentName(), factory, classification);
     }
 
-    public <T extends Entity, P, B extends EntityBuilder<T, P, B>> B entity(P parent, String name, EntityFactory<T> factory, MobCategory classification) {
+    public <T extends Entity, P, EB extends EntityBuilder<T, P, EB>> EB entity(P parent, String name, EntityFactory<T> factory, MobCategory classification) {
         return entry(name, callback -> EntityBuilder.create(this, parent, name, callback, factory, classification));
     }
 
     // Block Entities
 
-    public <T extends BlockEntity, B extends BlockEntityBuilder<T, S, B>> B blockEntity(BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity, BEB extends BlockEntityBuilder<T, S, BEB>> BEB blockEntity(BlockEntityFactory<T> factory) {
         return blockEntity(self(), factory);
     }
 
-    public <T extends BlockEntity, B extends BlockEntityBuilder<T, S, B>> B blockEntity(String name, BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity, BEB extends BlockEntityBuilder<T, S, BEB>> BEB blockEntity(String name, BlockEntityFactory<T> factory) {
         return blockEntity(self(), name, factory);
     }
 
-    public <T extends BlockEntity, P, B extends BlockEntityBuilder<T, P, B>> B blockEntity(P parent, BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity, P, BEB extends BlockEntityBuilder<T, P, BEB>> BEB blockEntity(P parent, BlockEntityFactory<T> factory) {
         return blockEntity(parent, currentName(), factory);
     }
 
-    public <T extends BlockEntity, P, B extends BlockEntityBuilder<T, P, B>> B blockEntity(P parent, String name, BlockEntityFactory<T> factory) {
+    public <T extends BlockEntity, P, BEB extends BlockEntityBuilder<T, P, BEB>> BEB blockEntity(P parent, String name, BlockEntityFactory<T> factory) {
         return entry(name, callback -> BlockEntityBuilder.create(this, parent, name, callback, factory));
     }
 
     // Fluids
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid() {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid() {
         return fluid(self());
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(FluidBuilder.FluidTypeFactory typeFactory) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(FluidBuilder.FluidTypeFactory typeFactory) {
         return fluid(self(), typeFactory);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(NonNullSupplier<FluidType> fluidType) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(NonNullSupplier<FluidType> fluidType) {
         return fluid(self(), fluidType);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(Identifier stillTexture, Identifier flowingTexture) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(Identifier stillTexture, Identifier flowingTexture) {
         return fluid(self(), stillTexture, flowingTexture);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
         return fluid(self(), stillTexture, flowingTexture, typeFactory);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
         return fluid(self(), stillTexture, flowingTexture, fluidType);
     }
 
-    public <T extends BaseFlowingFluid, B extends FluidBuilder<T, S, B>> B fluid(Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, FB extends FluidBuilder<T, S, FB>> FB fluid(Identifier stillTexture, Identifier flowingTexture,
                                                                  FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, fluidFactory);
     }
 
-    public <T extends BaseFlowingFluid, B extends FluidBuilder<T, S, B>> B fluid(Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, FB extends FluidBuilder<T, S, FB>> FB fluid(Identifier stillTexture, Identifier flowingTexture,
         FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
-    public <T extends BaseFlowingFluid, B extends FluidBuilder<T, S, B>> B fluid(Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, FB extends FluidBuilder<T, S, FB>> FB fluid(Identifier stillTexture, Identifier flowingTexture,
         NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(String name) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(String name) {
         return fluid(self(), name);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(String name, FluidBuilder.FluidTypeFactory typeFactory) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(String name, FluidBuilder.FluidTypeFactory typeFactory) {
         return fluid(self(), name, typeFactory);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(String name, NonNullSupplier<FluidType> fluidType) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(String name, NonNullSupplier<FluidType> fluidType) {
         return fluid(self(), name, fluidType);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(String name, Identifier stillTexture, Identifier flowingTexture) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(String name, Identifier stillTexture, Identifier flowingTexture) {
         return fluid(self(), name, stillTexture, flowingTexture);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, typeFactory);
     }
 
-    public <B extends FluidBuilder<BaseFlowingFluid.Flowing, S, B>> B fluid(String name, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
+    public <FB extends FluidBuilder<BaseFlowingFluid.Flowing, S, FB>> FB fluid(String name, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
         return fluid(self(), name, stillTexture, flowingTexture, fluidType);
     }
 
-    public <T extends BaseFlowingFluid, B extends FluidBuilder<T, S, B>> B fluid(String name, Identifier stillTexture, Identifier flowingTexture,
-                                                                 FluidBuilder.FluidFactory<T> fluidFactory) {
+    public <T extends BaseFlowingFluid, FB extends FluidBuilder<T, S, FB>> FB fluid(String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, fluidFactory);
     }
 
-    public <T extends BaseFlowingFluid, B extends FluidBuilder<T, S, B>> B fluid(String name, Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, FB extends FluidBuilder<T, S, FB>> FB fluid(String name, Identifier stillTexture, Identifier flowingTexture,
         FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
-    public <T extends BaseFlowingFluid, B extends FluidBuilder<T, S, B>> B fluid(String name, Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, FB extends FluidBuilder<T, S, FB>> FB fluid(String name, Identifier stillTexture, Identifier flowingTexture,
         NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(self(), name, stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent) {
         return fluid(parent, currentName());
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, FluidBuilder.FluidTypeFactory typeFactory) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, FluidBuilder.FluidTypeFactory typeFactory) {
         return fluid(parent, currentName(), typeFactory);
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, NonNullSupplier<FluidType> fluidType) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, NonNullSupplier<FluidType> fluidType) {
         return fluid(parent, currentName(), fluidType);
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, Identifier stillTexture, Identifier flowingTexture) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, Identifier stillTexture, Identifier flowingTexture) {
         return fluid(parent, currentName(), stillTexture, flowingTexture);
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, typeFactory);
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, fluidType);
     }
 
-    public <T extends BaseFlowingFluid, P, B extends FluidBuilder<T, P, B>> B fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, P, FB extends FluidBuilder<T, P, FB>> FB fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
                                                                     FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, fluidFactory);
     }
 
-    public <T extends BaseFlowingFluid, P, B extends FluidBuilder<T, P, B>> B fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, P, FB extends FluidBuilder<T, P, FB>> FB fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
         FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, typeFactory, fluidFactory);
     }
 
-    public <T extends BaseFlowingFluid, P, B extends FluidBuilder<T, P, B>> B fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
+    public <T extends BaseFlowingFluid, P, FB extends FluidBuilder<T, P, FB>> FB fluid(P parent, Identifier stillTexture, Identifier flowingTexture,
         NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
         return fluid(parent, currentName(), stillTexture, flowingTexture, fluidType, fluidFactory);
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, String name) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, String name) {
         return fluid(parent, name, defaultStillTexture(), defaultFlowingTexture());
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, String name, FluidBuilder.FluidTypeFactory typeFactory) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, String name, FluidBuilder.FluidTypeFactory typeFactory) {
         return fluid(parent, name, defaultStillTexture(), defaultFlowingTexture(), typeFactory);
     }
 
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, String name, NonNullSupplier<FluidType> fluidType) {
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, String name, NonNullSupplier<FluidType> fluidType) {
         return fluid(parent, name, defaultStillTexture(), defaultFlowingTexture(), fluidType);
     }
 
@@ -1171,34 +1169,28 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
         return Identifier.fromNamespaceAndPath(getModid(), "block/" + currentName() + "_flow");
     }
 
-    @SuppressWarnings("unchecked")
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture) {
-        return entry(name, callback -> (B) FluidBuilder.create(this, parent, name, callback, FluidType::new)).model(stillTexture, flowingTexture);
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture) {
+        return entry(name, callback -> FluidBuilder.<P, FB>create(this, parent, name, callback, FluidType::new)).model(stillTexture, flowingTexture);
     }
 
-    @SuppressWarnings("unchecked")
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
-        return entry(name, callback -> (B) FluidBuilder.create(this, parent, name, callback, typeFactory)).model(stillTexture, flowingTexture);
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory) {
+        return entry(name, callback -> FluidBuilder.<P, FB>create(this, parent, name, callback, typeFactory)).model(stillTexture, flowingTexture);
     }
 
-    @SuppressWarnings("unchecked")
-    public <P, B extends FluidBuilder<BaseFlowingFluid.Flowing, P, B>> B fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
-        return entry(name, callback -> (B) FluidBuilder.create(this, parent, name, callback, fluidType)).model(stillTexture, flowingTexture);
+    public <P, FB extends FluidBuilder<BaseFlowingFluid.Flowing, P, FB>> FB fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType) {
+        return entry(name, callback -> FluidBuilder.<P, FB>create(this, parent, name, callback, fluidType)).model(stillTexture, flowingTexture);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends BaseFlowingFluid, P, B extends FluidBuilder<T, P, B>> B fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidFactory<T> fluidFactory) {
-        return entry(name, callback -> (B) FluidBuilder.create(this, parent, name, callback, fluidFactory)).model(stillTexture, flowingTexture);
+    public <T extends BaseFlowingFluid, P, FB extends FluidBuilder<T, P, FB>> FB fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.<T, P, FB>create(this, parent, name, callback, fluidFactory)).model(stillTexture, flowingTexture);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends BaseFlowingFluid, P, B extends FluidBuilder<T, P, B>> B fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
-        return entry(name, callback -> (B) FluidBuilder.create(this, parent, name, callback, typeFactory, fluidFactory)).model(stillTexture, flowingTexture);
+    public <T extends BaseFlowingFluid, P, FB extends FluidBuilder<T, P, FB>> FB fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, FluidBuilder.FluidTypeFactory typeFactory, FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.<T, P, FB>create(this, parent, name, callback, typeFactory, fluidFactory)).model(stillTexture, flowingTexture);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends BaseFlowingFluid, P, B extends FluidBuilder<T, P, B>> B fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
-        return entry(name, callback -> (B) FluidBuilder.create(this, parent, name, callback, fluidType, fluidFactory)).model(stillTexture, flowingTexture);
+    public <T extends BaseFlowingFluid, P, FB extends FluidBuilder<T, P, FB>> FB fluid(P parent, String name, Identifier stillTexture, Identifier flowingTexture, NonNullSupplier<FluidType> fluidType, FluidBuilder.FluidFactory<T> fluidFactory) {
+        return entry(name, callback -> FluidBuilder.<T, P, FB>create(this, parent, name, callback, fluidType, fluidFactory)).model(stillTexture, flowingTexture);
     }
 
     // Menu

@@ -5,6 +5,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import org.jspecify.annotations.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -88,8 +90,7 @@ public class BlockBuilder<T extends Block, P, S extends BlockBuilder<T, P, S>> e
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
     public static <T extends Block, P, S extends BlockBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return new BlockBuilder<T, P, S>(owner, parent, name, callback, factory, BlockBehaviour.Properties::of)
-                .defaultBlockstate().defaultLoot().defaultLang();
+        return new BlockBuilder<T, P, S>(owner, parent, name, callback, factory, BlockBehaviour.Properties::of).defaultBlockstate().defaultLoot().defaultLang();
     }
 
     private final NonNullFunction<BlockBehaviour.Properties, T> factory;
@@ -177,7 +178,7 @@ public class BlockBuilder<T extends Block, P, S extends BlockBuilder<T, P, S>> e
                 .model(() -> (ctx, prov) -> {
                     getOwner().getDataProvider(ProviderType.BLOCKSTATE)
                             .map(g -> g.seenBlockstates.get(getEntry()))
-                            .flatMap(b -> b.simpleModels())
+                            .flatMap(BlockStateModelDispatcher::simpleModels)
                             .map(b -> b.models().get(""))
                             .map(unbaked -> {
                                 if (unbaked instanceof SingleVariant.Unbaked(Variant variant)) {
@@ -213,9 +214,8 @@ public class BlockBuilder<T extends Block, P, S extends BlockBuilder<T, P, S>> e
      *            A factory for the block entity
      * @return the {@link BlockEntityBuilder}
      */
-    @SuppressWarnings("unchecked")
-    public <BE extends BlockEntity, B extends BlockEntityBuilder<BE, S, B>> B blockEntity(BlockEntityFactory<BE> factory) {
-        return (B) getOwner().blockEntity(self(), getName(), factory).validBlock(asSupplier());
+    public <BE extends BlockEntity, BEB extends BlockEntityBuilder<BE, S, BEB>> BEB blockEntity(BlockEntityFactory<BE> factory) {
+        return getOwner().<BE, S, BEB>blockEntity(self(), getName(), factory).validBlock(asSupplier());
     }
     
     /**

@@ -292,6 +292,10 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
     private @Nullable NonNullSupplier<? extends BaseFlowingFluid> source;
     private final List<TagKey<Fluid>> tags = new ArrayList<>();
 
+    protected final String getSourceName() {
+        return sourceName;
+    }
+
     public FluidBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
         super(owner, parent, "flowing_" + name, callback, Registries.FLUID);
         this.sourceName = name;
@@ -412,7 +416,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      *
      * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
-    public BlockBuilder<LiquidBlock, S, ?> block() {
+    public <BB extends BlockBuilder<LiquidBlock, S, BB>> BB block() {
         return block(LiquidBlock::new);
     }
 
@@ -425,7 +429,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      *            A factory for the block, which accepts the block object and properties and returns a new block
      * @return the {@link BlockBuilder} for the {@link LiquidBlock}
      */
-    public <B extends LiquidBlock, BB extends BlockBuilder<B, S, BB>> BlockBuilder<B, S, ?> block(NonNullBiFunction<T, BlockBehaviour.Properties, ? extends B> factory) {
+    public <B extends LiquidBlock, BB extends BlockBuilder<B, S, BB>> BB block(NonNullBiFunction<T, BlockBehaviour.Properties, ? extends B> factory) {
         if (this.defaultBlock == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to block/noBlock per builder allowed");
         }
@@ -471,7 +475,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      *
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
-    public <B extends ItemBuilder<BucketItem, S, B>> B bucket() {
+    public <IB extends ItemBuilder<BucketItem, S, IB>> IB bucket() {
         return bucket(BucketItem::new);
     }
 
@@ -484,7 +488,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      *            A factory for the bucket item, which accepts the fluid object supplier and properties and returns a new item
      * @return the {@link ItemBuilder} for the {@link BucketItem}
      */
-    public <I extends BucketItem, B extends ItemBuilder<I, S, B>> B bucket(NonNullBiFunction<BaseFlowingFluid, Item.Properties, ? extends I> factory) {
+    public <I extends BucketItem, IB extends ItemBuilder<I, S, IB>> IB bucket(NonNullBiFunction<BaseFlowingFluid, Item.Properties, ? extends I> factory) {
         if (this.defaultBucket == Boolean.FALSE) {
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
@@ -494,7 +498,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
         if (source == null) {
             throw new IllegalStateException("Cannot create a bucket before creating a source block");
         }
-        final var ret = getOwner().<I, S, B>item(self(), bucketName, p -> factory.apply(source.get(), p))
+        final var ret = getOwner().<I, S, IB>item(self(), bucketName, p -> factory.apply(source.get(), p))
             .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
                 .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
         this.fluidProperties(p -> p.bucket(ret.asSupplier()));
@@ -519,13 +523,13 @@ public class FluidBuilder<T extends BaseFlowingFluid, P, S extends FluidBuilder<
      */
     @SafeVarargs
     public final S tag(TagKey<Fluid>... tags) {
-        FluidBuilder<T, P, S> ret = this.tag(ProviderType.FLUID_TAGS, tags);
+        S ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
-            ret.getOwner().<RegistrateTagsProvider.Intrinsic<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
+            ret.getOwner().<RegistrateTagsProvider.Intrinsic<Fluid>, Fluid>setDataGenerator(ret.getSourceName(), getRegistryKey(), ProviderType.FLUID_TAGS,
                 prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource())));
         }
         this.tags.addAll(Arrays.asList(tags));
-        return ret.self();
+        return ret;
     }
 
     /**
