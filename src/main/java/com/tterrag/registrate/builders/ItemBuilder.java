@@ -47,7 +47,7 @@ import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
  * @param <P>
  *            Parent object type
  */
-public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, ItemBuilder<T, P>> {
+public class ItemBuilder<T extends Item, P, S extends ItemBuilder<T, P, S>> extends AbstractBuilder<Item, T, P, S> {
 
     /**
      * Create a new {@link ItemBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
@@ -74,8 +74,8 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            Factory to create the item
      * @return A new {@link ItemBuilder} with reasonable default data generators.
      */
-    public static <T extends Item, P> ItemBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
-        return new ItemBuilder<>(owner, parent, name, callback, factory)
+    public static <T extends Item, P, S extends ItemBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
+        return new ItemBuilder<T, P, S>(owner, parent, name, callback, factory)
                 .defaultModel().defaultLang();
     }
 
@@ -98,6 +98,11 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         });
     }
 
+    @SuppressWarnings("unchecked")
+    protected final S self() {
+        return (S) this;
+    }
+
     /**
      * Modify the properties of the item. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
      * different operations.
@@ -108,9 +113,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The action to perform on the properties
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> properties(NonNullUnaryOperator<Item.Properties> func) {
+    public S properties(NonNullUnaryOperator<Item.Properties> func) {
         propertiesCallback = propertiesCallback.andThen(func);
-        return this;
+        return self();
     }
 
     /**
@@ -120,9 +125,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            A supplier to to create the initial properties
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> initialProperties(NonNullSupplier<Item.Properties> properties) {
+    public S initialProperties(NonNullSupplier<Item.Properties> properties) {
         initialProperties = properties;
-        return this;
+        return self();
     }
 
     /**
@@ -142,7 +147,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @deprecated Use {@link #tab(ResourceKey, NonNullBiConsumer)} which provides access to the registered item.
      */
     @Deprecated
-    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
+    public S tab(ResourceKey<CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
         return tab(tab, ($, m) -> modifier.accept(m));
     }
 
@@ -161,9 +166,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and {@link CreativeModeTabModifier} used to update the tab
      * @return This builder
      */
-    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier> modifier) {
+    public S tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier> modifier) {
         creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
-        return this;
+        return self();
     }
 
     /**
@@ -180,7 +185,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return This builder
      * @see #tab(ResourceKey, NonNullBiConsumer)
      */
-    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab) {
+    public S tab(ResourceKey<CreativeModeTab> tab) {
         return tab(tab, (item, modifier) -> modifier.accept(item));
     }
 
@@ -190,9 +195,9 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to remove the modifier from
      * @return This builder
      */
-    public ItemBuilder<T, P> removeTab(ResourceKey<CreativeModeTab> tab) {
+    public S removeTab(ResourceKey<CreativeModeTab> tab) {
         creativeModeTabs.remove(tab);
-        return this;
+        return self();
     }
 
     /**
@@ -202,12 +207,12 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The color handler to register for this item
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> color(NonNullSupplier<Supplier<ItemColor>> colorHandler) {
+    public S color(NonNullSupplier<Supplier<ItemColor>> colorHandler) {
         if (this.colorHandler == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerItemColor);
         }
         this.colorHandler = colorHandler;
-        return this;
+        return self();
     }
 
     protected void registerItemColor() {
@@ -224,7 +229,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> defaultModel() {
+    public S defaultModel() {
         return model((ctx, prov) -> prov.generated(ctx::getEntry));
     }
 
@@ -236,7 +241,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
-    public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> cons) {
+    public S model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> cons) {
         return setData(ProviderType.ITEM_MODEL, cons);
     }
 
@@ -246,7 +251,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> defaultLang() {
+    public S defaultLang() {
         return lang(Item::getDescriptionId);
     }
 
@@ -257,7 +262,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            A localized English name
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> lang(String name) {
+    public S lang(String name) {
         return lang(Item::getDescriptionId, name);
     }
 
@@ -269,7 +274,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      * @see #setData(ProviderType, NonNullBiConsumer)
      */
-    public ItemBuilder<T, P> recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
+    public S recipe(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateRecipeProvider> cons) {
         return setData(ProviderType.RECIPE, cons);
     }
 
@@ -277,7 +282,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Add burn time for the item
      * @param tick time in ticks for this item to burn in furnace.
      */
-    public ItemBuilder<T, P> burnTime(int tick) {
+    public S burnTime(int tick) {
         return dataMap(NeoForgeDataMaps.FURNACE_FUELS, new FurnaceFuel(tick));
     }
 
@@ -285,7 +290,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Add compost chance for the item
      * @param chance chance for composter to increase one level when composting this item.
      */
-    public ItemBuilder<T, P> compostable(float chance) {
+    public S compostable(float chance) {
         return dataMap(NeoForgeDataMaps.COMPOSTABLES, new Compostable(chance));
     }
 
@@ -299,21 +304,21 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      *            The client extension to register for this item
      * @return this {@link ItemBuilder}
      */
-    public ItemBuilder<T, P> clientExtension(NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension) {
+    public S clientExtension(NonNullSupplier<Supplier<IClientItemExtensions>> clientExtension) {
         if (this.clientExtensionFunc == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
         this.clientExtensionFunc = item -> clientExtension;
-        return this;
+        return self();
     }
 
     @Deprecated(forRemoval = true)
-    public ItemBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtension) {
+    public S clientExtension(Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtension) {
         if (this.clientExtensionFunc == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
         this.clientExtensionFunc = clientExtension;
-        return this;
+        return self();
     }
 
     protected void registerClientExtension() {
@@ -333,7 +338,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @return this {@link ItemBuilder}
      */
     @SafeVarargs
-    public final ItemBuilder<T, P> tag(TagKey<Item>... tags) {
+    public final S tag(TagKey<Item>... tags) {
         return tag(ProviderType.ITEM_TAGS, tags);
     }
 

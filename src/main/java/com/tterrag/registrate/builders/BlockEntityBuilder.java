@@ -37,7 +37,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
  * @param <P>
  *            Parent object type
  */
-public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilder<BlockEntityType<?>, BlockEntityType<T>, P, BlockEntityBuilder<T, P>> {
+public class BlockEntityBuilder<T extends BlockEntity, P, S extends BlockEntityBuilder<T, P, S>> extends AbstractBuilder<BlockEntityType<?>, BlockEntityType<T>, P, S> {
 
     public interface BlockEntityFactory<T extends BlockEntity> {
 
@@ -66,8 +66,8 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      *            Factory to create the block entity
      * @return A new {@link BlockEntityBuilder} with reasonable default data generators.
      */
-    public static <T extends BlockEntity, P> BlockEntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
-        return new BlockEntityBuilder<>(owner, parent, name, callback, factory);
+    public static <T extends BlockEntity, P, S extends BlockEntityBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, BlockEntityFactory<T> factory) {
+        return new BlockEntityBuilder<T, P, S>(owner, parent, name, callback, factory).self();
     }
 
     private final BlockEntityFactory<T> factory;
@@ -79,6 +79,11 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
         super(owner, parent, name, callback, Registries.BLOCK_ENTITY_TYPE);
         this.factory = factory;
     }
+
+    @SuppressWarnings("unchecked")
+    protected final S self() {
+        return (S) this;
+    }
     
     /**
      * Add a valid block for this block entity.
@@ -87,9 +92,9 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      *            A supplier for the block to add at registration time
      * @return this {@link BlockEntityBuilder}
      */
-    public BlockEntityBuilder<T, P> validBlock(NonNullSupplier<? extends Block> block) {
+    public S validBlock(NonNullSupplier<? extends Block> block) {
         validBlocks.add(block);
-        return this;
+        return self();
     }
     
     /**
@@ -100,9 +105,9 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      * @return this {@link BlockEntityBuilder}
      */
     @SafeVarargs
-    public final BlockEntityBuilder<T, P> validBlocks(NonNullSupplier<? extends Block>... blocks) {
+    public final S validBlocks(NonNullSupplier<? extends Block>... blocks) {
         Arrays.stream(blocks).forEach(this::validBlock);
-        return this;
+        return self();
     }
     
     /**
@@ -115,12 +120,12 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
      *            A (server safe) supplier to an {@link Function} that will provide this block entity's renderer given the renderer dispatcher
      * @return this {@link BlockEntityBuilder}
      */
-    public BlockEntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
+    public S renderer(NonNullSupplier<NonNullFunction<BlockEntityRendererProvider.Context, BlockEntityRenderer<? super T>>> renderer) {
         if (this.renderer == null) { // First call only
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
         this.renderer = renderer;
-        return this;
+        return self();
     }
     
     protected void registerRenderer() {

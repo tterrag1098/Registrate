@@ -371,7 +371,7 @@ public class TestMod {
 //            .block(Block::new)
 //            .addLayer(() -> RenderType::getTranslucent);
 
-    private static <T extends Block, P> @NonnullType BlockBuilder<T, P> applyDiamondDrop(BlockBuilder<T, P> builder) {
+    private static <T extends Block, P, BB extends BlockBuilder<T, P, BB>> @NonnullType BB applyDiamondDrop(BB builder) {
         return builder.loot((prov, block) -> prov.dropOther(block, Items.DIAMOND));
     }
 
