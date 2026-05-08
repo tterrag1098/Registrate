@@ -26,6 +26,7 @@ import net.minecraft.world.item.Item;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.datamaps.builtin.Compostable;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
@@ -82,14 +83,14 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
     private NonNullSupplier<Item.Properties> initialProperties = Item.Properties::new;
     private NonNullFunction<Item.Properties, Item.Properties> propertiesCallback = NonNullUnaryOperator.identity();
 
-    private Map<ResourceKey<CreativeModeTab>, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier>> creativeModeTabs = Maps.newLinkedHashMap();
+    private final Map<ResourceKey<CreativeModeTab>, NonNullBiConsumer<DataGenContext<Item, T>, BuildCreativeModeTabContentsEvent>> creativeModeTabs = Maps.newLinkedHashMap();
 
     protected ItemBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<Item.Properties, T> factory) {
         super(owner, parent, name, callback, Registries.ITEM);
         this.factory = factory;
 
         onRegister(item -> {
-            creativeModeTabs.forEach((creativeModeTab, consumer) -> owner.modifyCreativeModeTab(creativeModeTab, modifier -> consumer.accept(DataGenContext.from(this), modifier)));
+            creativeModeTabs.forEach((creativeModeTab, consumer) -> owner.modifyCreativeTab(creativeModeTab, modifier -> consumer.accept(DataGenContext.from(this), modifier)));
             creativeModeTabs.clear(); // this registration should only fire once, to doubly ensure this, clear the map
         });
     }
@@ -135,7 +136,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
      * @param modifier A {@link Consumer consumer} accepting a {@link CreativeModeTabModifier} used to update the tab
      * @return This builder
-     * @deprecated Use {@link #tab(ResourceKey, NonNullBiConsumer)} which provides access to the registered item.
+     * @deprecated Use {@link #tabNew(ResourceKey, NonNullBiConsumer)} which provides access to the registered item.
      */
     @Deprecated
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
@@ -156,8 +157,29 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
      * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and {@link CreativeModeTabModifier} used to update the tab
      * @return This builder
+     * @deprecated Use {@link #tabNew(ResourceKey, NonNullBiConsumer)}
      */
+    @Deprecated
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier> modifier) {
+        return tabNew(tab, (ctx, event) -> modifier.accept(ctx, new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept, event::getParameters)));
+    }
+
+    /**
+     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created and/or added to the tab.
+     *
+     * <p>
+     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
+     * This means you can call this method as many times as you like during the build process with no added side effects.
+     * <p>
+     * Calling this method with different {@link ResourceKey tab keys} will add the modifier to all the specified tabs.
+     * <p>
+     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
+     *
+     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
+     * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and {@link BuildCreativeModeTabContentsEvent} used to update the tab
+     * @return This builder
+     */
+    public ItemBuilder<T, P> tabNew(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, BuildCreativeModeTabContentsEvent> modifier) {
         creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
@@ -177,7 +199,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @see #tab(ResourceKey, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab) {
-        return tab(tab, (item, modifier) -> modifier.accept(item));
+        return tabNew(tab, (ctx, modifier) -> modifier.accept(ctx.get()));
     }
 
     /**

@@ -135,7 +135,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
 
     private final Table<Pair<String, ResourceKey<? extends Registry<?>>>, GeneratorType<?>, Consumer<?>> datagensByEntry = HashBasedTable.create();
     private final ListMultimap<GeneratorType<?>, NonNullConsumer<?>> datagens = ArrayListMultimap.create();
-    private final Multimap<ResourceKey<CreativeModeTab>, Consumer<CreativeModeTabModifier>> creativeModeTabModifiers = ArrayListMultimap.create();
+    private final Multimap<ResourceKey<CreativeModeTab>, Consumer<BuildCreativeModeTabContentsEvent>> creativeModeTabModifiers = ArrayListMultimap.create();
     private ResourceKey<CreativeModeTab> defaultCreativeModeTab = CreativeModeTabs.SEARCH;
 
     @Accessors(fluent = true)
@@ -271,10 +271,8 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      *            The event
      */
     protected void onBuildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
-        var modifier = new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept, event::getParameters);
-
         creativeModeTabModifiers.forEach((key, value) -> {
-            if(event.getTabKey().equals(key)) value.accept(modifier);
+            if(event.getTabKey().equals(key)) value.accept(event);
         });
     }
 
@@ -733,8 +731,27 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      * @param creativeModeTab The {@link CreativeModeTab} to register this callback for
      * @param modifier The modifier callback to be registered
      * @return This {@link AbstractRegistrate} instance
+     * @deprecated Use {@link #modifyCreativeTab(ResourceKey, Consumer)}
      */
+    @Deprecated
     public S modifyCreativeModeTab(ResourceKey<CreativeModeTab> creativeModeTab, Consumer<CreativeModeTabModifier> modifier) {
+        return modifyCreativeTab(creativeModeTab, event -> modifier.accept(new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept, event::getParameters)));
+    }
+
+    /**
+     * Registers a new modifier callback to be used to modify the given CreativeModeTab.
+     *
+     * <p>
+     * Registers a new callback to be invoked during the {@link BuildCreativeModeTabContentsEvent} event and
+     * used to modify what items are displayed on the given {@link CreativeModeTab}.
+     * <p>
+     * Calling this method multiple times will add additional callbacks.
+     *
+     * @param creativeModeTab The {@link CreativeModeTab} to register this callback for
+     * @param modifier The modifier callback to be registered. Accepts the {@link BuildCreativeModeTabContentsEvent event} directly.
+     * @return This {@link AbstractRegistrate} instance
+     */
+    public S modifyCreativeTab(ResourceKey<CreativeModeTab> creativeModeTab, Consumer<BuildCreativeModeTabContentsEvent> modifier) {
         creativeModeTabModifiers.put(creativeModeTab, modifier);
         return self();
     }

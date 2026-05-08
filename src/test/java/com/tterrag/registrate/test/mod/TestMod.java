@@ -225,7 +225,7 @@ public class TestMod {
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
                 .tag(ItemTags.BEDS)
             .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
-                .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx))
+                .tabNew(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx.get()))
                 .register();
 
     @VisibleForTesting
