@@ -95,6 +95,9 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
             NonNullSupplier<Supplier<FluidModel.Unbaked>> model = this.model;
             if (model != null) {
                 e.register(model.get().get(), getEntry());
+                if (this.source != null) {
+                    e.register(model.get().get(), getSource());
+                }
             }
         });
     }

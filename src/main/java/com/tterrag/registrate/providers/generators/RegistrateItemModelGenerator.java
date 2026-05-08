@@ -16,9 +16,14 @@ import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.client.model.item.DynamicFluidContainerModel;
+import net.neoforged.neoforge.common.NeoForgeMod;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
@@ -104,5 +109,18 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
 
     public void generateTintedModel(Item entry, Identifier model, ItemTintSource tint) {
         this.itemModelOutput.accept(entry, ItemModelUtils.tintedModel(model, tint));
+    }
+
+    /**
+     * Create a bucket model using the NeoForge built in fluid container model. Borrowed with <3 from EnderIO.
+     * @param item A supplier to the bucket item, most commonly a {@link com.tterrag.registrate.providers.DataGenContext}
+     * @param flipGas If true, the bucket model will be flipped upside down
+     * @param applyFluidLuminosity If true, the fluid will "glow"
+     */
+    public void bucketItem(NonNullSupplier<? extends BucketItem> item, boolean flipGas, boolean applyFluidLuminosity) {
+        Material drip = new Material(Identifier.fromNamespaceAndPath(NeoForgeMod.MOD_ID, "item/mask/bucket_fluid_drip"));
+        Material bucket = new Material(Identifier.withDefaultNamespace("item/bucket"));
+        DynamicFluidContainerModel.Textures textures = new DynamicFluidContainerModel.Textures(Optional.empty(), Optional.of(bucket), Optional.of(drip), Optional.empty());
+        this.itemModelOutput.accept(item.get(), new DynamicFluidContainerModel.Unbaked(textures, item.get().getContent(), flipGas, false, applyFluidLuminosity));
     }
 }

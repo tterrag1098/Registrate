@@ -313,10 +313,10 @@ public class TestMod {
                     Identifier.withDefaultNamespace("block/lava_still"),
 					FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
-            .noBucket()
-//            .bucket()
-//                .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.mcLoc("item/water_bucket")))
-//                .build()
+            .source(BaseFlowingFluid.Source::new) // TODO should be unnecessary
+            .bucket()
+                .model(() -> (ctx, prov) -> prov.bucketItem(ctx, false, false))
+                .build()
             .register();
 
     @VisibleForTesting
@@ -509,7 +509,7 @@ public class TestMod {
         testblockitem.is(Items.STONE);
         testblockbe.is(BlockEntityType.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
-        if (testfluid.get().getBucket() != Items.AIR) throw new IllegalStateException("Expected no bucket for test fluid"); // should not crash
+        if (testfluid.get().getBucket() == Items.AIR) throw new IllegalStateException("Expected bucket for test fluid"); // should not crash
     }
 
     private static class Client {
