@@ -46,7 +46,7 @@ import java.util.function.Supplier;
  * @param <P>
  *            Parent object type
  */
-public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, EntityBuilder<T, P>> {
+public class EntityBuilder<T extends Entity, P, S extends EntityBuilder<T, P, S>> extends AbstractBuilder<EntityType<?>, EntityType<T>, P, S> {
 
     /**
      * Create a new {@link EntityBuilder} and configure data. Used in lieu of adding side-effects to constructor, so that alternate initialization strategies can be done in subclasses.
@@ -74,10 +74,8 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The {@link MobCategory} of the entity
      * @return A new {@link EntityBuilder} with reasonable default data generators.
      */
-    public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory,
-            MobCategory classification) {
-        return new EntityBuilder<>(owner, parent, name, callback, factory, classification)
-                .defaultLang();
+    public static <T extends Entity, P, S extends EntityBuilder<T, P, S>> S create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
+        return new EntityBuilder<T, P, S>(owner, parent, name, callback, factory, classification).defaultLang();
     }
 
     private final NonNullSupplier<EntityType.Builder<T>> builder;
@@ -94,6 +92,11 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         this.builder = () -> EntityType.Builder.of(factory, classification);
     }
 
+    @SuppressWarnings("unchecked")
+    protected final S self() {
+        return (S) this;
+    }
+
     /**
      * Modify the properties of the entity. Modifications are done lazily, but the passed function is composed with the current one, and as such this method can be called multiple times to perform
      * different operations.
@@ -102,9 +105,9 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The action to perform on the properties
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> properties(NonNullConsumer<EntityType.Builder<T>> cons) {
+    public S properties(NonNullConsumer<EntityType.Builder<T>> cons) {
         builderCallback = builderCallback.andThen(cons);
-        return this;
+        return self();
     }
 
     /**
@@ -115,12 +118,12 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            A (server safe) supplier to an {@link EntityRendererProvider} that will provide this entity's renderer
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> renderer(NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer) {
+    public S renderer(NonNullSupplier<NonNullFunction<EntityRendererProvider.Context, EntityRenderer<? super T>>> renderer) {
         if (this.renderer == null && FMLEnvironment.dist.isClient()) { // First call only
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerRenderer);
         }
         this.renderer = renderer;
-        return this;
+        return self();
     }
 
     protected void registerRenderer() {
@@ -149,13 +152,13 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *             When called more than once
      */
     @SuppressWarnings("unchecked")
-    public EntityBuilder<T, P> attributes(Supplier<AttributeSupplier.Builder> attributes) {
+    public S attributes(Supplier<AttributeSupplier.Builder> attributes) {
         if (attributesConfigured) {
             throw new IllegalStateException("Cannot configure attributes more than once");
         }
         attributesConfigured = true;
         OneTimeEventReceiver.addModListener(getOwner(), EntityAttributeCreationEvent.class, e -> e.put((EntityType<LivingEntity>) getEntry(), attributes.get().build()));
-        return this;
+        return self();
     }
 
     /**
@@ -173,8 +176,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @throws IllegalStateException
      *             When called more than once
      */
-    @SuppressWarnings("unchecked")
-    public EntityBuilder<T, P> spawnPlacement(SpawnPlacementType type, Heightmap.Types heightmap, SpawnPredicate<T> predicate, RegisterSpawnPlacementsEvent.Operation operation) {
+    public S spawnPlacement(SpawnPlacementType type, Heightmap.Types heightmap, SpawnPredicate<T> predicate, RegisterSpawnPlacementsEvent.Operation operation) {
         if (spawnConfigured) {
             throw new IllegalStateException("Cannot configure spawn placement more than once");
         }
@@ -193,7 +195,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
                 e.register(t, type, heightmap, predicate, operation);
             });
         });
-        return this;
+        return self();
     }
 
     /**
@@ -210,7 +212,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @return this {@link EntityBuilder}
      */
     @Deprecated
-    public EntityBuilder<T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
+    public S defaultSpawnEgg(int primaryColor, int secondaryColor) {
         return spawnEgg(primaryColor, secondaryColor).build();
     }
 
@@ -229,9 +231,10 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Deprecated
-    public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
+    public <IB extends ItemBuilder<DeferredSpawnEggItem, S, IB>> IB spawnEgg(int primaryColor, int secondaryColor) {
         var sup = asSupplier();
-        return getOwner().item(this, getName() + "_spawn_egg", p -> new DeferredSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) sup, primaryColor, secondaryColor, p)).tab(CreativeModeTabs.SPAWN_EGGS)
+        return getOwner().<DeferredSpawnEggItem, S, IB>item(self(), getName() + "_spawn_egg", p -> new DeferredSpawnEggItem((Supplier<EntityType<? extends Mob>>) (Supplier) sup, primaryColor, secondaryColor, p))
+                .tab(CreativeModeTabs.SPAWN_EGGS)
                 .model((ctx, prov) -> prov.withExistingParent(ctx.getName(), ResourceLocation.withDefaultNamespace("item/template_spawn_egg")));
     }
 
@@ -241,7 +244,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> defaultLang() {
+    public S defaultLang() {
         return lang(EntityType::getDescriptionId);
     }
 
@@ -252,7 +255,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            A localized English name
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> lang(String name) {
+    public S lang(String name) {
         return lang(EntityType::getDescriptionId, name);
     }
 
@@ -264,7 +267,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      *            The callback which will be invoked during entity loot table creation.
      * @return this {@link EntityBuilder}
      */
-    public EntityBuilder<T, P> loot(NonNullBiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
+    public S loot(NonNullBiConsumer<RegistrateEntityLootTables, EntityType<T>> cons) {
         return setData(ProviderType.LOOT, (ctx, prov) -> prov.addLootAction(LootType.ENTITY, tb -> cons.accept(tb, ctx.getEntry())));
     }
 
@@ -276,7 +279,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
      * @return this {@link EntityBuilder}
      */
     @SafeVarargs
-    public final EntityBuilder<T, P> tag(TagKey<EntityType<?>>... tags) {
+    public final S tag(TagKey<EntityType<?>>... tags) {
         return tag(ProviderType.ENTITY_TAGS, tags);
     }
 
