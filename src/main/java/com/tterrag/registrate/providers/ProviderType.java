@@ -43,11 +43,11 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
     ProviderType<RegistrateRecipeRunner> RECIPE_RUNNER = registerServerData("recipe_runner", RegistrateRecipeRunner::new);
     ProviderType<RegistrateAdvancementProvider> ADVANCEMENT = registerServerData("advancement", RegistrateAdvancementProvider::new);
     ProviderType<RegistrateLootTableProvider> LOOT = registerServerData("loot", RegistrateLootTableProvider::new);
-    ProviderType<RegistrateTagsProvider.IntrinsicImpl<Block>> BLOCK_TAGS = registerIntrinsicTag("tags/block", "blocks", Registries.BLOCK, block -> block.builtInRegistryHolder().key());
-    ProviderType<RegistrateTagsProvider.Impl<Enchantment>> ENCHANTMENT_TAGS = registerDynamicTag("tags/enchantment", "enchantments", Registries.ENCHANTMENT);
+    ProviderType<RegistrateTagsProvider.Impl<Block>> BLOCK_TAGS = registerTag("tags/block", "blocks", Registries.BLOCK);
+    ProviderType<RegistrateTagsProvider.Impl<Enchantment>> ENCHANTMENT_TAGS = registerTag("tags/enchantment", "enchantments", Registries.ENCHANTMENT);
     ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerTag("tags/item", Registries.ITEM, c -> new RegistrateItemTagsProvider(c.parent(), c.type(), "items", c.output(), c.provider(), c.get(BLOCK_TAGS).contentsGetter()));
-    ProviderType<RegistrateTagsProvider.IntrinsicImpl<Fluid>> FLUID_TAGS = registerIntrinsicTag("tags/fluid", "fluids", Registries.FLUID, fluid -> fluid.builtInRegistryHolder().key());
-    ProviderType<RegistrateTagsProvider.IntrinsicImpl<EntityType<?>>> ENTITY_TAGS = registerIntrinsicTag("tags/entity", "entity_types", Registries.ENTITY_TYPE, entityType -> entityType.builtInRegistryHolder().key());
+    ProviderType<RegistrateTagsProvider.Impl<Fluid>> FLUID_TAGS = registerTag("tags/fluid", "fluids", Registries.FLUID);
+    ProviderType<RegistrateTagsProvider.Impl<EntityType<?>>> ENTITY_TAGS = registerTag("tags/entity", "entity_types", Registries.ENTITY_TYPE);
     ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider",  c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.SERVER, c.type()));
 
     // CLIENT DATA
@@ -126,12 +126,7 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
     }
 
     @Nonnull
-    static <T> ProviderType<RegistrateTagsProvider.IntrinsicImpl<T>> registerIntrinsicTag(String providerName, String typeName, ResourceKey<? extends Registry<T>> registry, Function<T, ResourceKey<T>> keyExtractor) {
-        return registerTag(providerName, registry, c -> new RegistrateTagsProvider.IntrinsicImpl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider(), keyExtractor));
-    }
-
-    @Nonnull
-    static <T> ProviderType<RegistrateTagsProvider.Impl<T>> registerDynamicTag(String providerName, String typeName, ResourceKey<Registry<T>> registry) {
+    static <T> ProviderType<RegistrateTagsProvider.Impl<T>> registerTag(String providerName, String typeName, ResourceKey<Registry<T>> registry) {
         return registerTag(providerName, registry, c -> new RegistrateTagsProvider.Impl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider()));
     }
 

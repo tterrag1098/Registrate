@@ -2,7 +2,7 @@ plugins {
     id "io.freefair.lombok" version "8.13"
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id 'org.ajoberstar.grgit' version '5.2.2'
-    id 'net.neoforged.gradle.userdev' version '7.1.25'
+    id 'net.neoforged.gradle.userdev' version '7.1.38'
 }
 
 apply plugin: 'maven-publish'

@@ -15,13 +15,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class RegistrateItemTagsProvider extends RegistrateTagsProvider.IntrinsicImpl<Item> {
+public class RegistrateItemTagsProvider extends RegistrateTagsProvider.Impl<Item> {
 
     private final CompletableFuture<TagsProvider.TagLookup<Block>> blockTags;
     private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new HashMap<>();
 
     public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, PackOutput output, CompletableFuture<HolderLookup.Provider> registriesLookup, CompletableFuture<TagsProvider.TagLookup<Block>> blockTags) {
-        super(owner, type, name, output, Registries.ITEM, registriesLookup, item -> item.builtInRegistryHolder().key());
+        super(owner, type, name, output, Registries.ITEM, registriesLookup);
         this.blockTags = blockTags;
     }
 

@@ -12,7 +12,7 @@ import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.*;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementType;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.triggers.InventoryChangeTrigger;
 import net.minecraft.client.color.block.BlockTintSources;
 import net.minecraft.client.color.item.Constant;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.core.registries.Registries;
@@ -71,6 +72,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
@@ -420,41 +422,45 @@ public class TestMod {
                     data.registries(),
                     new RegistrySetBuilder()
                             // custom dimension type, just a simple overworld-like dimension
-                            .add(Registries.DIMENSION_TYPE, context -> context.register(
-                                    testDimensionTypeKey,
-                                    new DimensionType(
-                                            /* hasFixedTime */ false,
-                                            /* hasSky */ true,
-                                            /* hasCeiling */ false,
-                                            /* hasEnderDragonFight */ false,
-                                            /* coordinateScale */ 1D,
-                                            /* minY */ -64,
-                                            /* height */ 384,
-                                            /* localHeight */ 384,
-                                            /* infiniBurn */ BlockTags.INFINIBURN_OVERWORLD,
-                                            /* ambientLight */ 0F,
-                                            new DimensionType.MonsterSettings(
-                                                    /* monsterSpawnLightTest */ UniformInt.of(0, 7),
-                                                    /* monsterSpawnBlockLightLimit */ 0
-                                            ),
-                                            DimensionType.Skybox.OVERWORLD,
-                                            CardinalLighting.Type.DEFAULT,
-                                            EnvironmentAttributeMap.builder()
-                                                    .set(EnvironmentAttributes.FOG_COLOR, 0xffc0d8ff)
-                                                    .set(EnvironmentAttributes.SKY_COLOR, OverworldBiomes.calculateSkyColor(0.8F))
-                                                    .set(EnvironmentAttributes.AMBIENT_LIGHT_COLOR, 0xff0a0a0a)
-                                                    .set(EnvironmentAttributes.CLOUD_COLOR, ARGB.white(0.8F))
-                                                    .set(EnvironmentAttributes.CLOUD_HEIGHT, 192.33f)
-                                                    .set(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.OVERWORLD)
-                                                    .set(EnvironmentAttributes.BED_RULE, BedRule.CAN_SLEEP_WHEN_DARK)
-                                                    .set(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, false)
-                                                    .set(EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS, true)
-                                                    .set(EnvironmentAttributes.AMBIENT_SOUNDS, AmbientSounds.LEGACY_CAVE_SETTINGS)
-                                                    .build(),
-                                            context.lookup(Registries.TIMELINE).getOrThrow(TimelineTags.IN_OVERWORLD),
-                                            Optional.of(context.lookup(Registries.WORLD_CLOCK).getOrThrow(WorldClocks.OVERWORLD))
-                                    )
-                            ))
+                            .add(Registries.DIMENSION_TYPE, context -> {
+                                HolderGetter<Block> blocks = context.lookup(Registries.BLOCK);
+
+                                context.register(
+                                        testDimensionTypeKey,
+                                        new DimensionType(
+                                                /* hasFixedTime */ false,
+                                                /* hasSky */ true,
+                                                /* hasCeiling */ false,
+                                                /* hasEnderDragonFight */ false,
+                                                /* coordinateScale */ 1D,
+                                                /* minY */ -64,
+                                                /* height */ 384,
+                                                /* localHeight */ 384,
+                                                /* infiniBurn */ blocks.getOrThrow(BlockTags.INFINIBURN_OVERWORLD),
+                                                /* ambientLight */ 0F,
+                                                new DimensionType.MonsterSettings(
+                                                        /* monsterSpawnLightTest */ UniformInt.of(0, 7),
+                                                        /* monsterSpawnBlockLightLimit */ 0
+                                                ),
+                                                DimensionType.Skybox.OVERWORLD,
+                                                CardinalLighting.Type.DEFAULT,
+                                                EnvironmentAttributeMap.builder()
+                                                        .set(EnvironmentAttributes.FOG_COLOR, 0xffc0d8ff)
+                                                        .set(EnvironmentAttributes.SKY_COLOR, OverworldBiomes.calculateSkyColor(0.8F))
+                                                        .set(EnvironmentAttributes.AMBIENT_LIGHT_COLOR, 0xff0a0a0a)
+                                                        .set(EnvironmentAttributes.CLOUD_COLOR, ARGB.white(0.8F))
+                                                        .set(EnvironmentAttributes.CLOUD_HEIGHT, 192.33f)
+                                                        .set(EnvironmentAttributes.BACKGROUND_MUSIC, BackgroundMusic.OVERWORLD)
+                                                        .set(EnvironmentAttributes.BED_RULE, BedRule.CAN_SLEEP_WHEN_DARK)
+                                                        .set(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, false)
+                                                        .set(EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS, true)
+                                                        .set(EnvironmentAttributes.AMBIENT_SOUNDS, AmbientSounds.LEGACY_CAVE_SETTINGS)
+                                                        .build(),
+                                                context.lookup(Registries.TIMELINE).getOrThrow(TimelineTags.IN_OVERWORLD),
+                                                Optional.of(context.lookup(Registries.WORLD_CLOCK).getOrThrow(WorldClocks.OVERWORLD))
+                                        )
+                                );
+                            })
                             // register custom dimension for the dimension type
                             // simple single biome (plains) dimension
                             .add(Registries.LEVEL_STEM, context -> {
@@ -507,7 +513,7 @@ public class TestMod {
         testblock.asStackTemplate();
         testitem.is(Items.SNOWBALL);
         testblockitem.is(Items.STONE);
-        testblockbe.is(BlockEntityType.CHEST);
+        testblockbe.is(BlockEntityTypes.CHEST);
         // testbiome.is(Feature.BAMBOO); // should not compile
         if (testfluid.get().getBucket() == Items.AIR) throw new IllegalStateException("Expected bucket for test fluid"); // should not crash
     }

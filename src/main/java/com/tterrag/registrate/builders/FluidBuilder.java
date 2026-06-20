@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.BucketItem;
@@ -511,8 +512,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     public final FluidBuilder<T, P> tag(TagKey<Fluid>... tags) {
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
-            ret.getOwner().<RegistrateTagsProvider.Intrinsic<Fluid>, Fluid>setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
-                prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(getSource())));
+            ret.getOwner().setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
+                prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(ResourceKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath(getOwner().getModid(), sourceName)))));
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;
