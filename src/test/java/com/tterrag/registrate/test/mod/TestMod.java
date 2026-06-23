@@ -228,7 +228,7 @@ public class TestMod {
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
                 .tag(ItemTags.BEDS)
             .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
-                .tabNew(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx.get()))
+                .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx.get()))
                 .register();
 
     @VisibleForTesting
@@ -305,7 +305,7 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntityEntry<TestDummyBlockEntity> testblockentity = registrate.object("testblockentity")
             .blockEntity(TestDummyBlockEntity::new)
-            .validBlock(() -> Blocks.DIRT)//TODO <1.21.4> now empty valid block is not allowed
+            .validBlock(() -> Blocks.DIRT)
             .register();
 
     @VisibleForTesting
