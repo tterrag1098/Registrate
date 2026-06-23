@@ -1,15 +1,17 @@
-// 26.1.2	2026-05-08T19:30:20.3360021	Registrate Provider for testmod [Registries, Data Maps, , Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Model Definitions - testmod, Lang (en_us/en_ud), generic_client_provider]
+// 26.1.2	2026-06-23T00:42:47.4288864	Registrate Provider for testmod [Registries, Data Maps, , Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Model Definitions - testmod, Lang (en_us/en_ud), generic_client_provider]
 353e0134b90278ff49840165bed05cb48e7fff1b assets/testmod/blockstates/magic_item_model.json
 bc6ecd9ef8452b21567c005ab9c626c54a1beeaa assets/testmod/blockstates/testblock.json
 069fa0cc9495cbad97a129b3e39bd0bdf0599b28 assets/testmod/blockstates/testfluid.json
 f89300065873b3d7b9ce32afdc50aa054bf394c9 assets/testmod/items/magic_item_model.json
 9a69e68a4d502233127cbf455882bfccf73db0f7 assets/testmod/items/testblock.json
+51182a9403409bb9bc19701bdea22cc30baeadda assets/testmod/items/testentity_spawn_egg.json
 dde43a5a29d1eb62339164d00cfe91a460aba30a assets/testmod/items/testfluid_bucket.json
 1e6a2105bb914bd0e1433b408fde3c456245968a assets/testmod/items/testitem.json
-eb3c70b0ff56b6716a68dbf07fe43c4045aa93b5 assets/testmod/lang/en_ud.json
-9f897f642fb9427551bc638fb1f07c956903bc1f assets/testmod/lang/en_us.json
+76caa9c325c27ed21bfda221a9ff8faffc8da82e assets/testmod/lang/en_ud.json
+d5ac0fe8f83c360f7847c83db0df0d67396f47fe assets/testmod/lang/en_us.json
 b3c7ac87f735c9813d09ee46f1d26c844c06353c assets/testmod/models/block/subfolder/magic_item_model.json
 e6b1a73e2228a3216085e31392b29703b4c7cda9 assets/testmod/models/block/testblock.json
+478ea205953097a116d0e4dd21b63fd9da92ab69 assets/testmod/models/item/testentity_spawn_egg.json
 6cde7304ac9429b0ea7e01078b4846b1cac6a0c8 data/minecraft/tags/block/dragon_immune.json
 6cde7304ac9429b0ea7e01078b4846b1cac6a0c8 data/minecraft/tags/block/supports_bamboo.json
 6cde7304ac9429b0ea7e01078b4846b1cac6a0c8 data/minecraft/tags/block/wither_immune.json

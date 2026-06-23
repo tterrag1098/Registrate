@@ -290,7 +290,7 @@ public class TestMod {
             .attributes(Pig::createAttributes)
             .renderer(() -> PigRenderer::new)
             .spawnPlacement(SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR)
-            //TODO <1.21.4> .defaultSpawnEgg(0xFF0000, 0x00FF00)
+            .defaultSpawnEgg()
             .loot((prov, type) -> prov.add(type, LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .setRolls(ConstantValue.exactly(1))
