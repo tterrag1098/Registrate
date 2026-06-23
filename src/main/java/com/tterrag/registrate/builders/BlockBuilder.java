@@ -317,7 +317,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     /**
      * Register a client extension for this block.
-     * The {@link IClientBlockExtensions} instance can be shared across many items.
+     * The {@link IClientBlockExtensions} instance can be shared across many blocks.
      *
      * @param clientExtension
      *            The client extension to register for this block
@@ -333,13 +333,12 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     /**
      * Register a client extension for this block.
-     * The {@link IClientBlockExtensions} instance can be shared across many items.
+     * The {@link IClientBlockExtensions} instance can be shared across many blocks.
      *
      * @param clientExtension
      *            The client extension to register for this block
      * @return this {@link BlockBuilder}
      */
-    @Deprecated(forRemoval = true)
     public BlockBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtension) {
         if (this.clientExtensionFunc == null) {
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
