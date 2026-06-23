@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +34,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         }
 
         @Override
-        public void add(@Nullable String key, @Nullable String value) {
+        public void add(String key, String value) {
             super.add(key, value);
         }
 
@@ -68,7 +67,7 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
         owner.genData(ProviderType.LANG, this);
     }
 
-    public static final String toEnglishName(String internalName) {
+    public static String toEnglishName(String internalName) {
         return Arrays.stream(internalName.toLowerCase(Locale.ROOT).split("_"))
                 .map(StringUtils::capitalize)
                 .collect(Collectors.joining(" "));

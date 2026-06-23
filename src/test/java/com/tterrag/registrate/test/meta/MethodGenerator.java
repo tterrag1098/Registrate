@@ -14,29 +14,23 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.tterrag.registrate.test.meta.ProtectedMethodScraper.Header;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
 @RequiredArgsConstructor
 public class MethodGenerator {
-    
-    @Value
-    private class Exclusion {
 
-        String name;
-        String[] params;
-        
-        public boolean matches(Header header) {
-            if (!header.getName().equals(this.name)) {
-                return false;
+    private record Exclusion(String name, String[] params) {
+
+            public boolean matches(Header header) {
+                if (!header.getName().equals(this.name)) {
+                    return false;
+                }
+                return Arrays.equals(header.getParamTypes(), this.params);
             }
-            return this.params == null ? true : Arrays.equals(header.getParamTypes(), this.params);
         }
-    }
     
     private static final String START_KEY = "// GENERATED START";
     private static final String END_KEY = "// GENERATED END";
@@ -51,7 +45,7 @@ public class MethodGenerator {
     }
     
     public MethodGenerator exclude(String name) {
-        excludes.add(new Exclusion(name, null));
+        excludes.add(new Exclusion(name, new String[0]));
         return this;
     }
     

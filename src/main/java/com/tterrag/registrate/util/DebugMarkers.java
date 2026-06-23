@@ -8,7 +8,7 @@ public class DebugMarkers {
     
     private static final String PREFIX = "REGISTRATE.";
     
-    private static final Marker marker(String name) {
+    private static Marker marker(String name) {
         return MarkerManager.getMarker(PREFIX + name);
     }
     

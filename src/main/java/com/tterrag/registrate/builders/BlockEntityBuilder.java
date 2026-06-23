@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
@@ -43,7 +42,7 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
 
     public interface BlockEntityFactory<T extends BlockEntity> {
 
-        public T create(BlockEntityType<T> type, BlockPos pos, BlockState state);
+        T create(BlockEntityType<T> type, BlockPos pos, BlockState state);
 
     }
 

@@ -17,8 +17,6 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.SpawnPlacements.SpawnPredicate;
@@ -155,7 +153,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
-     * Register a spawn placement for this entity. The entity must extend {@link Mob} and allow construction with a {@code null} {@link Level}.
+     * Register a spawn placement for this entity.
      * <p>
      * Cannot be called more than once per builder.
      *
@@ -175,20 +173,7 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
             throw new IllegalStateException("Cannot configure spawn placement more than once");
         }
         spawnConfigured = true;
-        this.onRegister(t -> {
-            /* TODO is there any way to do this now?
-            try {
-                if (!(t.create(null) instanceof MobEntity)) {
-                    throw new IllegalArgumentException("Cannot register spawn placement for entity " + t.getRegistryName() + " as it does not extend MobEntity");
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to type check entity " + t.getRegistryName() + " when registering spawn placement", e);
-            }
-            */
-            OneTimeEventReceiver.addModListener(getOwner(), RegisterSpawnPlacementsEvent.class, e -> {
-                e.register(t, type, heightmap, predicate, operation);
-            });
-        });
+        this.onRegister(t -> OneTimeEventReceiver.addModListener(getOwner(), RegisterSpawnPlacementsEvent.class, e -> e.register(t, type, heightmap, predicate, operation)));
         return this;
     }
 

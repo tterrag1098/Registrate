@@ -35,9 +35,7 @@ public class RegistrateItemTagsProvider extends RegistrateTagsProvider.Intrinsic
             this.tagsToCopy.forEach((p_274763_, p_274764_) -> {
                 TagBuilder tagbuilder = this.getOrCreateRawBuilder(p_274764_);
                 Optional<TagBuilder> optional = p_274767_.apply(p_274763_);
-                optional.orElseThrow(() -> {
-                    return new IllegalStateException("Missing block tag " + p_274764_.location());
-                }).build().forEach(tagbuilder::add);
+                optional.orElseThrow(() -> new IllegalStateException("Missing block tag " + p_274764_.location())).build().forEach(tagbuilder::add);
             });
             return p_274766_;
         });

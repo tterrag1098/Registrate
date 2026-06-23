@@ -17,7 +17,6 @@ import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -65,6 +64,7 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
                                                  PackOutput output,
                                                  CompletableFuture<HolderLookup.Provider> provider) {
 
+        @SuppressWarnings("unchecked")
         public <R extends RegistrateProvider> R get(ProviderType<R> other) {
             return (R) existing().get(other);
         }
@@ -96,18 +96,15 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
 
     }
 
-    @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerServerData(String name, SimpleServerDataFactory<T> factory) {
         return registerProvider(name, factory.asProvider());
     }
 
-    @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerProvider(String name, ProviderType<T> type) {
         RegistrateDataProvider.TYPES.put(name, type);
         return type;
     }
 
-    @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerClientProvider(String name, NonNullSupplier<ProviderType<T>> supplier) {
         if (!DatagenModLoader.isRunningDataGen()) return context -> null;
         var type = supplier.get();
@@ -115,7 +112,7 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
         return type;
     }
 
-    @Nonnull
+    @SuppressWarnings("unchecked")
     static <T, R extends RegistrateTagsProvider<T>> ProviderType<R> registerTag(String name, ResourceKey<? extends Registry<T>> key, ProviderType<R> type) {
         if (RegistrateDataProvider.TAG_TYPES.containsKey(key)) {
             return (ProviderType<R>) RegistrateDataProvider.TAG_TYPES.get(key);
@@ -125,12 +122,10 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
         return type;
     }
 
-    @Nonnull
     static <T> ProviderType<RegistrateTagsProvider.IntrinsicImpl<T>> registerIntrinsicTag(String providerName, String typeName, ResourceKey<? extends Registry<T>> registry, Function<T, ResourceKey<T>> keyExtractor) {
         return registerTag(providerName, registry, c -> new RegistrateTagsProvider.IntrinsicImpl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider(), keyExtractor));
     }
 
-    @Nonnull
     static <T> ProviderType<RegistrateTagsProvider.Impl<T>> registerDynamicTag(String providerName, String typeName, ResourceKey<Registry<T>> registry) {
         return registerTag(providerName, registry, c -> new RegistrateTagsProvider.Impl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider()));
     }

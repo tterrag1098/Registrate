@@ -230,9 +230,8 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
      */
     public static <T extends BaseFlowingFluid, P> FluidBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback,
         FluidTypeFactory typeFactory, FluidFactory<T> fluidFactory) {
-        FluidBuilder<T, P> ret = new FluidBuilder<>(owner, parent, name, callback, typeFactory, fluidFactory)
+        return new FluidBuilder<>(owner, parent, name, callback, typeFactory, fluidFactory)
                 .defaultLang().defaultSource().defaultBlock().defaultBucket();
-        return ret;
     }
 
     /**
@@ -274,7 +273,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     private final FluidFactory<T> fluidFactory;
 
-    private @Nullable final NonNullSupplier<FluidType> fluidType;
+    private final NonNullSupplier<FluidType> fluidType;
 
     private @Nullable Boolean defaultSource, defaultBlock, defaultBucket;
 
@@ -282,7 +281,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     private NonNullConsumer<BaseFlowingFluid.Properties> fluidProperties = $ -> {};
 
-    private boolean registerType;
+    private final boolean registerType;
 
     private @Nullable NonNullSupplier<? extends BaseFlowingFluid> source;
     private final List<TagKey<Fluid>> tags = new ArrayList<>();
@@ -539,7 +538,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     private BaseFlowingFluid.Properties makeProperties() {
         NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
-        BaseFlowingFluid.Properties ret = new BaseFlowingFluid.Properties(fluidType, source == null ? null : source::get, asSupplier());
+        BaseFlowingFluid.Properties ret = new BaseFlowingFluid.Properties(fluidType, source, asSupplier());
         fluidProperties.accept(ret);
         return ret;
     }
@@ -599,7 +598,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
         NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
         if (source != null) {
-            getCallback().accept(sourceName, Registries.FLUID, (FluidBuilder) this, source::get);
+            getCallback().accept(sourceName, Registries.FLUID, (FluidBuilder) this, source);
         } else {
             throw new IllegalStateException("Fluid must have a source version: " + getName());
         }
