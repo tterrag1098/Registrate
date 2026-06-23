@@ -255,9 +255,6 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         return builder.build(getResourceKey());
     }
 
-    @Deprecated
-    protected void injectSpawnEggType(EntityType<T> entry) {}
-
     @Override
     protected RegistryEntry<EntityType<?>, EntityType<T>> createEntryWrapper(DeferredHolder<EntityType<?>, EntityType<T>> delegate) {
         return new EntityEntry<>(getOwner(), delegate);

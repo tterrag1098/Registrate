@@ -194,17 +194,6 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
                 .save(this, safeKey(output.get()));
     }
 
-    /**
-     * @deprecated Broken, use {@link #storage(NonNullSupplier, RecipeCategory, NonNullSupplier)} or {@link #storage(DataIngredient, RecipeCategory, NonNullSupplier, DataIngredient, NonNullSupplier)}.
-     */
-    @Deprecated
-    public <T extends ItemLike> void storage(DataIngredient source, RecipeCategory category, NonNullSupplier<? extends T> output) {
-        square(source, category, output, false);
-        // This is backwards, but leaving in for binary compat
-        singleItemUnfinished(source, category, output, 1, 9)
-                .save(this, safeId(source) + "_from_" + safeName(output.get()));
-    }
-
     public <T extends ItemLike> void storage(NonNullSupplier<? extends T> source, RecipeCategory category, NonNullSupplier<? extends T> output) {
         storage(DataIngredient.items(source), category, source, DataIngredient.items(output), output);
     }

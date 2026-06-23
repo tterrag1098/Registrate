@@ -56,15 +56,9 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
     public static <T extends Event> void addForgeListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addListener(NeoForge.EVENT_BUS, priority, evtClass, listener);
     }
-    
-    @Deprecated
-    public static <T extends Event> void addListener(IEventBus bus, Class<? super T> evtClass, Consumer<? super T> listener) {
-        OneTimeEventReceiver.<T>addListener(bus, EventPriority.NORMAL, evtClass, listener);
-    }
-    
+
     @SuppressWarnings("unchecked")
-    @Deprecated
-    public static <T extends Event> void addListener(IEventBus bus, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
+    private static <T extends Event> void addListener(IEventBus bus, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         bus.addListener(priority, false, (Class<T>) evtClass, new OneTimeEventReceiver<>(bus, listener));
     }
 

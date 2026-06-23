@@ -32,7 +32,6 @@ import java.util.function.Function;
  * @param <T> The type of the provider
  */
 @FunctionalInterface
-@SuppressWarnings("deprecation")
 @ParametersAreNonnullByDefault
 public interface ProviderType<T extends RegistrateProvider> extends GeneratorType<T> {
 
@@ -59,7 +58,6 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
     GeneratorType<RegistrateItemModelGenerator> ITEM_MODEL = MODEL.createGenerator("item_model");
 
     record Context<T extends RegistrateProvider>(ProviderType<T> type, AbstractRegistrate<?> parent,
-                                                 @Deprecated GatherDataEvent event,
                                                  Map<ProviderType<?>, RegistrateProvider> existing,
                                                  PackOutput output,
                                                  CompletableFuture<HolderLookup.Provider> provider) {
@@ -122,13 +120,12 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
         return type;
     }
 
-    @Nonnull
     static <T> ProviderType<RegistrateTagsProvider.Impl<T>> registerTag(String providerName, String typeName, ResourceKey<Registry<T>> registry) {
         return registerTag(providerName, registry, c -> new RegistrateTagsProvider.Impl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider()));
     }
 
     static <T extends RegistrateProvider> T create(ProviderType<T> type, AbstractRegistrate<?> parent, GatherDataEvent event, Map<ProviderType<?>, RegistrateProvider> existing, CompletableFuture<HolderLookup.Provider> provider) {
-        return type.create(new Context<>(type, parent, event, existing, event.getGenerator().getPackOutput(), provider));
+        return type.create(new Context<>(type, parent, existing, event.getGenerator().getPackOutput(), provider));
     }
 
 }

@@ -32,11 +32,6 @@ public class DataGenContext<R, E extends R> implements NonNullSupplier<E> {
     public E getEntry() {
         return entry.get();
     }
-
-    @Deprecated
-    public static <R, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder, ResourceKey<? extends Registry<R>> type) {
-        return from(builder);
-    }
     
     public static <R, E extends R> DataGenContext<R, E> from(Builder<R, E, ?, ?> builder) {
         return new DataGenContext<>(NonNullSupplier.of(builder.getOwner().get(builder.getName(), builder.getRegistryKey())), builder.getName(),

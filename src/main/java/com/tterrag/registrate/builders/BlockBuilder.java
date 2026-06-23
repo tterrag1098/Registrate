@@ -331,22 +331,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         return this;
     }
 
-    /**
-     * Register a client extension for this block.
-     * The {@link IClientBlockExtensions} instance can be shared across many blocks.
-     *
-     * @param clientExtension
-     *            The client extension to register for this block
-     * @return this {@link BlockBuilder}
-     */
-    public BlockBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtension) {
-        if (this.clientExtensionFunc == null) {
-            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
-        }
-        this.clientExtensionFunc = clientExtension;
-        return this;
-    }
-
     protected void registerClientExtension() {
         OneTimeEventReceiver.addModListener(getOwner(), RegisterClientExtensionsEvent.class, e -> {
             if (this.clientExtensionFunc != null) {
@@ -371,8 +355,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     @Override
     protected T createEntry() {
         @Nonnull BlockBehaviour.Properties properties = this.initialProperties.get();
-        //TODO why do we need this?
-        // ObfuscationReflectionHelper.setPrivateValue(BlockBehaviour.Properties.class, properties, null, "drops");
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties.setId(getResourceKey()));
     }

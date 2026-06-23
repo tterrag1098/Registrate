@@ -9,7 +9,6 @@ import com.tterrag.registrate.builders.MenuBuilder.ForgeMenuFactory;
 import com.tterrag.registrate.builders.MenuBuilder.MenuFactory;
 import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
 import com.tterrag.registrate.providers.*;
-import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
@@ -718,25 +717,6 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public S defaultCreativeTab(ResourceKey<CreativeModeTab> creativeModeTab) {
         defaultCreativeModeTab = creativeModeTab;
         return self();
-    }
-
-    /**
-     * Registers a new modifier callback to be used to modify the given CreativeModeTab.
-     *
-     * <p>
-     * Registers a new callback to be invoked during the {@link BuildCreativeModeTabContentsEvent} event and
-     * used to modify what items are displayed on the given {@link CreativeModeTab}.
-     * <p>
-     * Calling this method multiple times will add additional callbacks.
-     *
-     * @param creativeModeTab The {@link CreativeModeTab} to register this callback for
-     * @param modifier The modifier callback to be registered
-     * @return This {@link AbstractRegistrate} instance
-     * @deprecated Use {@link #modifyCreativeTab(ResourceKey, Consumer)}
-     */
-    @Deprecated
-    public S modifyCreativeModeTab(ResourceKey<CreativeModeTab> creativeModeTab, Consumer<CreativeModeTabModifier> modifier) {
-        return modifyCreativeTab(creativeModeTab, event -> modifier.accept(new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept, event::getParameters)));
     }
 
     /**
