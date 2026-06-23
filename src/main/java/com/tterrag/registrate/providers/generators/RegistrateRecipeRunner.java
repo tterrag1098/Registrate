@@ -32,11 +32,6 @@ public class RegistrateRecipeRunner extends RecipeProvider.Runner implements Reg
 		return "";
 	}
 
-	@Override
-	public LogicalSide getSide() {
-		return LogicalSide.SERVER;
-	}
-
 	public RegistrateRecipeProvider getRecipeProvider() {
 		if (provider == null) throw new IllegalStateException("Recipe Provider is not available now");
 		return provider;

@@ -23,9 +23,4 @@ public class RegistrateModelProvider extends ModelProvider implements Registrate
 		new RegistrateItemModelGenerator(parent, itemModels.itemModelOutput, itemModels.modelOutput).run();
 	}
 
-	@Override
-	public LogicalSide getSide() {
-		return LogicalSide.CLIENT;
-	}
-
 }

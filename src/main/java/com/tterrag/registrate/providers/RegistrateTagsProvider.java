@@ -23,11 +23,7 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
 
     TagBuilder rawBuilder(TagKey<T> key);
 
-    interface Key<T> extends RegistrateTagsProvider<T> {
-        TagAppender<T> tag(TagKey<T> key);
-    }
-
-    class Impl<T> extends TagsProvider<T> implements RegistrateTagsProvider.Key<T> {
+    class Impl<T> extends TagsProvider<T> implements RegistrateTagsProvider<T> {
         private final AbstractRegistrate<?> owner;
         private final ProviderType<? extends Impl<T>> type;
         private final String name;
@@ -48,11 +44,6 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
         @Override
         protected void addTags(HolderLookup.Provider provider) {
             owner.genData(type, this);
-        }
-
-        @Override
-        public LogicalSide getSide() {
-            return LogicalSide.SERVER;
         }
 
         @Override

@@ -85,11 +85,6 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     }
 
     @Override
-    public LogicalSide getSide() {
-        return LogicalSide.SERVER;
-    }
-
-    @Override
     protected void validate(WritableRegistry<LootTable> tables, ValidationContextSource validationContext, ProblemReporter.Collector problems) {
         currentLootCreators.forEach(c -> c.validate(tables, validationContext));
     }
