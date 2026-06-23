@@ -1,6 +1,5 @@
 package com.tterrag.registrate.providers;
 
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.resources.ResourceKey;

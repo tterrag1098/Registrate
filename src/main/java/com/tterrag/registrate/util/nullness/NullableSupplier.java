@@ -22,7 +22,7 @@ public interface NullableSupplier<T> extends Supplier<@Nullable T> {
     }
     
     default NonNullSupplier<T> asNonNull() {
-        return () -> getNonNull();
+        return this::getNonNull;
     }
     
     default NonNullSupplier<T> asNonNull(NonNullSupplier<String> errorMsg) {

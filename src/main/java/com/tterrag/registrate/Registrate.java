@@ -27,7 +27,7 @@ public class Registrate extends AbstractRegistrate<Registrate> {
             String message = "# [Registrate] Failed to register eventListeners for mod " + modid + ", This should be reported to this mod's dev #";
 
             
-            StringBuilder hashtags = new StringBuilder().append("#".repeat(message.length()));
+            StringBuilder hashtags = new StringBuilder().repeat("#", message.length());
             
             log.fatal(hashtags.toString());
             log.fatal(message);

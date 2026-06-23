@@ -70,7 +70,7 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
      */
     @Override
     default RegistryEntry<R, T> get() {
-        return getOwner().<R, T> get(getName(), getRegistryKey());
+        return getOwner().get(getName(), getRegistryKey());
     }
     
     /**
@@ -199,10 +199,10 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
      */
     default <OR> S onRegisterAfter(ResourceKey<? extends Registry<OR>> dependencyType, NonNullConsumer<? super T> callback) {
         return onRegister(e -> {
-            if (getOwner().<OR>isRegistered(dependencyType)) {
+            if (getOwner().isRegistered(dependencyType)) {
                 callback.accept(e);
             } else {
-                getOwner().<OR>addRegisterCallback(dependencyType, () -> callback.accept(e));
+                getOwner().addRegisterCallback(dependencyType, () -> callback.accept(e));
             }
         });
     }

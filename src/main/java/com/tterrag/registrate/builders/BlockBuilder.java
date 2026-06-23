@@ -5,6 +5,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import org.jspecify.annotations.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -30,9 +32,7 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.block.dispatch.SingleVariant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -40,7 +40,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -84,7 +83,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
     public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of())
+        return new BlockBuilder<>(owner, parent, name, callback, factory, BlockBehaviour.Properties::of)
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
 
@@ -164,20 +163,18 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p.useBlockDescriptionPrefix()))
-                .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
-                .model(() -> (ctx, prov) -> {
-                    getOwner().getDataProvider(ProviderType.BLOCKSTATE)
-                            .map(g -> g.seenBlockstates.get(getEntry()))
-                            .flatMap(b -> b.simpleModels())
-                            .map(b -> b.models().get(""))
-                            .map(unbaked -> {
-                                if (unbaked instanceof SingleVariant.Unbaked(Variant variant)) {
-                                    return variant.modelLocation();
-                                }
-                                return null;
-                            })
-                            .ifPresent(model -> prov.createWithExistingModel(ctx.get(), model));
-                });
+                .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a better API for "unsetting" providers
+                .model(() -> (ctx, prov) -> getOwner().getDataProvider(ProviderType.BLOCKSTATE)
+                        .map(g -> g.seenBlockstates.get(getEntry()))
+                        .flatMap(BlockStateModelDispatcher::simpleModels)
+                        .map(b -> b.models().get(""))
+                        .map(unbaked -> {
+                            if (unbaked instanceof SingleVariant.Unbaked(Variant variant)) {
+                                return variant.modelLocation();
+                            }
+                            return null;
+                        })
+                        .ifPresent(model -> prov.createWithExistingModel(ctx.get(), model)));
     }
 
     /**
@@ -205,7 +202,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link BlockEntityBuilder}
      */
     public <BE extends BlockEntity> BlockEntityBuilder<BE, BlockBuilder<T, P>> blockEntity(BlockEntityFactory<BE> factory) {
-        return getOwner().<BE, BlockBuilder<T, P>>blockEntity(this, getName(), factory).validBlock(asSupplier());
+        return getOwner().blockEntity(this, getName(), factory).validBlock(asSupplier());
     }
     
     /**

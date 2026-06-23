@@ -19,7 +19,7 @@ public class EntityEntry<T extends Entity> extends RegistryEntry<EntityType<?>, 
         return get().create(world, reason);
     }
 
-    public boolean is(Entity t) {
+    public boolean is(@Nullable Entity t) {
         return t != null && t.getType() == get();
     }
 

@@ -20,7 +20,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.fml.LogicalSide;
@@ -36,15 +35,15 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
 
     public interface LootType<T extends RegistrateLootTables> {
 
-        static LootType<RegistrateBlockLootTables> BLOCK = register("block", LootContextParamSets.BLOCK, RegistrateBlockLootTables::new);
-        static LootType<RegistrateEntityLootTables> ENTITY = register("entity", LootContextParamSets.ENTITY, RegistrateEntityLootTables::new);
+        LootType<RegistrateBlockLootTables> BLOCK = register("block", LootContextParamSets.BLOCK, RegistrateBlockLootTables::new);
+        LootType<RegistrateEntityLootTables> ENTITY = register("entity", LootContextParamSets.ENTITY, RegistrateEntityLootTables::new);
 
         T getLootCreator(HolderLookup.Provider provider, AbstractRegistrate<?> parent, Consumer<T> callback);
 
         ContextKeySet getLootSet();
 
         static <T extends RegistrateLootTables> LootType<T> register(String name, ContextKeySet set, TriFunction<HolderLookup.Provider, AbstractRegistrate<?>, Consumer<T>, T> factory) {
-            LootType<T> type = new LootType<T>() {
+            LootType<T> type = new LootType<>() {
                 @Override
                 public T getLootCreator(HolderLookup.Provider provider, AbstractRegistrate<?> parent, Consumer<T> callback) {
                     return factory.apply(provider, parent, callback);
@@ -68,7 +67,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
     private final Multimap<ContextKeySet, Consumer<BiConsumer<ResourceKey<LootTable>, LootTable.Builder>>> lootActions = HashMultimap.create();
     private final Set<RegistrateLootTables> currentLootCreators = new HashSet<>();
 
-    private CompletableFuture<HolderLookup.Provider> provider;
+    private final CompletableFuture<HolderLookup.Provider> provider;
 
     public RegistrateLootTableProvider(AbstractRegistrate<?> parent, PackOutput packOutput, CompletableFuture<HolderLookup.Provider> provider) {
         super(packOutput, Set.of(), VanillaLootTableProvider.create(packOutput, provider).getTables(), provider);
@@ -76,7 +75,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         this.provider = provider;
     }
 
-    public HolderLookup.Provider getProvider(){
+    public HolderLookup.Provider getProvider() {
         return provider.getNow(null);
     }
 
@@ -104,7 +103,7 @@ public class RegistrateLootTableProvider extends LootTableProvider implements Re
         return creator;
     }
 
-    private static final BiMap<Identifier, ContextKeySet> SET_REGISTRY = ObfuscationReflectionHelper.getPrivateValue(LootContextParamSets.class, null, "REGISTRY");
+    private static final BiMap<Identifier, ContextKeySet> SET_REGISTRY = Objects.requireNonNull(ObfuscationReflectionHelper.getPrivateValue(LootContextParamSets.class, null, "REGISTRY"));
 
     @Override
     public List<LootTableProvider.SubProviderEntry> getTables() {

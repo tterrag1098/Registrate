@@ -195,9 +195,6 @@ public class RegistrateRecipeProvider extends RecipeProvider implements RecipeOu
     }
 
     /**
-     * @param <T>
-     * @param source
-     * @param output
      * @deprecated Broken, use {@link #storage(NonNullSupplier, RecipeCategory, NonNullSupplier)} or {@link #storage(DataIngredient, RecipeCategory, NonNullSupplier, DataIngredient, NonNullSupplier)}.
      */
     @Deprecated

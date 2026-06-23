@@ -59,9 +59,7 @@ public class MenuBuilder<T extends AbstractContainerMenu, S extends Screen & Men
         MenuType<T> ret = IMenuTypeExtension.create((windowId, inv, buf) -> factory.create(supplier.get(), windowId, inv, buf));
         RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             ScreenFactory<T, S> screenFactory = this.screenFactory.get();
-            OneTimeEventReceiver.addModListener(this.getOwner(), RegisterMenuScreensEvent.class, event -> {
-                event.register(ret, screenFactory::create);
-            });
+            OneTimeEventReceiver.addModListener(this.getOwner(), RegisterMenuScreensEvent.class, event -> event.register(ret, screenFactory::create));
         });
         return ret;
     }

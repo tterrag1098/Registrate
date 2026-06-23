@@ -74,6 +74,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -120,7 +121,7 @@ public class TestMod {
 
     public static final String MOD_ID = "testmod";
 
-    private class TestBlock extends Block implements EntityBlock {
+    public class TestBlock extends Block implements EntityBlock {
 
         public TestBlock(Properties properties) {
             super(properties);
@@ -138,7 +139,7 @@ public class TestMod {
                 player.openMenu(new MenuProvider() {
 
                     @Override
-                    public @Nullable AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
+                    public AbstractContainerMenu createMenu(int windowId, Inventory inv, Player player) {
                         return new ChestMenu(MenuType.GENERIC_9x3, windowId, inv, testblockbe.get(worldIn, pos).orElseThrow(IllegalStateException::new), 3);
                     }
 
@@ -195,21 +196,21 @@ public class TestMod {
         }
     }
 
-    private class TestDummyBlockEntity extends BlockEntity {
+    public static class TestDummyBlockEntity extends BlockEntity {
 
         public TestDummyBlockEntity(BlockEntityType<? extends TestDummyBlockEntity> type, BlockPos pos, BlockState state) {
             super(type, pos, state);
         }
     }
 
-    private static class TestEntity extends Pig {
+    public static class TestEntity extends Pig {
 
         public TestEntity(EntityType<? extends Pig> p_i50250_1_, Level p_i50250_2_) {
             super(p_i50250_1_, p_i50250_2_);
         }
     }
 
-    private static class TestCustomRegistryEntry {}
+    public static class TestCustomRegistryEntry {}
 
     private final Registrate registrate = Registrate.create("testmod");
 
@@ -241,7 +242,7 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntry<TestBlock> testblock = registrate.object("testblock")
             .block(TestBlock::new)
-                .properties(p -> p.noOcclusion())
+                .properties(BlockBehaviour.Properties::noOcclusion)
             .blockstate(() -> (ctx, prov) -> prov.create(ctx.getEntry(),
                     prov.getBuilder().transformTemplate(template -> template
                             .parent(prov.mcLoc("block/glass"))
@@ -285,7 +286,6 @@ public class TestMod {
     @VisibleForTesting
     public final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(Registries.BLOCK_ENTITY_TYPE));
 
-    @SuppressWarnings("deprecation")
     @VisibleForTesting
     public final EntityEntry<TestEntity> testentity = registrate.object("testentity")
             .entity(TestEntity::new, MobCategory.CREATURE)
@@ -401,14 +401,12 @@ public class TestMod {
         registrate.addRawLang("testmod.custom.lang.slashes", "/commmands look good and here is a backslash \\");
         registrate.addLang("tooltip", testblock.getId(), "Egg.");
         registrate.addLang("item", testitem.getId(), "testextra", "Magic!");
-        registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> {
-            Advancement.Builder.advancement()
-                .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
-                .display(Items.EGG,
-                        adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
-                        Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
-                .save(adv, registrate.getModid() + ":root");
-        });
+        registrate.addDataGenerator(ProviderType.ADVANCEMENT, adv -> Advancement.Builder.advancement()
+            .addCriterion("has_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.EGG))
+            .display(Items.EGG,
+                    adv.title(registrate.getModid(), "root", "Test Advancement"), adv.desc(registrate.getModid(), "root", "Get an egg."),
+                    Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"), AdvancementType.TASK, true, true, false)
+            .save(adv, registrate.getModid() + ":root"));
         registrate.addDataGenerator(ProviderType.GENERIC_SERVER, provider -> provider.add(data -> {
             // generic server side provider to generate custom dimension
             // to teleport to this dimension use the following command
