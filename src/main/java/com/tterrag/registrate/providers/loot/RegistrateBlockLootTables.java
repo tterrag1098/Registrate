@@ -7,6 +7,7 @@ import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -289,7 +290,13 @@ public class RegistrateBlockLootTables extends BlockLootSubProvider implements R
     /** Generated override to expose protected method: {@link BlockLootSubProvider#dropSelf} */
     @Override
     @Generated(value = "com.tterrag.registrate.test.meta.UpdateBlockLootTables", date = "Sat, 20 Jun 2026 04:20:08 GMT")
-    public void dropSelf(Block block) { super.dropSelf(block); }
+    public void dropSelf(Block block) {
+        if (block.asItem() == Items.AIR) {
+            add(block, noDrop());
+            return;
+        }
+        super.dropSelf(block);
+    }
 
     /** Generated override to expose protected method: {@link BlockLootSubProvider#add} */
     @Override

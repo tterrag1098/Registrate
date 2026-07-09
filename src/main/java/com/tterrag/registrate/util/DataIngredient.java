@@ -71,6 +71,10 @@ public final class DataIngredient {
     public static DataIngredient tag(HolderSet.Named<Item> tag) {
         return ingredient(Ingredient.of(tag), tag.key());
     }
+
+    public static DataIngredient tag(TagKey<Item> tag) {
+        return ingredient(Ingredient.of(HolderSet.emptyNamed(BuiltInRegistries.ITEM, tag)), tag);
+    }
     
     public static DataIngredient ingredient(Ingredient parent, ItemLike required) {
         return new DataIngredient(parent, required);

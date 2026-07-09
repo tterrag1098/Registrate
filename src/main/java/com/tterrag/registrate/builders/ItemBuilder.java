@@ -193,6 +193,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
         return setData(ProviderType.ITEM_MODEL, cons.get());
     }
 
+    public ItemBuilder<T, P> model(NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelGenerator> cons) {
+        return model(() -> cons);
+    }
+
     /**
      * Assign the default translation, as specified by {@link RegistrateLangProvider#getAutomaticName(NonNullSupplier, net.minecraft.resources.ResourceKey)}. This is the default, so it is generally
      * not necessary to call, unless for undoing previous changes.

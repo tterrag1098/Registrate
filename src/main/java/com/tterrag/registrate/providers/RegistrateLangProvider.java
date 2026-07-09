@@ -2,6 +2,8 @@ package com.tterrag.registrate.providers;
 
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.nullness.NonNullSupplier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -43,13 +45,24 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     private final AbstractRegistrate<?> owner;
+    private final CompletableFuture<HolderLookup.Provider> registriesLookup;
 
     private final AccessibleLanguageProvider upsideDown;
 
     public RegistrateLangProvider(AbstractRegistrate<?> owner, PackOutput packOutput) {
+        this(owner, packOutput, CompletableFuture.completedFuture(RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)));
+    }
+
+    public RegistrateLangProvider(AbstractRegistrate<?> owner, PackOutput packOutput,
+                                  CompletableFuture<HolderLookup.Provider> registriesLookup) {
         super(packOutput, owner.getModid(), "en_us");
         this.owner = owner;
+        this.registriesLookup = registriesLookup;
         this.upsideDown = new AccessibleLanguageProvider(packOutput, owner.getModid(), "en_ud");
+    }
+
+    public CompletableFuture<HolderLookup.Provider> getRegistriesLookup() {
+        return registriesLookup;
     }
 
     @Override

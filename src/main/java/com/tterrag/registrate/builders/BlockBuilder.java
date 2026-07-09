@@ -30,6 +30,7 @@ import com.tterrag.registrate.util.nullness.NonNullSupplier;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
 import net.minecraft.client.color.block.BlockTintSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.block.dispatch.SingleVariant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.core.registries.Registries;
@@ -219,6 +220,14 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
         this.tintSources = tintSources;
         return this;
     }
+
+    public BlockBuilder<T, P> addLayer(NonNullSupplier<Supplier<RenderType>> renderType) {
+        return this;
+    }
+
+    public BlockBuilder<T, P> addLayer(Supplier<Supplier<RenderType>> renderType) {
+        return addLayer(NonNullSupplier.of(renderType));
+    }
     
     protected void registerBlockColor() {
         OneTimeEventReceiver.addModListener(getOwner(), RegisterColorHandlersEvent.BlockTintSources.class, e -> {
@@ -250,6 +259,10 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public BlockBuilder<T, P> blockstate(NonNullSupplier<NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockModelGenerator>> cons) {
         if (!getOwner().doDatagen().get()) return this;
         return setData(ProviderType.BLOCKSTATE, cons.get());
+    }
+
+    public BlockBuilder<T, P> blockstate(NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockModelGenerator> cons) {
+        return blockstate(() -> cons);
     }
 
     /**

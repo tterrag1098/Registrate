@@ -48,9 +48,10 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class RegistrateBlockModelGenerator extends BlockModelGenerators {
+public class RegistrateBlockModelGenerator extends BlockModelGenerators implements BlockStateProvider {
 
     private final AbstractRegistrate<?> parent;
+    private final BlockModelProvider legacyModels;
     public final Map<Block, BlockStateModelDispatcher> seenBlockstates = new HashMap<>();
 
     public RegistrateBlockModelGenerator(AbstractRegistrate<?> parent, Consumer<BlockModelDefinitionGenerator> known, ItemModelOutput item, BiConsumer<Identifier, ModelInstance> model) {
@@ -60,6 +61,7 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
             known.accept(g);
         }, "blockStateOutput");
         this.parent = parent;
+        this.legacyModels = new BlockModelProvider(parent.getModid(), model);
     }
 
     @Override
@@ -78,6 +80,85 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
 
     public Identifier modLoc(String id) {
         return Identifier.fromNamespaceAndPath(parent.getModid(), id);
+    }
+
+    @Override
+    public BlockModelProvider models() {
+        return legacyModels;
+    }
+
+    public VariantBlockStateBuilder getVariantBuilder(Block block) {
+        return new VariantBlockStateBuilder(this, block);
+    }
+
+    public MultiPartBlockStateBuilder getMultipartBuilder(Block block) {
+        return new MultiPartBlockStateBuilder(this, block);
+    }
+
+    public void simpleBlock(Block block, ModelFile model) {
+        blockStateOutput.accept(createSimpleBlock(block, plainVariant(model.getLocation())));
+    }
+
+    public void simpleBlock(Block block, ConfiguredModel... models) {
+        if (models.length == 0) {
+            generate(block, TexturedModel.CUBE);
+            return;
+        }
+        blockStateOutput.accept(createSimpleBlock(block, models[0].toMultiVariant()));
+    }
+
+    public void horizontalBlock(Block block, ModelFile model) {
+        generateHorizontalBlock(block, plainVariant(model.getLocation()));
+    }
+
+    public void horizontalBlock(Block block, ModelFile model, int angleOffset) {
+        blockStateOutput.accept(MultiVariantGenerator.dispatch(block, plainVariant(model.getLocation()))
+                .with(rotationHorizontalFacing(angleOffset)));
+    }
+
+    public void horizontalBlock(Block block, java.util.function.Function<net.minecraft.world.level.block.state.BlockState, ModelFile> modelFunc) {
+        getVariantBuilder(block).forAllStates(state -> ConfiguredModel.builder()
+            .modelFile(modelFunc.apply(state))
+            .rotationY(((int) state.getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot() + 180) % 360)
+            .build());
+    }
+
+    public void horizontalFaceBlock(Block block, ModelFile model) {
+        blockStateOutput.accept(MultiVariantGenerator.dispatch(block, plainVariant(model.getLocation()))
+                .with(rotationAttachFaceAndHorizontalFacing(180)));
+    }
+
+    public void horizontalFaceBlock(Block block, java.util.function.Function<net.minecraft.world.level.block.state.BlockState, ModelFile> modelFunc) {
+        getVariantBuilder(block).forAllStates(state -> {
+            AttachFace attachFace = state.getValue(BlockStateProperties.ATTACH_FACE);
+            Direction direction = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+            int rotationX = switch (attachFace) {
+                case FLOOR -> 0;
+                case WALL -> 90;
+                case CEILING -> 180;
+            };
+            int rotationY = ((int) direction.toYRot() + (attachFace == AttachFace.CEILING ? 0 : 180)) % 360;
+            return ConfiguredModel.builder()
+                .modelFile(modelFunc.apply(state))
+                .rotationX(rotationX)
+                .rotationY(rotationY)
+                .build();
+        });
+    }
+
+    public void directionalBlock(Block block, ModelFile model) {
+        generateDirectionalBlock(block, plainVariant(model.getLocation()));
+    }
+
+    public void directionalBlock(Block block, java.util.function.Function<net.minecraft.world.level.block.state.BlockState, ModelFile> modelFunc) {
+        getVariantBuilder(block).forAllStates(state -> {
+            Direction direction = state.getValue(BlockStateProperties.FACING);
+            return ConfiguredModel.builder()
+                .modelFile(modelFunc.apply(state))
+                .rotationX(direction == Direction.DOWN ? 180 : direction.getAxis().isHorizontal() ? 90 : 0)
+                .rotationY(direction.getAxis().isVertical() ? 0 : (((int) direction.toYRot()) + 180) % 360)
+                .build();
+        });
     }
 
     public Material mcBlockTexture(String path) {
@@ -145,6 +226,10 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
 
     public void generateAxisBlock(RotatedPillarBlock block, Material side, Material end) {
         generateAxisBlockInternal(block, side, end, ModelTemplates.CUBE_COLUMN, ModelTemplates.CUBE_COLUMN_HORIZONTAL);
+    }
+
+    public void axisBlock(RotatedPillarBlock block, Identifier side, Identifier end) {
+        generateAxisBlock(block, new Material(side), new Material(end));
     }
 
     private void generateAxisBlockInternal(RotatedPillarBlock block, Material side, Material end, ModelTemplate cubeColumn, ModelTemplate cubeColumnHorizontal) {
@@ -431,6 +516,10 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         );
     }
 
+    public void paneBlock(IronBarsBlock block, Identifier pane, Identifier edge) {
+        generatePaneBlock(block, new Material(pane), new Material(edge));
+    }
+
     public void generatePaneBlock(IronBarsBlock block, String name, Material pane, Material edge) {
         Identifier baseName = modLoc(name + "_pane");
         generatePaneBlockInternal(block, baseName, pane, edge, ModelTemplates.STAINED_GLASS_PANE_POST, ModelTemplates.STAINED_GLASS_PANE_SIDE, ModelTemplates.STAINED_GLASS_PANE_SIDE_ALT, ModelTemplates.STAINED_GLASS_PANE_NOSIDE, ModelTemplates.STAINED_GLASS_PANE_NOSIDE_ALT);
@@ -459,6 +548,16 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
                 .with(condition().term(BlockStateProperties.EAST, false), noSideAlt)
                 .with(condition().term(BlockStateProperties.SOUTH, false), noSideAlt.with(Y_ROT_90))
                 .with(condition().term(BlockStateProperties.WEST, false), noSide.with(Y_ROT_270))
+        );
+    }
+
+    public void paneBlock(IronBarsBlock block, ModelFile post, ModelFile side, ModelFile sideAlt, ModelFile noSide, ModelFile noSideAlt) {
+        generatePaneBlock(block,
+                plainVariant(post.getLocation()),
+                plainVariant(side.getLocation()),
+                plainVariant(sideAlt.getLocation()),
+                plainVariant(noSide.getLocation()),
+                plainVariant(noSideAlt.getLocation())
         );
     }
 

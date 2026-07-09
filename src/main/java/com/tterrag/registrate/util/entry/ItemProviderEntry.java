@@ -15,11 +15,18 @@ public class ItemProviderEntry<R extends ItemLike, T extends R> extends Registry
     }
 
     public ItemStack asStack() {
-        return new ItemStack(this);
+        return asStack(1);
     }
 
     public ItemStack asStack(int count) {
-        return new ItemStack(this, count);
+        try {
+            return new ItemStack(this, count);
+        } catch (NullPointerException e) {
+            if ("Components not bound yet".equals(e.getMessage())) {
+                return ItemStack.EMPTY;
+            }
+            throw e;
+        }
     }
 
     public ItemStackTemplate asStackTemplate() {
