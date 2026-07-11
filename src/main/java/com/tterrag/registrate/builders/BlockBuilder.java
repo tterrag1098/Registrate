@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import org.jspecify.annotations.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
@@ -86,7 +87,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return A new {@link BlockBuilder} with reasonable default data generators.
      */
     public static <T extends Block, P> BlockBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory) {
-        return new BlockBuilder<>(owner, parent, name, callback, factory, () -> BlockBehaviour.Properties.of())
+        return new BlockBuilder<>(owner, parent, name, callback, factory, BlockBehaviour.Properties::of)
                 .defaultBlockstate().defaultLoot().defaultLang();
     }
 
@@ -168,23 +169,21 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p.useBlockDescriptionPrefix()))
-                .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a beetter API for "unsetting" providers
+                .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a better API for "unsetting" providers
                 .addMiscData(ProviderType.ITEM_TAGS, prov ->
                         blockItemTags.forEach(tag -> prov.tag(tag).add(asTag()))
                 )
-                .model(() -> (ctx, prov) -> {
-                    getOwner().getDataProvider(ProviderType.BLOCKSTATE)
-                            .map(g -> g.seenBlockstates.get(getEntry()))
-                            .flatMap(b -> b.simpleModels())
-                            .map(b -> b.models().get(""))
-                            .map(unbaked -> {
-                                if (unbaked instanceof SingleVariant.Unbaked(Variant variant)) {
-                                    return variant.modelLocation();
-                                }
-                                return null;
-                            })
-                            .ifPresent(model -> prov.createWithExistingModel(ctx.get(), model));
-                });
+                .model(() -> (ctx, prov) -> getOwner().getDataProvider(ProviderType.BLOCKSTATE)
+                        .map(g -> g.seenBlockstates.get(getEntry()))
+                        .flatMap(BlockStateModelDispatcher::simpleModels)
+                        .map(b -> b.models().get(""))
+                        .map(unbaked -> {
+                            if (unbaked instanceof SingleVariant.Unbaked(Variant variant)) {
+                                return variant.modelLocation();
+                            }
+                            return null;
+                        })
+                        .ifPresent(model -> prov.createWithExistingModel(ctx.get(), model)));
     }
 
     /**
@@ -212,7 +211,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      * @return the {@link BlockEntityBuilder}
      */
     public <BE extends BlockEntity> BlockEntityBuilder<BE, BlockBuilder<T, P>> blockEntity(BlockEntityFactory<BE> factory) {
-        return getOwner().<BE, BlockBuilder<T, P>>blockEntity(this, getName(), factory).validBlock(asSupplier());
+        return getOwner().blockEntity(this, getName(), factory).validBlock(asSupplier());
     }
     
     /**
@@ -327,7 +326,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
 
     /**
      * Register a client extension for this block.
-     * The {@link IClientBlockExtensions} instance can be shared across many items.
+     * The {@link IClientBlockExtensions} instance can be shared across many blocks.
      *
      * @param clientExtension
      *            The client extension to register for this block
@@ -338,23 +337,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
         this.clientExtensionFunc = block -> clientExtension;
-        return this;
-    }
-
-    /**
-     * Register a client extension for this block.
-     * The {@link IClientBlockExtensions} instance can be shared across many items.
-     *
-     * @param clientExtension
-     *            The client extension to register for this block
-     * @return this {@link BlockBuilder}
-     */
-    @Deprecated(forRemoval = true)
-    public BlockBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtension) {
-        if (this.clientExtensionFunc == null) {
-            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
-        }
-        this.clientExtensionFunc = clientExtension;
         return this;
     }
 
@@ -397,8 +379,6 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     @Override
     protected T createEntry() {
         @Nonnull BlockBehaviour.Properties properties = this.initialProperties.get();
-        //TODO why do we need this?
-        // ObfuscationReflectionHelper.setPrivateValue(BlockBehaviour.Properties.class, properties, null, "drops");
         properties = propertiesCallback.apply(properties);
         return factory.apply(properties.setId(getResourceKey()));
     }

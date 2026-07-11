@@ -164,7 +164,7 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
      * @return this {@link Builder}
      */
     public S lang(NonNullFunction<T, String> langKeyProvider) {
-        return lang(langKeyProvider, (p, t) -> p.<R>getAutomaticName(t, getRegistryKey()));
+        return lang(langKeyProvider, (p, t) -> p.getAutomaticName(t, getRegistryKey()));
     }
 
     /**

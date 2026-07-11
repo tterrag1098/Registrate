@@ -1,8 +1,6 @@
 package com.tterrag.registrate.providers;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.tterrag.registrate.AbstractRegistrate;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -34,14 +32,12 @@ import java.util.function.Consumer;
 @Log4j2
 public class RegistrateAdvancementProvider implements RegistrateProvider, Consumer<AdvancementHolder> {
 
-    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
-
     private final AbstractRegistrate<?> owner;
     private final PackOutput packOutput;
     private final CompletableFuture<HolderLookup.Provider> registriesLookup;
     private final List<CompletableFuture<?>> advancementsToSave = Lists.newArrayList();
     @Getter
-    private HolderLookup.Provider provider;
+    private HolderLookup.@Nullable Provider provider;
 
     public RegistrateAdvancementProvider(AbstractRegistrate<?> owner, PackOutput packOutputIn, CompletableFuture<HolderLookup.Provider> registriesLookupIn) {
         this.owner = owner;
@@ -50,12 +46,8 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
     }
 
     public <T> Holder<T> resolve(ResourceKey<T> key) {
+        if (provider == null) throw new IllegalStateException("Cannot resolve holder before provider is initialized");
         return provider.lookupOrThrow(key.registryKey()).getOrThrow(key);
-    }
-
-    @Override
-    public LogicalSide getSide() {
-        return LogicalSide.SERVER;
     }
 
     public MutableComponent title(String category, String name, String title) {
@@ -67,7 +59,7 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
     }
 
     private @Nullable CachedOutput cache;
-    private Set<Identifier> seenAdvancements = new HashSet<>();
+    private final Set<Identifier> seenAdvancements = new HashSet<>();
 
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {

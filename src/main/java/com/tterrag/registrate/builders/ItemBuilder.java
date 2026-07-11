@@ -8,7 +8,6 @@ import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 import com.tterrag.registrate.providers.generators.RegistrateItemModelGenerator;
 import com.tterrag.registrate.providers.generators.RegistrateRecipeProvider;
-import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.RegistrateDistExecutor;
 import com.tterrag.registrate.util.entry.ItemEntry;
@@ -34,7 +33,6 @@ import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 
 import org.jspecify.annotations.Nullable;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -134,52 +132,10 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
      *
      * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
-     * @param modifier A {@link Consumer consumer} accepting a {@link CreativeModeTabModifier} used to update the tab
-     * @return This builder
-     * @deprecated Use {@link #tabNew(ResourceKey, NonNullBiConsumer)} which provides access to the registered item.
-     */
-    @Deprecated
-    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, Consumer<CreativeModeTabModifier> modifier) {
-        return tab(tab, ($, m) -> modifier.accept(m));
-    }
-
-    /**
-     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created and/or added to the tab.
-     *
-     * <p>
-     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
-     * This means you can call this method as many times as you like during the build process with no added side effects.
-     * <p>
-     * Calling this method with different {@link ResourceKey tab keys} will add the modifier to all the specified tabs.
-     * <p>
-     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
-     *
-     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
-     * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and {@link CreativeModeTabModifier} used to update the tab
-     * @return This builder
-     * @deprecated Use {@link #tabNew(ResourceKey, NonNullBiConsumer)}
-     */
-    @Deprecated
-    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, CreativeModeTabModifier> modifier) {
-        return tabNew(tab, (ctx, event) -> modifier.accept(ctx, new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept, event::getParameters)));
-    }
-
-    /**
-     * Sets a tab modifier for the given tab which can be used to define custom logic for how the item stack is created and/or added to the tab.
-     *
-     * <p>
-     * CreativeModeTab registration is delegated off until the item has been finalized and registered to the {@link net.minecraft.core.registries.BuiltInRegistries#ITEM Item registry}.<br>
-     * This means you can call this method as many times as you like during the build process with no added side effects.
-     * <p>
-     * Calling this method with different {@link ResourceKey tab keys} will add the modifier to all the specified tabs.
-     * <p>
-     * Calling this method multiple times with the same {@link ResourceKey tab key} will replace any existing modifier for that tab.
-     *
-     * @param tab A {@link ResourceKey} representing the {@link CreativeModeTab} to use the modifier for
      * @param modifier A {@link NonNullBiConsumer consumer} accepting a context object and {@link BuildCreativeModeTabContentsEvent} used to update the tab
      * @return This builder
      */
-    public ItemBuilder<T, P> tabNew(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, BuildCreativeModeTabContentsEvent> modifier) {
+    public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab, NonNullBiConsumer<DataGenContext<Item, T>, BuildCreativeModeTabContentsEvent> modifier) {
         creativeModeTabs.put(tab, modifier); // Should we get the current value in the map [if one exists] and .andThen() the 2 together? right now we replace any consumer that currently exists
         return this;
     }
@@ -199,7 +155,7 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
      * @see #tab(ResourceKey, NonNullBiConsumer)
      */
     public ItemBuilder<T, P> tab(ResourceKey<CreativeModeTab> tab) {
-        return tabNew(tab, (ctx, modifier) -> modifier.accept(ctx.get()));
+        return tab(tab, (ctx, modifier) -> modifier.accept(ctx.get()));
     }
 
     /**
@@ -300,15 +256,6 @@ public class ItemBuilder<T extends Item, P> extends AbstractBuilder<Item, T, P, 
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
         this.clientExtensionFunc = item -> clientExtension;
-        return this;
-    }
-
-    @Deprecated(forRemoval = true)
-    public ItemBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientItemExtensions>>> clientExtension) {
-        if (this.clientExtensionFunc == null) {
-            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
-        }
-        this.clientExtensionFunc = clientExtension;
         return this;
     }
 

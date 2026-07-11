@@ -20,11 +20,6 @@ public class RegistrateDataMapProvider extends DataMapProvider implements Regist
 		this.parent = parent;
 	}
 
-	@Override
-	public LogicalSide getSide() {
-		return LogicalSide.SERVER;
-	}
-
 	/**
 	 * Generate data map entries.
 	 *

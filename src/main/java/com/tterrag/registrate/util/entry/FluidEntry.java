@@ -2,12 +2,12 @@ package com.tterrag.registrate.util.entry;
 
 import java.util.Optional;
 
+import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 import com.tterrag.registrate.AbstractRegistrate;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
@@ -24,7 +24,7 @@ public class FluidEntry<T extends BaseFlowingFluid> extends RegistryEntry<Fluid,
         BlockEntry<? extends Block> block = null;
         try {
             block = BlockEntry.cast(getSibling(BuiltInRegistries.BLOCK));
-        } catch (IllegalArgumentException e) {} // TODO add way to get entry optionally
+        } catch (IllegalArgumentException _) {} // TODO add way to get entry optionally
         this.block = block;
     }
 
@@ -49,6 +49,6 @@ public class FluidEntry<T extends BaseFlowingFluid> extends RegistryEntry<Fluid,
 
     @SuppressWarnings({ "unchecked", "null" })
     public <I extends Item> Optional<I> getBucket() {
-        return Optional.ofNullable((I) get().getBucket());
+        return Optional.of(get().getBucket()).filter(item -> item != Items.AIR).map(item -> (I) item);
     }
 }

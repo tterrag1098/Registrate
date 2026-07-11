@@ -45,18 +45,6 @@ public class RegistrateDataProvider implements DataProvider {
         this.mod = modid;
         this.registriesLookup = event.getLookupProvider();
 
-        // For now, generate everything together
-        /*
-        EnumSet<LogicalSide> sides = EnumSet.noneOf(LogicalSide.class);
-        if (event.includeServer()) {
-            sides.add(LogicalSide.SERVER);
-        }
-        if (event.includeClient()) {
-            sides.add(LogicalSide.CLIENT);
-        }
-        */
-
-        //log.debug(DebugMarkers.DATA, "Gathering providers for sides: {}", sides);
         log.debug(DebugMarkers.DATA, "Gathering providers");
         Map<ProviderType<?>, RegistrateProvider> known = new HashMap<>();
         for (DataProviderInitializer.Sorted sorted :parent.getDataGenInitializer().getSortedProviders()) {
@@ -68,10 +56,8 @@ public class RegistrateDataProvider implements DataProvider {
 				throw new IllegalStateException("Tag providers must be registered through ProviderType::registerTag");
             }
             known.put(type, prov);
-            // if (sides.contains(prov.getSide())) {
-                log.debug(DebugMarkers.DATA, "Adding provider for type: {}", sorted.id());
-                subProviders.put(type, prov);
-            //}
+            log.debug(DebugMarkers.DATA, "Adding provider for type: {}", sorted.id());
+            subProviders.put(type, prov);
         }
     }
 
@@ -83,7 +69,7 @@ public class RegistrateDataProvider implements DataProvider {
             for (Map.Entry<ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
                 log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
                 list.add(e.getValue().run(cache));
-            };
+            }
 
             return CompletableFuture.allOf(list.toArray(CompletableFuture[]::new));
         });

@@ -10,13 +10,14 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /**
  * Scrapes all protected methods from pasted source, and emits them as public super-calling stubs. Used to create the bouncer classes such as BuilderModelProvider.
@@ -29,7 +30,7 @@ public class ProtectedMethodScraper {
 
         String className;
         boolean isStatic;
-        String generics;
+        @Nullable String generics;
         String type;
         String name;
         String[] paramTypes;
@@ -71,7 +72,7 @@ public class ProtectedMethodScraper {
             } else {
                 base.append("super.");
             }
-            base.append(name).append("(").append(Arrays.stream(paramNames).collect(Collectors.joining(", "))).append("); }");
+            base.append(name).append("(").append(String.join(", ", paramNames)).append("); }");
             return base.toString();
         }
 
@@ -107,7 +108,6 @@ public class ProtectedMethodScraper {
     }
 
     public static List<Header> scrapeInput() {
-        @SuppressWarnings("resource")
         Scanner scanner = new Scanner(System.in);
         System.out.println("Paste class source:");
         String line = scanner.nextLine();

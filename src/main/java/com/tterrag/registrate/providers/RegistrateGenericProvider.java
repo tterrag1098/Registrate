@@ -19,15 +19,13 @@ public final class RegistrateGenericProvider implements RegistrateProvider
     private final AbstractRegistrate<?> registrate;
     private final PackOutput output;
     private final CompletableFuture<HolderLookup.Provider> registries;
-    private final LogicalSide side;
     private final ProviderType<RegistrateGenericProvider> providerType;
     private final List<Generator> generators = Lists.newArrayList();
 
     @ApiStatus.Internal
-    RegistrateGenericProvider(AbstractRegistrate<?> registrate, GatherDataEvent event, LogicalSide side, ProviderType<RegistrateGenericProvider> providerType)
+    RegistrateGenericProvider(AbstractRegistrate<?> registrate, GatherDataEvent event, ProviderType<RegistrateGenericProvider> providerType)
     {
         this.registrate = registrate;
-        this.side = side;
         this.providerType = providerType;
 
         output = event.getGenerator().getPackOutput();
@@ -38,12 +36,6 @@ public final class RegistrateGenericProvider implements RegistrateProvider
     {
         generators.add(generator);
         return this;
-    }
-
-    @Override
-    public LogicalSide getSide()
-    {
-        return side;
     }
 
     @Override
@@ -63,7 +55,7 @@ public final class RegistrateGenericProvider implements RegistrateProvider
     @Override
     public String getName()
     {
-        return "generic_%s_provider".formatted(side.name().toLowerCase(Locale.ROOT));
+        return "generic_provider";
     }
 
     public record GeneratorData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {

@@ -17,7 +17,6 @@ import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -48,12 +47,12 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
     ProviderType<RegistrateItemTagsProvider> ITEM_TAGS = registerTag("tags/item", Registries.ITEM, c -> new RegistrateItemTagsProvider(c.parent(), c.type(), "items", c.output(), c.provider(), c.get(BLOCK_TAGS).contentsGetter()));
     ProviderType<RegistrateTagsProvider.Impl<Fluid>> FLUID_TAGS = registerTag("tags/fluid", "fluids", Registries.FLUID);
     ProviderType<RegistrateTagsProvider.Impl<EntityType<?>>> ENTITY_TAGS = registerTag("tags/entity", "entity_types", Registries.ENTITY_TYPE);
-    ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider",  c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.SERVER, c.type()));
+    ProviderType<RegistrateGenericProvider> GENERIC_SERVER = registerProvider("registrate_generic_server_provider",  c -> new RegistrateGenericProvider(c.parent(), c.event(), c.type()));
 
     // CLIENT DATA
     ProviderType<RegistrateModelProvider> MODEL = registerClientProvider("model", () -> c -> new RegistrateModelProvider(c.parent(), c.output()));
     ProviderType<RegistrateLangProvider> LANG = registerClientProvider("lang", () -> c -> new RegistrateLangProvider(c.parent(), c.output()));
-    ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = registerClientProvider("registrate_generic_client_provider", () -> c -> new RegistrateGenericProvider(c.parent(), c.event(), LogicalSide.CLIENT, c.type()));
+    ProviderType<RegistrateGenericProvider> GENERIC_CLIENT = registerClientProvider("registrate_generic_client_provider", () -> c -> new RegistrateGenericProvider(c.parent(), c.event(), c.type()));
 
     GeneratorType<RegistrateRecipeProvider> RECIPE = RECIPE_RUNNER.createGenerator("recipe");
     GeneratorType<RegistrateBlockModelGenerator> BLOCKSTATE = MODEL.createGenerator("blockstate");
@@ -65,6 +64,7 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
                                                  PackOutput output,
                                                  CompletableFuture<HolderLookup.Provider> provider) {
 
+        @SuppressWarnings("unchecked")
         public <R extends RegistrateProvider> R get(ProviderType<R> other) {
             return (R) existing().get(other);
         }
@@ -96,18 +96,15 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
 
     }
 
-    @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerServerData(String name, SimpleServerDataFactory<T> factory) {
         return registerProvider(name, factory.asProvider());
     }
 
-    @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerProvider(String name, ProviderType<T> type) {
         RegistrateDataProvider.TYPES.put(name, type);
         return type;
     }
 
-    @Nonnull
     static <T extends RegistrateProvider> ProviderType<T> registerClientProvider(String name, NonNullSupplier<ProviderType<T>> supplier) {
         if (!DatagenModLoader.isRunningDataGen()) return context -> null;
         var type = supplier.get();
@@ -115,7 +112,7 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
         return type;
     }
 
-    @Nonnull
+    @SuppressWarnings("unchecked")
     static <T, R extends RegistrateTagsProvider<T>> ProviderType<R> registerTag(String name, ResourceKey<? extends Registry<T>> key, ProviderType<R> type) {
         if (RegistrateDataProvider.TAG_TYPES.containsKey(key)) {
             return (ProviderType<R>) RegistrateDataProvider.TAG_TYPES.get(key);
@@ -125,7 +122,6 @@ public interface ProviderType<T extends RegistrateProvider> extends GeneratorTyp
         return type;
     }
 
-    @Nonnull
     static <T> ProviderType<RegistrateTagsProvider.Impl<T>> registerTag(String providerName, String typeName, ResourceKey<Registry<T>> registry) {
         return registerTag(providerName, registry, c -> new RegistrateTagsProvider.Impl<>(c.parent(), c.type(), typeName, c.output(), registry, c.provider()));
     }
