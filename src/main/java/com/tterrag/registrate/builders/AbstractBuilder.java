@@ -24,6 +24,7 @@ import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Base class which most builders should extend, instead of implementing [@link {@link Builder} directly.
@@ -93,16 +94,29 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
      *            The tags to add
      * @return this {@link Builder}
      */
-    @SuppressWarnings("unchecked")
     @SafeVarargs
     public final <TP extends TagsProvider<R> & RegistrateTagsProvider<R>> S tag(ProviderType<? extends TP> type, TagKey<R>... tags) {
+        return tag(type, Arrays.asList(tags));
+    }
+
+    /**
+     * Tag this entry with a tag (or tags) of the correct type. Multiple calls will add additional tags.
+     *
+     * @param type
+     *            The provider type (which must be a tag provider)
+     * @param tags
+     *            The tags to add
+     * @return this {@link Builder}
+     */
+    @SuppressWarnings("unchecked")
+    public final <TP extends TagsProvider<R> & RegistrateTagsProvider<R>> S tag(ProviderType<? extends TP> type, Collection<TagKey<R>> tags) {
         if (!tagsByType.containsKey(type)) {
-            setData(type, (ctx, prov) -> tagsByType.get(type).stream()
+            setData(type, (_, prov) -> tagsByType.get(type).stream()
                     .map(t -> (TagKey<R>) t)
                     .map(prov::rawBuilder)
                     .forEach(b -> b.add(asTag())));
         }
-        tagsByType.putAll(type, Arrays.asList(tags));
+        tagsByType.putAll(type, tags);
         return (S) this;
     }
 

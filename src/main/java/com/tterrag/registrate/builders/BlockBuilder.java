@@ -1,11 +1,14 @@
 package com.tterrag.registrate.builders;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import org.jspecify.annotations.Nullable;
 
@@ -33,6 +36,7 @@ import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.block.dispatch.SingleVariant;
 import net.minecraft.client.renderer.block.dispatch.Variant;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.BlockItemTagId;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -93,6 +97,8 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     private NonNullFunction<BlockBehaviour.Properties, BlockBehaviour.Properties> propertiesCallback = NonNullUnaryOperator.identity();
 
     private @Nullable NonNullSupplier<Supplier<List<BlockTintSource>>> tintSources;
+
+    private final Set<TagKey<Item>> blockItemTags = new ReferenceOpenHashSet<>();
 
     protected BlockBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, NonNullFunction<BlockBehaviour.Properties, T> factory, NonNullSupplier<BlockBehaviour.Properties> initialProperties) {
         super(owner, parent, name, callback, Registries.BLOCK);
@@ -164,6 +170,9 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p.useBlockDescriptionPrefix()))
                 .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a better API for "unsetting" providers
+                .addMiscData(ProviderType.ITEM_TAGS, prov ->
+                        blockItemTags.forEach(tag -> prov.tag(tag).add(asTag()))
+                )
                 .model(() -> (ctx, prov) -> getOwner().getDataProvider(ProviderType.BLOCKSTATE)
                         .map(g -> g.seenBlockstates.get(getEntry()))
                         .flatMap(BlockStateModelDispatcher::simpleModels)
@@ -350,6 +359,21 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
     @SafeVarargs
     public final BlockBuilder<T, P> tag(TagKey<Block>... tags) {
         return tag(ProviderType.BLOCK_TAGS, tags);
+    }
+
+    /**
+     * Assign {@link BlockItemTagId}{@code s} to both this block and its item form (if it exists).
+     * Multiple calls will add additional tags.
+     *
+     * @param tags
+     *            The tags to assign
+     * @return this {@link BlockBuilder}
+     */
+    public final BlockBuilder<T, P> tag(BlockItemTagId... tags) {
+        for (BlockItemTagId tag : tags) {
+            blockItemTags.add(tag.item());
+        }
+        return tag(ProviderType.BLOCK_TAGS, Arrays.stream(tags).map(BlockItemTagId::block).toList());
     }
 
     @Override
