@@ -130,7 +130,15 @@ public abstract class AbstractBuilder<R, T extends R, P, S extends AbstractBuild
     }
 
     protected TagEntry asTag() {
-        Identifier id = Identifier.fromNamespaceAndPath(getOwner().getModid(), getName());
+        return asTag(getName());
+    }
+
+    /**
+     * Create the tag entry for a sibling entry owned by this builder, preserving
+     * the optional state configured through {@link #asOptional()}.
+     */
+    protected TagEntry asTag(String name) {
+        Identifier id = Identifier.fromNamespaceAndPath(getOwner().getModid(), name);
         if (isOptional) return TagEntry.optionalElement(id);
         return TagEntry.element(id);
     }

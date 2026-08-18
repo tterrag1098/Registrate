@@ -10,11 +10,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "testmod:magic_item_model"
+          "name": "testmod:manual_model"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "testmod:blocks/magic_item_model"
+  "random_sequence": "testmod:blocks/manual_model"
 }

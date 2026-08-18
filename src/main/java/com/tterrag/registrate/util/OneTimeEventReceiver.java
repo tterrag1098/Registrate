@@ -27,7 +27,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
     public static <T extends Event & IModBusEvent> void addModListener(AbstractRegistrate<?> owner, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addModListener(owner, EventPriority.NORMAL, evtClass, listener);
     }
-    
+    @SuppressWarnings("unchecked")
     public static <T extends Event & IModBusEvent> void addModListener(AbstractRegistrate<?> owner, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         if (owner.getModEventBus() == null) {
             if (!waitingModListeners.contains(owner, evtClass)) {
@@ -48,17 +48,23 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<T> {
         }
         OneTimeEventReceiver.<T>addListener(owner.getModEventBus(), priority, evtClass, listener);
     }
-    
+
     public static <T extends Event> void addForgeListener(Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addForgeListener(EventPriority.NORMAL, evtClass, listener);
     }
-    
+
     public static <T extends Event> void addForgeListener(EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         OneTimeEventReceiver.<T>addListener(NeoForge.EVENT_BUS, priority, evtClass, listener);
     }
 
+    @Deprecated
+    public static <T extends Event> void addListener(IEventBus bus, Class<? super T> evtClass, Consumer<? super T> listener) {
+        OneTimeEventReceiver.<T>addListener(bus, EventPriority.NORMAL, evtClass, listener);
+    }
+
     @SuppressWarnings("unchecked")
-    private static <T extends Event> void addListener(IEventBus bus, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
+    @Deprecated
+    public static <T extends Event> void addListener(IEventBus bus, EventPriority priority, Class<? super T> evtClass, Consumer<? super T> listener) {
         bus.addListener(priority, false, (Class<T>) evtClass, new OneTimeEventReceiver<>(bus, listener));
     }
 

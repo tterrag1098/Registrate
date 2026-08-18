@@ -21,4 +21,9 @@ public class RegistrateDatapackProvider extends DatapackBuiltinEntriesProvider i
 		return getRegistryProvider();
 	}
 
+	@Override
+	public LogicalSide getSide() {
+		return LogicalSide.SERVER;
+	}
+
 }

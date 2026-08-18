@@ -111,7 +111,7 @@ public class RegistrateItemModelGenerator extends ItemModelGenerators {
     }
 
     /**
-     * Create a bucket model using the NeoForge built in fluid container model. Borrowed with <3 from EnderIO.
+     * Create a bucket model using the NeoForge built-in fluid container model. Borrowed with love from EnderIO.
      * @param item A supplier to the bucket item, most commonly a {@link com.tterrag.registrate.providers.DataGenContext}
      * @param flipGas If true, the bucket model will be flipped upside down
      * @param applyFluidLuminosity If true, the fluid will "glow"

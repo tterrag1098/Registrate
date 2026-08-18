@@ -107,7 +107,6 @@ public class BlockEntityBuilder<T extends BlockEntity, P> extends AbstractBuilde
     
     /**
      * Register an {@link BlockEntityRenderer} for this block entity.
-     * <p>
      * 
      * @apiNote This requires the {@link Class} of the block entity object, which can only be gotten by inspecting an instance of it. Thus, the entity will be constructed to register the renderer.
      * 

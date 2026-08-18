@@ -50,6 +50,11 @@ public class RegistrateAdvancementProvider implements RegistrateProvider, Consum
         return provider.lookupOrThrow(key.registryKey()).getOrThrow(key);
     }
 
+    @Override
+    public LogicalSide getSide() {
+        return LogicalSide.SERVER;
+    }
+
     public MutableComponent title(String category, String name, String title) {
         return owner.addLang("advancements", Identifier.fromNamespaceAndPath(category, name), "title", title);
     }

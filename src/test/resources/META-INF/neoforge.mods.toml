@@ -7,8 +7,6 @@
 modLoader="javafml" #mandatory
 # A version range to match for said mod loader - for regular FML @Mod it will be the forge version
 loaderVersion="[2,)" #mandatory (2 is current neoforge version)
-# A URL to refer people to when problems occur with this mod
-issueTrackerURL="http://my.issue.tracker/" #optional
 license="MPL 2.0"
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
@@ -30,9 +28,19 @@ displayName="Test Mod" #mandatory
 #authors="Cojomax99, Corosus, tterrag, Mr_okushama, MrRube, etc" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-This is a long form description of the mod. You can write whatever you want here
-
-Have some lorem ipsum.
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed mollis lacinia magna. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed sagittis luctus odio eu tempus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque volutpat ligula eget lacus auctor sagittis. In hac habitasse platea dictumst. Nunc gravida elit vitae sem vehicula efficitur. Donec mattis ipsum et arcu lobortis, eleifend sagittis sem rutrum. Cras pharetra quam eget posuere fermentum. Sed id tincidunt justo. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Registrate's test mod.
 '''
+
+[[dependencies.testmod]]
+modId="minecraft"
+type="required"
+versionRange="[26.2]"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.testmod]]
+modId="neoforge"
+type="required"
+versionRange="[26.2.0.59,)"
+ordering="NONE"
+side="BOTH"

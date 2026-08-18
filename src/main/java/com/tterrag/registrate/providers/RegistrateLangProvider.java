@@ -53,6 +53,11 @@ public class RegistrateLangProvider extends LanguageProvider implements Registra
     }
 
     @Override
+    public LogicalSide getSide() {
+        return LogicalSide.CLIENT;
+    }
+
+    @Override
     public String getName() {
         return "Lang (en_us/en_ud)";
     }

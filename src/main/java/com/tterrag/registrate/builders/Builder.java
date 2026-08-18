@@ -115,6 +115,17 @@ public interface Builder<R, T extends R, P, S extends Builder<R, T, P, S>> exten
     }
 
     /**
+     * Remove the entry-associated callback for the given generator type.
+     *
+     * @return this builder
+     */
+    @SuppressWarnings("unchecked")
+    default S removeData(GeneratorType<?> type) {
+        getOwner().removeDataGenerator(this, type);
+        return (S) this;
+    }
+
+    /**
      * Add a data provider callback which will be invoked when the provider of the given type executes.
      * <p>
      * Calling this multiple times for the same type will <em>not</em> overwrite an existing callback.

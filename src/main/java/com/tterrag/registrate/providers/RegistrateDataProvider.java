@@ -2,7 +2,6 @@ package com.tterrag.registrate.providers;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Lists;
 import com.tterrag.registrate.AbstractRegistrate;
 import com.tterrag.registrate.util.DebugMarkers;
 import lombok.extern.log4j.Log4j2;
@@ -19,7 +18,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -53,7 +54,7 @@ public class RegistrateDataProvider implements DataProvider {
             if (sorted.parent() != null) lookup = ((RegistrateLookupFillerProvider) known.get(sorted.parent())).getFilledProvider();
             RegistrateProvider prov = ProviderType.create(type, parent, event, known, lookup);
             if (prov instanceof RegistrateTagsProvider<?> tagsProvider && TAG_TYPES.get(tagsProvider.registry()) != type) {
-				throw new IllegalStateException("Tag providers must be registered through ProviderType::registerTag");
+                throw new IllegalStateException("Tag providers must be registered through ProviderType::registerTag");
             }
             known.put(type, prov);
             log.debug(DebugMarkers.DATA, "Adding provider for type: {}", sorted.id());
@@ -64,15 +65,40 @@ public class RegistrateDataProvider implements DataProvider {
     @Override
     public CompletableFuture<?> run(CachedOutput cache) {
         return registriesLookup.thenCompose(provider -> {
-            var list = Lists.<CompletableFuture<?>>newArrayList();
+            Map<String, CompletableFuture<?>> futures = new LinkedHashMap<>();
 
             for (Map.Entry<ProviderType<?>, RegistrateProvider> e : subProviders.entrySet()) {
-                log.debug(DebugMarkers.DATA, "Generating data for type: {}", getTypeName(e.getKey()));
-                list.add(e.getValue().run(cache));
+                String name = String.valueOf(getTypeName(e.getKey()));
+                log.debug(DebugMarkers.DATA, "Generating data for type: {}", name);
+                try {
+                    futures.put(name, e.getValue().run(cache));
+                } catch (Throwable throwable) {
+                    log.error(DebugMarkers.DATA, "Data provider {} failed before returning a future", name, throwable);
+                    return CompletableFuture.failedFuture(throwable);
+                }
             }
 
-            return CompletableFuture.allOf(list.toArray(CompletableFuture[]::new));
+            return failFastAll(futures);
         });
+    }
+
+    static CompletableFuture<Void> failFastAll(Map<String, ? extends CompletableFuture<?>> futures) {
+        if (futures.isEmpty()) return CompletableFuture.completedFuture(null);
+
+        CompletableFuture<Void> result = new CompletableFuture<>();
+        AtomicInteger remaining = new AtomicInteger(futures.size());
+        futures.forEach((name, future) -> future.whenComplete((ignored, throwable) -> {
+            if (throwable != null) {
+                Throwable cause = throwable instanceof CompletionException && throwable.getCause() != null
+                        ? throwable.getCause()
+                        : throwable;
+                log.error(DebugMarkers.DATA, "Data provider {} failed", name, cause);
+                result.completeExceptionally(cause);
+            } else if (remaining.decrementAndGet() == 0) {
+                result.complete(null);
+            }
+        }));
+        return result;
     }
 
     @Override

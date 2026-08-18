@@ -80,9 +80,11 @@ dependencies {
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
     testRuntimeOnly    "org.junit.jupiter:junit-jupiter-engine:5.7.2"
+    testRuntimeOnly    "org.junit.platform:junit-platform-launcher:1.7.2"
 }
 
 test {
+    useJUnitPlatform()
     failOnNoDiscoveredTests = false
 }
 
@@ -116,11 +118,19 @@ tasks.register('sourceJar', Jar) {
 javadoc {
     source = delombok
     configure (options) {
+        encoding = 'UTF-8'
+        charSet = 'UTF-8'
+        docEncoding = 'UTF-8'
+        addBooleanOption('Xdoclint:all,-missing', true)
         tags(
            'apiNote:a:API Note:',
            'implNote:a:Implementation Note:'
         )
     }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('javadoc')
 }
 
 publishing {
@@ -135,7 +145,7 @@ publishing {
 
     repositories {
         if (project.hasProperty('mavendir')) {
-            maven { url mavendir }
+            maven { url = mavendir }
         }
 
         def mavenToken = System.getenv("MAVEN_TOKEN")
@@ -153,7 +163,7 @@ publishing {
 
 repositories {
     maven {
-        url 'https://repo.maven.apache.org/maven2'
-        name 'Maven Central'
+        url = 'https://repo.maven.apache.org/maven2'
+        name = 'Maven Central'
     }
 }

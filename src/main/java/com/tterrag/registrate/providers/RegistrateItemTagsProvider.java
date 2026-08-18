@@ -10,7 +10,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -18,26 +18,26 @@ import java.util.concurrent.CompletableFuture;
 public class RegistrateItemTagsProvider extends RegistrateTagsProvider.Impl<Item> {
 
     private final CompletableFuture<TagsProvider.TagLookup<Block>> blockTags;
-    private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new HashMap<>();
+    private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new LinkedHashMap<>();
 
     public RegistrateItemTagsProvider(AbstractRegistrate<?> owner, ProviderType<RegistrateItemTagsProvider> type, String name, PackOutput output, CompletableFuture<HolderLookup.Provider> registriesLookup, CompletableFuture<TagsProvider.TagLookup<Block>> blockTags) {
         super(owner, type, name, output, Registries.ITEM, registriesLookup);
         this.blockTags = blockTags;
     }
 
-    public void copy(TagKey<Block> p_206422_, TagKey<Item> p_206423_) {
-        this.tagsToCopy.put(p_206422_, p_206423_);
+    public void copy(TagKey<Block> blockTag, TagKey<Item> itemTag) {
+        this.tagsToCopy.put(blockTag, itemTag);
     }
 
     @Override
     protected CompletableFuture<HolderLookup.Provider> createContentsProvider() {
-        return super.createContentsProvider().thenCombineAsync(this.blockTags, (p_274766_, p_274767_) -> {
-            this.tagsToCopy.forEach((p_274763_, p_274764_) -> {
-                TagBuilder tagbuilder = this.getOrCreateRawBuilder(p_274764_);
-                Optional<TagBuilder> optional = p_274767_.apply(p_274763_);
-                optional.orElseThrow(() -> new IllegalStateException("Missing block tag " + p_274764_.location())).build().forEach(tagbuilder::add);
+        return super.createContentsProvider().thenCombineAsync(this.blockTags, (provider, blockTagLookup) -> {
+            this.tagsToCopy.forEach((blockTag, itemTag) -> {
+                TagBuilder itemTagBuilder = this.getOrCreateRawBuilder(itemTag);
+                Optional<TagBuilder> blockTagBuilder = blockTagLookup.apply(blockTag);
+                blockTagBuilder.orElseThrow(() -> new IllegalStateException("Missing block tag " + blockTag.location())).build().forEach(itemTagBuilder::add);
             });
-            return p_274766_;
+            return provider;
         });
     }
 }

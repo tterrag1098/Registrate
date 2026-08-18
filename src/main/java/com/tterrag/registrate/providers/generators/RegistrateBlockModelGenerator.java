@@ -72,6 +72,11 @@ public class RegistrateBlockModelGenerator extends BlockModelGenerators {
         this.blockStateOutput.accept(createSimpleBlock(block, plainVariant(model)));
     }
 
+    public void createParticleOnlyBlock(Block block, Material particle) {
+        Identifier model = ModelTemplates.PARTICLE_ONLY.create(block, TextureMapping.particle(particle), modelOutput);
+        create(block, model);
+    }
+
     public Identifier mcLoc(String id) {
         return Identifier.withDefaultNamespace(id);
     }

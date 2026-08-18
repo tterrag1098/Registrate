@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.block.FluidModel;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.BucketItem;
@@ -85,20 +84,17 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
 
     public FluidBuilder<T, P> model(NonNullSupplier<Supplier<FluidModel.Unbaked>> model) {
         if (this.model == null) {
-            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerModel);
+            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> onRegister($ -> registerModel()));
         }
         this.model = model;
         return this;
     }
 
     protected void registerModel() {
-        OneTimeEventReceiver.addModListener(getOwner(), RegisterFluidModelsEvent.class, e -> {
+        Preconditions.checkNotNull(getOwner().getModEventBus(), "Cannot register fluid models without a mod event bus").addListener((RegisterFluidModelsEvent e) -> {
             NonNullSupplier<Supplier<FluidModel.Unbaked>> model = this.model;
             if (model != null) {
-                e.register(model.get().get(), getEntry());
-                if (this.source != null) {
-                    e.register(model.get().get(), getSource());
-                }
+                e.register(model.get().get(), getSource(), getEntry());
             }
         });
     }
@@ -368,6 +364,15 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         return this;
     }
 
+    private NonNullSupplier<? extends BaseFlowingFluid> ensureSource() {
+        NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
+        if (source == null && this.defaultSource == Boolean.TRUE) {
+            source = NonNullSupplier.lazy(() -> new BaseFlowingFluid.Source(makeProperties()));
+            this.source = source;
+        }
+        return Preconditions.checkNotNull(source, "Fluid has no source version: " + sourceName);
+    }
+
     /**
      * Create a {@link BaseFlowingFluid} for this fluid, which is created by the given factory, and which will be built and registered along with this fluid.
      *
@@ -426,7 +431,10 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         final var ret =  getOwner().<B, FluidBuilder<T, P>>block(this, sourceName, p -> factory.apply(supplier.get(), p))
             .properties(p -> BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).noLootTable())
             .properties(p -> p.lightLevel(lightLevelInt))
-                .blockstate(() -> (ctx, prov) -> prov.createNonTemplateModelBlock(ctx.get()));
+                .blockstate(() -> (ctx, prov) -> {
+                    NonNullSupplier<Supplier<FluidModel.Unbaked>> model = Preconditions.checkNotNull(this.model, "Cannot generate a fluid block model without a fluid model");
+                    prov.createParticleOnlyBlock(ctx.get(), model.get().get().stillMaterial());
+                });
         this.fluidProperties(p -> p.block(ret.asSupplier()));
         return ret;
     }
@@ -479,11 +487,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
             throw new IllegalStateException("Only one call to bucket/noBucket per builder allowed");
         }
         this.defaultBucket = false;
-        NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
-        // TODO: Can we find a way to circumvent this limitation?
-        if (source == null) {
-            throw new IllegalStateException("Cannot create a bucket before creating a source block");
-        }
+        NonNullSupplier<? extends BaseFlowingFluid> source = ensureSource();
         final var ret = getOwner().<I, FluidBuilder<T, P>>item(this, bucketName, p -> factory.apply(source.get(), p))
             .properties(p -> p.craftRemainder(Items.BUCKET).stacksTo(1))
                 .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
@@ -512,7 +516,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         FluidBuilder<T, P> ret = this.tag(ProviderType.FLUID_TAGS, tags);
         if (this.tags.isEmpty()) {
             ret.getOwner().setDataGenerator(ret.sourceName, getRegistryKey(), ProviderType.FLUID_TAGS,
-                prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(ResourceKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath(getOwner().getModid(), sourceName)))));
+                prov -> this.tags.stream().map(prov::tag).forEach(p -> p.add(asTag(sourceName))));
         }
         this.tags.addAll(Arrays.asList(tags));
         return ret;
@@ -532,9 +536,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
     }
 
     private BaseFlowingFluid getSource() {
-        NonNullSupplier<? extends BaseFlowingFluid> source = this.source;
-        Preconditions.checkNotNull(source, "Fluid has no source block: " + sourceName);
-        return source.get();
+        return ensureSource().get();
     }
 
     private BaseFlowingFluid.Properties makeProperties() {
@@ -556,7 +558,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
         // TODO improve this?
         if (block.isPresent() && block.get().isBound()) {
             properties.descriptionId(block.get().get().getDescriptionId());
-            setData(ProviderType.LANG, NonNullBiConsumer.noop());
+            removeData(ProviderType.LANG);
         } else {
             properties.descriptionId(Util.makeDescriptionId("fluid", Identifier.fromNamespaceAndPath(getOwner().getModid(), sourceName)));
         }
@@ -587,9 +589,7 @@ public class FluidBuilder<T extends BaseFlowingFluid, P> extends AbstractBuilder
             throw new IllegalStateException("Fluid must have a type: " + getName());
         }
 
-        if (defaultSource == Boolean.TRUE) {
-            source(BaseFlowingFluid.Source::new);
-        }
+        ensureSource();
         if (defaultBlock == Boolean.TRUE) {
             block().register();
         }

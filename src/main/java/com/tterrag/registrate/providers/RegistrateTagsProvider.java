@@ -6,14 +6,12 @@ import net.minecraft.core.Registry;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.data.tags.TagAppender;
-import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.neoforged.fml.LogicalSide;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvider {
 
@@ -23,7 +21,11 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
 
     TagBuilder rawBuilder(TagKey<T> key);
 
-    class Impl<T> extends TagsProvider<T> implements RegistrateTagsProvider<T> {
+    interface Key<T> extends RegistrateTagsProvider<T> {
+        TagAppender<T> tag(TagKey<T> key);
+    }
+
+    class Impl<T> extends TagsProvider<T> implements RegistrateTagsProvider.Key<T> {
         private final AbstractRegistrate<?> owner;
         private final ProviderType<? extends Impl<T>> type;
         private final String name;
@@ -44,6 +46,11 @@ public interface RegistrateTagsProvider<T> extends RegistrateLookupFillerProvide
         @Override
         protected void addTags(HolderLookup.Provider provider) {
             owner.genData(type, this);
+        }
+
+        @Override
+        public LogicalSide getSide() {
+            return LogicalSide.SERVER;
         }
 
         @Override

@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "testmod:flowing_testfluid",
+      "required": false
+    },
+    {
+      "id": "testmod:testfluid",
+      "required": false
+    }
+  ]
+}

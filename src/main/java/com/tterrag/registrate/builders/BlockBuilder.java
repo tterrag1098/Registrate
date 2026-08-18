@@ -169,7 +169,7 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public <I extends Item> ItemBuilder<I, BlockBuilder<T, P>> item(NonNullBiFunction<? super T, Item.Properties, ? extends I> factory) {
         return getOwner().<I, BlockBuilder<T, P>> item(this, getName(), p -> factory.apply(getEntry(), p.useBlockDescriptionPrefix()))
-                .setData(ProviderType.LANG, NonNullBiConsumer.noop()) // FIXME Need a better API for "unsetting" providers
+                .removeData(ProviderType.LANG)
                 .addMiscData(ProviderType.ITEM_TAGS, prov ->
                         blockItemTags.forEach(tag -> prov.tag(tag).add(asTag()))
                 )
@@ -246,6 +246,15 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
      */
     public BlockBuilder<T, P> defaultBlockstate() {
         return blockstate(() -> (ctx, prov) -> prov.createTrivialCube(ctx.getEntry()));
+    }
+
+    /**
+     * Disable Registrate's automatic blockstate and block-model generation for this entry.
+     *
+     * @return this {@link BlockBuilder}
+     */
+    public BlockBuilder<T, P> noBlockstate() {
+        return removeData(ProviderType.BLOCKSTATE);
     }
 
     /**
@@ -337,6 +346,18 @@ public class BlockBuilder<T extends Block, P> extends AbstractBuilder<Block, T, 
             RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
         }
         this.clientExtensionFunc = block -> clientExtension;
+        return this;
+    }
+
+    /**
+     * @deprecated Use {@link #clientExtension(NonNullSupplier)} when the extension does not depend on the block.
+     */
+    @Deprecated(forRemoval = false)
+    public BlockBuilder<T, P> clientExtension(Function<T, NonNullSupplier<Supplier<IClientBlockExtensions>>> clientExtension) {
+        if (this.clientExtensionFunc == null) {
+            RegistrateDistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerClientExtension);
+        }
+        this.clientExtensionFunc = clientExtension;
         return this;
     }
 

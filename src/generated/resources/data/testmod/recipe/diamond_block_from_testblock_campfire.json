@@ -1,6 +1,5 @@
 {
   "type": "minecraft:campfire_cooking",
-  "category": "misc",
   "cookingtime": 600,
   "experience": 1.0,
   "ingredient": "testmod:testblock",

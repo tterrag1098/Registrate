@@ -107,7 +107,6 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
 
     /**
      * Register an {@link EntityRenderer} for this entity.
-     * <p>
      *
      * @param renderer
      *            A (server safe) supplier to an {@link EntityRendererProvider} that will provide this entity's renderer
@@ -191,6 +190,15 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
     }
 
     /**
+     * Legacy colored spawn-egg overload. Colors are data-driven in 26.2 and are ignored.
+     * @deprecated Use {@link #defaultSpawnEgg()}.
+     */
+    @Deprecated(forRemoval = false)
+    public EntityBuilder<T, P> defaultSpawnEgg(int primaryColor, int secondaryColor) {
+        return defaultSpawnEgg();
+    }
+
+    /**
      * Create a spawn egg item for this entity using the given colors, and return the builder for further configuration.
      *
      * @return the {@link ItemBuilder} for the egg item
@@ -201,6 +209,15 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
                 .tab(CreativeModeTabs.SPAWN_EGGS)
                 .properties(p -> p.spawnEgg(sup.get()))
                 .model(() -> (ctx, prov) -> prov.generateFlatItem(ctx.get(), ModelTemplates.FLAT_ITEM));
+    }
+
+    /**
+     * Legacy colored spawn-egg overload. Colors are data-driven in 26.2 and are ignored.
+     * @deprecated Use {@link #spawnEgg()}.
+     */
+    @Deprecated(forRemoval = false)
+    public ItemBuilder<? extends SpawnEggItem, EntityBuilder<T, P>> spawnEgg(int primaryColor, int secondaryColor) {
+        return spawnEgg();
     }
 
     /**
@@ -253,6 +270,10 @@ public class EntityBuilder<T extends Entity, P> extends AbstractBuilder<EntityTy
         EntityType.Builder<T> builder = this.builder.get();
         builderCallback.accept(builder);
         return builder.build(getResourceKey());
+    }
+
+    @Deprecated(forRemoval = false)
+    protected void injectSpawnEggType(EntityType<T> entry) {
     }
 
     @Override

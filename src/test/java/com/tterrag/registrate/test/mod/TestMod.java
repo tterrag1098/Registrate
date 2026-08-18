@@ -42,6 +42,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TimelineTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -83,6 +84,7 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -120,6 +122,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TestMod {
 
     public static final String MOD_ID = "testmod";
+    public static final TagKey<Fluid> OPTIONAL_TEST_FLUIDS = TagKey.create(
+            Registries.FLUID, Identifier.fromNamespaceAndPath(MOD_ID, "optional_test_fluids"));
 
     public class TestBlock extends Block implements EntityBlock {
 
@@ -228,7 +232,7 @@ public class TestMod {
                 .properties(p -> p.food(new FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()))
                 .tag(ItemTags.BEDS)
             .model(() -> (ctx, prov) -> prov.createWithExistingModel(ctx.getEntry(), prov.mcLoc("block/stone")))
-                .tab(testcreativetab.getKey(), (ctx, modifier) -> modifier.accept(ctx.get()))
+                .tabNew(testcreativetab.getKey(), (ctx, event) -> event.accept(ctx.get()))
                 .register();
 
     @VisibleForTesting
@@ -282,6 +286,15 @@ public class TestMod {
             .register();
 
     @VisibleForTesting
+    public final BlockEntry<Block> manualModelBlock = registrate.object("manual_model")
+            .block(Block::new)
+            .noBlockstate()
+            .item()
+                .noModel()
+                .build()
+            .register();
+
+    @VisibleForTesting
     public final ItemEntry<BlockItem> testblockitem = (ItemEntry<BlockItem>) testblock.<Item, BlockItem>getSibling(Registries.ITEM);
     @VisibleForTesting
     public final BlockEntityEntry<ChestBlockEntity> testblockbe = BlockEntityEntry.cast(testblock.getSibling(Registries.BLOCK_ENTITY_TYPE));
@@ -315,7 +328,8 @@ public class TestMod {
                     Identifier.withDefaultNamespace("block/lava_still"),
 					FluidType::new)
             .properties(p -> p.lightLevel(15).canConvertToSource(true))
-            .source(BaseFlowingFluid.Source::new) // TODO should be unnecessary
+            .asOptional()
+            .tag(OPTIONAL_TEST_FLUIDS)
             .bucket()
                 .model(() -> (ctx, prov) -> prov.bucketItem(ctx, false, false))
                 .build()

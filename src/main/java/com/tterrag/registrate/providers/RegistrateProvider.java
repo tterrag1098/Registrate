@@ -5,5 +5,5 @@ import net.neoforged.fml.LogicalSide;
 
 public interface RegistrateProvider extends DataProvider {
 
-    // Curently nothing, do we need this interface?
+    LogicalSide getSide();
 }

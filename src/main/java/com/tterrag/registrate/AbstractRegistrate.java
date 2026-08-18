@@ -9,6 +9,7 @@ import com.tterrag.registrate.builders.MenuBuilder.ForgeMenuFactory;
 import com.tterrag.registrate.builders.MenuBuilder.MenuFactory;
 import com.tterrag.registrate.builders.MenuBuilder.ScreenFactory;
 import com.tterrag.registrate.providers.*;
+import com.tterrag.registrate.util.CreativeModeTabModifier;
 import com.tterrag.registrate.util.DebugMarkers;
 import com.tterrag.registrate.util.OneTimeEventReceiver;
 import com.tterrag.registrate.util.entry.ItemEntry;
@@ -521,6 +522,7 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
      */
     public <P, R> S setDataGenerator(String entry, ResourceKey<? extends Registry<R>> registryType, GeneratorType<? extends P> type, NonNullConsumer<? extends P> cons) {
         if (!doDatagen.get()) return self();
+        if (provider != null) throw new IllegalStateException("Cannot set data generator after construction of root generator");
         @SuppressWarnings("null")
         Consumer<?> existing = datagensByEntry.put(Pair.of(entry, registryType), type, cons);
         if (existing != null) {
@@ -528,6 +530,38 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
             datagens.remove(type, existing);
         }
         return addDataGenerator(type, cons);
+    }
+
+    /**
+     * Remove the entry-associated callback for the given generator type.
+     */
+    public <P, R> S removeDataGenerator(Builder<R, ?, ?, ?> builder, GeneratorType<? extends P> type) {
+        return removeDataGenerator(builder.getName(), builder.getRegistryKey(), type);
+    }
+
+    /**
+     * Remove the entry-associated callback for the given generator type.
+     *
+     * @return this {@link AbstractRegistrate}
+     */
+    public <P, R> S removeDataGenerator(String entry, ResourceKey<? extends Registry<R>> registryType, GeneratorType<? extends P> type) {
+        if (!doDatagen.get()) return self();
+        if (provider != null) throw new IllegalStateException("Cannot remove data generator after construction of root generator");
+
+        @SuppressWarnings("null")
+        Consumer<?> existing = datagensByEntry.remove(Pair.of(entry, registryType), type);
+        if (existing != null) {
+            //noinspection SuspiciousMethodCalls
+            datagens.remove(type, existing);
+        }
+        return self();
+    }
+
+    /**
+     * Returns whether an entry-associated callback exists for the given generator type.
+     */
+    public boolean hasDataGenerator(String entry, ResourceKey<? extends Registry<?>> registryType, GeneratorType<?> type) {
+        return doDatagen.get() && datagensByEntry.contains(Pair.of(entry, registryType), type);
     }
 
     /**
@@ -717,6 +751,16 @@ public abstract class AbstractRegistrate<S extends AbstractRegistrate<S>> {
     public S defaultCreativeTab(ResourceKey<CreativeModeTab> creativeModeTab) {
         defaultCreativeModeTab = creativeModeTab;
         return self();
+    }
+
+    /**
+     * Compatibility adapter for the legacy creative-tab modifier callback.
+     *
+     * @deprecated Use {@link #modifyCreativeTab(ResourceKey, Consumer)}.
+     */
+    @Deprecated(forRemoval = false)
+    public S modifyCreativeModeTab(ResourceKey<CreativeModeTab> creativeModeTab, Consumer<CreativeModeTabModifier> modifier) {
+        return modifyCreativeTab(creativeModeTab, event -> modifier.accept(new CreativeModeTabModifier(event::getFlags, event::hasPermissions, event::accept, event::getParameters)));
     }
 
     /**
