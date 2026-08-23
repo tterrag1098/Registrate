@@ -16,6 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -37,8 +38,8 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
             waitingModListeners.get(owner, evtClass).add(Pair.of(priority, listener));
             return;
         }
-        if (!seenModBus) {
-            seenModBus = true;
+        if (!seenModBuses.contains(owner)) {
+            seenModBuses.add(owner);
             for (var waitingListener : waitingModListeners.row(owner).entrySet()) {
                 for (var pair : waitingListener.getValue()) {
                     //noinspection unchecked
@@ -69,7 +70,7 @@ public class OneTimeEventReceiver<T extends Event> implements Consumer<@NonnullT
         bus.addListener(priority, false, (Class<T>) evtClass, new OneTimeEventReceiver<>(bus, listener));
     }
 
-    private static boolean seenModBus = false;
+    private static final HashSet<AbstractRegistrate<?>> seenModBuses = new HashSet<>();
     private static final Table<AbstractRegistrate<?>, Class<?>, List<Pair<EventPriority, Consumer<?>>>> waitingModListeners = HashBasedTable.create();
 
     private final IEventBus bus;
